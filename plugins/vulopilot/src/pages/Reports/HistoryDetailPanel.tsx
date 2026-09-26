@@ -5,6 +5,7 @@ import { getApiLink, sendApiResponse } from '@zyra/core';
 import { CardComponent, ModuleGuardComponent, NoticeManager, FormGroupWrapperComponent, FormGroupComponent, BadgeComponent, ListComponent } from '@zyra/components';
 import { ButtonInput } from '@zyra/inputs';
 import { formatWpDate } from '../../services/formatWpDate';
+import { formatCredits } from '../../services/useAiCredits';
 import {
 	HistoryRow,
 	rowTitle,
@@ -493,7 +494,7 @@ const HistoryDetailPanel: React.FC<HistoryDetailPanelProps> = ({
 						</div>
 					)}
 					<FormGroupComponent row label={__('Credits used', 'vulopilot')}>
-						{row.conversation.credits_used ?? 0}
+						{formatCredits(row.conversation.credits_used)}
 					</FormGroupComponent>
 					<div className="issue-detail-section">
 						<h4>{__('Reply', 'vulopilot')}</h4>

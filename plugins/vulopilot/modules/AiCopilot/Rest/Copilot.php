@@ -202,8 +202,14 @@ class Copilot extends \WP_REST_Controller {
         try {
             $response = VuloPilot()->ai_request_sender->send( $messages, null, 'copilot_chat' );
         } catch ( VuloPilotException $exception ) {
+            if ( VuloPilotException::TYPE_INSUFFICIENT_CREDITS === $exception->get_type() ) {
+                return $exception->to_insufficient_credits_error();
+            }
+
+            // Returned, not rethrown - a throw from inside this catch skips
+            // the \Throwable catch below and fatals the request.
             if ( VuloPilotException::TYPE_UNSAFE_PROMPT !== $exception->get_type() ) {
-                throw $exception;
+                return new \WP_Error( 'vulopilot_ai_request_failed', $exception->getMessage(), array( 'status' => 502 ) );
             }
 
             return new \WP_Error( 'vulopilot_unsafe_prompt', $exception->getMessage(), array( 'status' => 400 ) );

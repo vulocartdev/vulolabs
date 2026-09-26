@@ -8,6 +8,7 @@ import { scrollToId } from '@zyra/core';
 import Brand from './assets/images/brand-logo.png';
 import { searchIndex, SearchItem } from './searchIndex';
 import AiCreditsIndicator from './components/AiCredits/AiCreditsIndicator';
+import InsufficientCreditsNotice from './components/AiCredits/InsufficientCreditsNotice';
 import './routeRegistry';
 import './routes';
 
@@ -159,6 +160,7 @@ const App = () => {
 
 	return (
 		<>
+			<InsufficientCreditsNotice />
 			<HeaderComponent
 				brandImg={Brand}
 				results={results}

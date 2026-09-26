@@ -157,19 +157,10 @@ class AiActionRuns extends \WP_REST_Controller {
             } elseif ( VuloPilotException::TYPE_INVALID_ACTION_OUTPUT === $exception->get_type() ) {
                 return new \WP_Error( 'vulopilot_ai_action_invalid_output', $exception->getMessage(), array( 'status' => 502 ) );
             } elseif ( VuloPilotException::TYPE_INSUFFICIENT_CREDITS === $exception->get_type() ) {
-                // VuloPilot brief §15 - a real, structured outcome the React
-                // side renders as the two-button exhausted-credits state, not
-                // a generic error toast. HTTP 200 (not 402): "do not treat
-                // exhausted credits as a generic API failure."
-                return rest_ensure_response(
-                    array(
-                        'success'           => false,
-                        'error'             => 'insufficient_credits',
-                        'credits_remaining' => $exception->get_credits_remaining(),
-                        'can_buy_credits'   => $exception->get_can_buy_credits(),
-                        'can_upgrade'       => $exception->get_can_upgrade(),
-                    )
-                );
+                // VuloCloud refused before calling the AI provider (nothing
+                // charged) - the one shared 402 shape the React side's
+                // global insufficient-credits notice (Buy Credits) handles.
+                return $exception->to_insufficient_credits_error();
             } elseif ( VuloPilotException::TYPE_UNSAFE_PROMPT === $exception->get_type() ) {
                 return new \WP_Error( 'vulopilot_ai_action_unsafe_prompt', $exception->getMessage(), array( 'status' => 400 ) );
             }

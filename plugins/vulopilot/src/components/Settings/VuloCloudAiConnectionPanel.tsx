@@ -14,7 +14,7 @@ import CardHeader from '../CardHeader';
 interface VuloCloudStatus {
 	/** Is this site connected to a VuloCloud account at all (a real site secret exists)? */
 	connected: boolean;
-	/** Does an Organization's own (or an allowed Customer backup) AI service key actually resolve for this site right now? */
+	/** Has this site's Organization configured an AI key on VuloCloud? Every AI request runs on it, charged in AI credits. */
 	configured: boolean;
 }
 
@@ -163,11 +163,11 @@ const VuloCloudAiConnectionPanel = () => {
 									)
 								: vulocloudStatus.configured
 									? __(
-											'Connected - an AI key is configured for this site by your Organization (or an allowed personal backup key).',
+											'Connected - AI requests run on your Organization’s AI key and use your AI credits.',
 											'vulopilot'
 										)
 									: __(
-											'Connected to VuloCloud, but no AI service key is configured yet for this site. Add one from your VuloCloud account, or ask your agency to.',
+											'Connected to VuloCloud, but your Organization hasn’t configured an AI key yet. Ask your Organization to add one.',
 											'vulopilot'
 										)
 						}
@@ -181,7 +181,7 @@ const VuloCloudAiConnectionPanel = () => {
 									? __('Not Connected', 'vulopilot')
 									: vulocloudStatus.configured
 										? __('Connected', 'vulopilot')
-										: __('Key needed', 'vulopilot')}
+										: __('Awaiting AI key', 'vulopilot')}
 							</span>
 						}
 						action={

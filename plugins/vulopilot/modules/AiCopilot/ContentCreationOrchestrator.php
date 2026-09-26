@@ -131,6 +131,8 @@ class ContentCreationOrchestrator {
                 return new \WP_Error( 'vulopilot_ai_action_invalid_output', $exception->getMessage(), array( 'status' => 502 ) );
             } elseif ( VuloPilotException::TYPE_UNSAFE_PROMPT === $exception->get_type() ) {
                 return new \WP_Error( 'vulopilot_unsafe_prompt', $exception->getMessage(), array( 'status' => 400 ) );
+            } elseif ( VuloPilotException::TYPE_INSUFFICIENT_CREDITS === $exception->get_type() ) {
+                return $exception->to_insufficient_credits_error();
             } elseif ( $exception->is_ai_request_failure() ) {
                 return new \WP_Error( 'vulopilot_ai_request_error', $exception->getMessage(), array( 'status' => 502 ) );
             }

@@ -74,7 +74,7 @@ class AiHistoryRepository extends RepositoryUtil {
      *
      * @param string $period_start Y-m-d, inclusive.
      * @param string $period_end   Y-m-d, inclusive.
-     * @return array{total_calls: int, successful_calls: int, failed_calls: int, credits_used: int}
+     * @return array{total_calls: int, successful_calls: int, failed_calls: int, credits_used: float}
      */
     public function get_stats_for_period( string $period_start, string $period_end ): array {
         global $wpdb;
@@ -96,7 +96,7 @@ class AiHistoryRepository extends RepositoryUtil {
             'total_calls'      => (int) ( $row['total_calls'] ?? 0 ),
             'successful_calls' => (int) ( $row['successful_calls'] ?? 0 ),
             'failed_calls'     => (int) ( $row['failed_calls'] ?? 0 ),
-            'credits_used'     => (int) ( $row['credits_used'] ?? 0 ),
+            'credits_used'     => round( (float) ( $row['credits_used'] ?? 0 ), 3 ),
         );
     }
 

@@ -27,17 +27,13 @@ final class AIResponse {
     private string $content;
 
     /**
-     * Real AI credits this call spent, as reported by VuloCloud. `0` is a
-     * genuine, honest value here, not a placeholder: it means the specific
-     * gateway path that produced this response is uncredited (the direct
-     * VuloCloud AI path's own response has no credits field at all), not
-     * that credit accounting is unfinished. A credits-metered path (e.g.
-     * AiCreditGatewayClient's `/plugin/ai/execute`) reports the real spent
-     * amount here instead.
+     * Real AI credits this call spent, exactly as VuloCloud reported it -
+     * fractional and rounded to 3 decimals for display. Never computed
+     * locally.
      *
-     * @var int
+     * @var float
      */
-    private int $credits_used;
+    private float $credits_used;
 
     /**
      * VuloCloud's own request id for this call, when the gateway that
@@ -50,12 +46,12 @@ final class AIResponse {
 
     /**
      * @param string      $content      Generated content.
-     * @param int         $credits_used Real AI credits this call spent - see get_credits_used()'s own docblock for why `0` is a real, honest value from some gateways.
+     * @param float       $credits_used Real AI credits this call spent, as reported by VuloCloud.
      * @param string|null $request_id   VuloCloud's own request id for this call, if the gateway returned one.
      */
     public function __construct(
         string $content,
-        int $credits_used,
+        float $credits_used,
         ?string $request_id = null
     ) {
         $this->content      = $content;
@@ -71,9 +67,9 @@ final class AIResponse {
     }
 
     /**
-     * @return int
+     * @return float
      */
-    public function get_credits_used(): int {
+    public function get_credits_used(): float {
         return $this->credits_used;
     }
 

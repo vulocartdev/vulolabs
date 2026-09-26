@@ -63,8 +63,8 @@ class VuloCloudAiConnection extends \WP_REST_Controller {
 
     /**
      * `connected` is "this site has a VuloCloud site secret"; `configured` is
-     * "an Organization's own (or an allowed Customer backup) AI key actually
-     * resolves for this site right now".
+     * "this site's Organization has an AI key configured on VuloCloud right
+     * now" (every AI request runs on it, charged in AI credits).
      *
      * @inheritDoc
      */

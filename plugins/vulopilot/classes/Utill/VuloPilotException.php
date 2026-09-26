@@ -44,8 +44,7 @@ class VuloPilotException extends \Exception {
 
 	/**
 	 * Thrown by AiAssistant\AiRequestSender when VuloCloud reports that no
-	 * key resolves for this site - neither this site's Organization nor an
-	 * allowed Customer backup has a usable AI key.
+	 * AI key is configured for this site's Organization yet.
 	 */
 	const TYPE_VULOCLOUD_AI_NOT_CONFIGURED = 'vulocloud_ai_not_configured';
 
@@ -96,13 +95,14 @@ class VuloPilotException extends \Exception {
 	const TYPE_INVALID_ACTION_OUTPUT = 'invalid_action_output';
 
 	/**
-	 * Thrown by AiCopilot\ActionRunner::propose() when a credits-metered
-	 * action's VuloCloud AI Gateway call comes back with
-	 * `{success:false, error:'insufficient_credits'}` - carries
-	 * `credits_remaining`/`can_buy_credits`/`can_upgrade` in `$context` so
-	 * RestAPI\Controllers\AiActionRuns::create_item() can pass them
-	 * through to the REST response's own `data`, matching the exact shape
-	 * the React side's exhausted-credits UI needs.
+	 * Thrown by AiAssistant\AiRequestSender and AiCopilot\ActionRunner when
+	 * VuloCloud refuses a request because the site owner's AI credit
+	 * balance can't cover it (`{success:false, error:'insufficient_credits'}`
+	 * - VuloCloud never calls the AI provider in that case). Carries
+	 * `credits_remaining`/`can_buy_credits`/`can_upgrade`/`buy_credits_url`
+	 * in `$context`; REST controllers turn it into a response with
+	 * to_insufficient_credits_error(), which the React side's global
+	 * insufficient-credits notice recognizes (Buy Credits action).
 	 */
 	const TYPE_INSUFFICIENT_CREDITS = 'insufficient_credits';
 
@@ -185,12 +185,43 @@ class VuloPilotException extends \Exception {
 
 	/**
 	 * TYPE_INSUFFICIENT_CREDITS convenience getter - see that constant's
-	 * own docblock.
+	 * own docblock. Credits are fractional.
 	 *
-	 * @return int
+	 * @return float
 	 */
-	public function get_credits_remaining(): int {
-		return (int) $this->get_context_value( 'credits_remaining', 0 );
+	public function get_credits_remaining(): float {
+		return (float) $this->get_context_value( 'credits_remaining', 0 );
+	}
+
+	/**
+	 * TYPE_INSUFFICIENT_CREDITS convenience getter - where the site owner
+	 * can buy more credits (VuloCloud's own AI Credits page), or '' if
+	 * VuloCloud didn't say.
+	 *
+	 * @return string
+	 */
+	public function get_buy_credits_url(): string {
+		return (string) $this->get_context_value( 'buy_credits_url', '' );
+	}
+
+	/**
+	 * The one REST shape every controller returns for TYPE_INSUFFICIENT_CREDITS
+	 * - HTTP 402 with code `vulopilot_insufficient_credits`, which the React
+	 * side's global insufficient-credits notice listens for.
+	 *
+	 * @return \WP_Error
+	 */
+	public function to_insufficient_credits_error(): \WP_Error {
+		return new \WP_Error(
+			'vulopilot_insufficient_credits',
+			__( 'You don’t have enough credits to complete this request.', 'vulopilot' ),
+			array(
+				'status'            => 402,
+				'credits_remaining' => $this->get_credits_remaining(),
+				'can_buy_credits'   => $this->get_can_buy_credits(),
+				'buy_credits_url'   => $this->get_buy_credits_url(),
+			)
+		);
 	}
 
 	/**

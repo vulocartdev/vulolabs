@@ -249,7 +249,7 @@ class History extends \WP_REST_Controller {
             'change'       => null,
             'conversation' => array(
                 'id'              => (int) $row['id'],
-                'credits_used'    => isset( $row['credits_used'] ) ? (int) $row['credits_used'] : null,
+                'credits_used'    => isset( $row['credits_used'] ) ? round( (float) $row['credits_used'], 3 ) : null,
                 'request_id'      => $row['request_id'] ?? null,
                 'status'          => $row['status'],
                 'excerpt'         => $row['response_excerpt'],

@@ -17,21 +17,19 @@ defined( 'ABSPATH' ) || exit;
  * separate person-level login status (`vulocloud_account_connected`/`_email`)
  * - a different, informational-only connection this class doesn't depend on.
  *
- * `execute()`/`get_vulocloud_ai_status()` are the one HTTP call the direct
- * VuloCloud AI path makes: sends `{siteId, secret, feature, prompt,
- * context, site_tone}`, deliberately never a `provider`/`model` field -
- * this site never names one, never learns which vendor/key actually
- * answered, and never holds an API key at all beyond this connection's own
- * encrypted site secret. VuloCloud alone resolves whichever Organization
- * or (if allowed) Customer backup credential should serve the request.
- * This gateway call has no state or behavior of its own beyond "read this
- * class's own credential, POST it", so it lives here rather than a
- * separate class. Deliberately still a distinct wire contract from
- * AiCopilot\Services\AiCreditGatewayClient (which calls the
- * credits-metered `/plugin/ai/execute` with a structured
- * `{featureId, action, context}` shape VuloCloud's own feature catalog
- * interprets) - genuinely different funding sources of the same
- * underlying Gateway, so that one stays its own class.
+ * `execute()` sends a plugin-built prompt to VuloCloud's credit-metered
+ * `POST /plugin/ai/prompt`: `{siteId, secret, feature, label, prompt,
+ * siteTone, requestId}` - deliberately never a `provider`/`model`/key
+ * field. This site never names one, never learns which key answered, and
+ * never holds an AI key at all beyond this connection's own encrypted site
+ * secret: VuloCloud runs every request on the site's Organization's AI key
+ * and charges the site owner's AI credits for its real usage. `requestId`
+ * is the idempotency key - the same id on a retry is never charged twice.
+ * `get_vulocloud_ai_status()` reads `POST /plugin/ai/status` (is an AI key
+ * configured, plus the current balance). AiCopilot\Services\AiCreditGatewayClient
+ * is the other entry point (`/plugin/ai/execute`, a structured
+ * `{featureId, action, context}` whose prompt VuloCloud's own feature
+ * catalog owns) - same credits, same key, different request shape.
  *
  * The low-level `/plugin/connect/*` broker HTTP calls and the
  * `/plugin/ai-credits/*` balance/disconnect calls are private helpers on
@@ -78,6 +76,7 @@ class AiCreditsConnection {
                 'credits'         => 0,
                 'lifetime_earned' => 0,
                 'lifetime_used'   => 0,
+                'buy_credits_url' => '',
                 'connected_at'    => '',
                 'last_synced_at'  => '',
             )
@@ -113,9 +112,10 @@ class AiCreditsConnection {
 
         return array(
             'connected'                   => $this->is_connected(),
-            'credits'                     => (int) $connection['credits'],
-            'lifetime_earned'             => (int) $connection['lifetime_earned'],
-            'lifetime_used'               => (int) $connection['lifetime_used'],
+            'credits'                     => round( (float) $connection['credits'], 3 ),
+            'lifetime_earned'             => round( (float) $connection['lifetime_earned'], 3 ),
+            'lifetime_used'               => round( (float) $connection['lifetime_used'], 3 ),
+            'buy_credits_url'             => (string) $connection['buy_credits_url'],
             'connected_at'                => $connection['connected_at'],
             'last_synced_at'              => $connection['last_synced_at'],
             // Composed in so a single GET /ai-credits/status gives the
@@ -149,10 +149,10 @@ class AiCreditsConnection {
     }
 
     /**
-     * Real `POST /plugin/ai-credits/balance` - the one method that
-     * re-syncs the cached balance from VuloCloud's own authoritative
-     * wallet (VuloPilot brief §3). Called on demand (Settings/credit
-     * indicator "refresh" action), not on every page load.
+     * Real `POST /plugin/ai/status` - the one method that re-syncs the
+     * cached balance (and the Buy Credits link) from VuloCloud's own
+     * authoritative wallet (VuloPilot brief §3). Called on demand
+     * (Settings/credit indicator "refresh" action), not on every page load.
      *
      * @return array<string, mixed>|\WP_Error Same shape as get_status().
      */
@@ -163,7 +163,7 @@ class AiCreditsConnection {
             return new \WP_Error( 'vulopilot_ai_credits_not_connected', __( 'This site is not connected to VuloCloud AI Credits.', 'vulopilot' ), array( 'status' => 400 ) );
         }
 
-        $result = $this->post_credits( VULOPILOT_VULOCLOUD_URL, '/plugin/ai-credits/balance', $credential['site_id'], $credential['secret'] );
+        $result = $this->post_credits( VULOPILOT_VULOCLOUD_URL, '/plugin/ai/status', $credential['site_id'], $credential['secret'] );
 
         if ( is_wp_error( $result ) ) {
             // Offline/unreachable - VuloPilot brief §27: never destroy the
@@ -187,18 +187,27 @@ class AiCreditsConnection {
             );
         }
 
-        $body = $result['body'];
+        $this->cache_status( $result['body'] );
 
+        return $this->get_status();
+    }
+
+    /**
+     * Caches the balance fields of a `/plugin/ai/status` response.
+     *
+     * @param array<string, mixed> $body Decoded VuloCloud response.
+     * @return void
+     */
+    private function cache_status( array $body ): void {
         $this->save_connection(
             array(
-                'credits'         => (int) ( $body['credits'] ?? 0 ),
-                'lifetime_earned' => (int) ( $body['lifetimeEarned'] ?? 0 ),
-                'lifetime_used'   => (int) ( $body['lifetimeUsed'] ?? 0 ),
+                'credits'         => (float) ( $body['credits'] ?? 0 ),
+                'lifetime_earned' => (float) ( $body['lifetimeEarned'] ?? 0 ),
+                'lifetime_used'   => (float) ( $body['lifetimeUsed'] ?? 0 ),
+                'buy_credits_url' => esc_url_raw( (string) ( $body['buyCreditsUrl'] ?? '' ) ),
                 'last_synced_at'  => current_time( 'mysql' ),
             )
         );
-
-        return $this->get_status();
     }
 
     /**
@@ -341,18 +350,18 @@ class AiCreditsConnection {
     /**
      * Records a real, successful AI Gateway spend against the LOCAL cache
      * immediately (rather than waiting for the next refresh_balance() call)
-     * - called by AiCreditGatewayClient right after a real
-     * `/plugin/ai/execute` success, whose own response already carries the
+     * - called right after every real `/plugin/ai/execute` or
+     * `/plugin/ai/prompt` success, whose own response already carries the
      * authoritative post-spend balance. This is still a cache write, not
      * an independent deduction (VuloPilot brief §3: "do not allow the
      * WordPress plugin to simply set its own credit balance") - the number
      * stored here is exactly what VuloCloud's own response just said the
      * balance now is, never locally computed.
      *
-     * @param int $credits_remaining The authoritative post-spend balance, straight from VuloCloud's own response.
+     * @param float $credits_remaining The authoritative post-spend balance, straight from VuloCloud's own response.
      * @return void
      */
-    public function record_known_balance( int $credits_remaining ): void {
+    public function record_known_balance( float $credits_remaining ): void {
         $this->save_connection(
             array(
                 'credits'        => $credits_remaining,
@@ -392,25 +401,26 @@ class AiCreditsConnection {
     }
 
     /**
-     * The direct VuloCloud AI path's one real AI call. Sends
-     * `{siteId, secret, feature, prompt, context, site_tone}` - see this
-     * class's own docblock for why there's deliberately no `provider`/`model`
-     * field.
+     * Sends one plugin-built prompt to VuloCloud's credit-metered
+     * `POST /plugin/ai/prompt` - see this class's own docblock for why
+     * there's deliberately no provider/model/key field.
      *
-     * @param string               $feature   Free-text action identifier (e.g. 'seo_analysis') - for VuloCloud's own usage-log categorization only.
-     * @param string               $prompt    This site's own already-built prompt text - VuloCloud does not construct it.
-     * @param array<string, mixed> $context   Optional structured metadata.
-     * @param string               $site_tone The manually-set `vulopilot_site_tone` option value, or ''.
-     * @return array{success: true, request_id: string, response: string}|\WP_Error {
-     *   A \WP_Error for connectivity/configuration failure OR VuloCloud
-     *   reporting no usable key (code 'vulopilot_vulocloud_ai_not_configured') -
-     *   the caller (AiAssistant\AiRequestSender) maps that one specific code
-     *   to VuloPilotException with TYPE_VULOCLOUD_AI_NOT_CONFIGURED; every
-     *   other \WP_Error becomes a generic VuloPilotException with
-     *   TYPE_GATEWAY_REQUEST.
+     * @param string      $feature    This plugin's surface name (e.g. 'geo_analysis') - VuloCloud's reporting category.
+     * @param string      $prompt     This site's own already-built prompt text.
+     * @param string      $site_tone  The `site_tone` setting, or ''.
+     * @param string      $request_id Idempotency key, stable across retries of this one logical request.
+     * @param string|null $label      Human task name for the site owner's credit history (e.g. 'Write Meta Title').
+     * @return array{success: true, request_id: string, response: string, credits_used: float, credits_remaining: float}|\WP_Error {
+     *   \WP_Error codes:
+     *   - 'vulopilot_ai_insufficient_credits' (data: credits_remaining, buy_credits_url) - VuloCloud refused
+     *     BEFORE calling the AI provider; nothing was charged.
+     *   - 'vulopilot_vulocloud_ai_not_configured' - no AI key is configured for this site's Organization.
+     *   - 'vulopilot_vulocloud_ai_unreachable'/'vulopilot_vulocloud_ai_busy' - retryable (network, 5xx,
+     *     429, or this same request still running on VuloCloud); safe to retry with the same $request_id.
+     *   - anything else - a non-retryable gateway failure.
      * }
      */
-    public function execute( string $feature, string $prompt, array $context, string $site_tone ) {
+    public function execute( string $feature, string $prompt, string $site_tone, string $request_id, ?string $label = null ) {
         if ( '' === trim( VULOPILOT_VULOCLOUD_URL ) ) {
             return new \WP_Error( 'vulopilot_vulocloud_ai_not_configured', __( 'VuloCloud isn’t configured for this build yet.', 'vulopilot' ), array( 'status' => 400 ) );
         }
@@ -422,27 +432,27 @@ class AiCreditsConnection {
         }
 
         $body = array(
-            'siteId'  => $credential['site_id'],
-            'secret'  => $credential['secret'],
-            'feature' => $feature,
-            'prompt'  => $prompt,
+            'siteId'    => $credential['site_id'],
+            'secret'    => $credential['secret'],
+            'feature'   => substr( $feature, 0, 100 ),
+            'prompt'    => $prompt,
+            'requestId' => $request_id,
         );
 
-        if ( ! empty( $context ) ) {
-            $body['context'] = $context;
+        if ( null !== $label && '' !== trim( $label ) ) {
+            $body['label'] = mb_substr( trim( $label ), 0, 120 );
         }
 
         if ( '' !== $site_tone ) {
-            $body['site_tone'] = $site_tone;
+            $body['siteTone'] = mb_substr( $site_tone, 0, 500 );
         }
 
         $response = wp_remote_post(
-            untrailingslashit( VULOPILOT_VULOCLOUD_URL ) . '/plugin/ai/byok-execute',
+            untrailingslashit( VULOPILOT_VULOCLOUD_URL ) . '/plugin/ai/prompt',
             array(
                 // Real provider latency lives on VuloCloud's side of this
-                // call - same generous timeout AiCreditGatewayClient uses,
-                // for the same reason (a slow completion shouldn't time
-                // out here before VuloCloud's own response comes back).
+                // call - long enough that a slow completion doesn't time
+                // out here before VuloCloud's own response comes back.
                 'timeout' => 60,
                 'headers' => array( 'Content-Type' => 'application/json' ),
                 'body'    => wp_json_encode( $body ),
@@ -469,16 +479,19 @@ class AiCreditsConnection {
         }
 
         if ( $status < 200 || $status >= 300 ) {
-            // VuloCloud's own "no usable key resolves for this site"
-            // response code - the one AiCopilot\ActionRunner specifically
-            // recognizes to decide whether to fall through to AI Credits
-            // (see that class's own docblock) - passed through as our own,
-            // differently-named \WP_Error code rather than translated to a
-            // generic message here, unlike every other DomainError (never
-            // expose VuloCloud's internal error text to the end user,
-            // VuloPilot brief §19/§26).
-            if ( 'AI_BYOK_NOT_CONFIGURED' === ( $decoded['error'] ?? '' ) ) {
-                return new \WP_Error( 'vulopilot_vulocloud_ai_not_configured', __( 'No AI connection is configured for this site.', 'vulopilot' ), array( 'status' => $status ) );
+            // Never expose VuloCloud's internal error text to the end user
+            // (VuloPilot brief §19/§26) - map its machine code instead.
+            $error = (string) ( $decoded['error'] ?? '' );
+
+            if ( 'AI_PROVIDER_NOT_CONFIGURED' === $error ) {
+                return new \WP_Error( 'vulopilot_vulocloud_ai_not_configured', __( 'Your Organization hasn’t configured an AI key yet.', 'vulopilot' ), array( 'status' => $status ) );
+            }
+
+            if ( 409 === $status || 429 === $status || $status >= 500 ) {
+                // Retryable - including 409 "this same requestId is still
+                // running": the retry either replays the finished answer
+                // or waits its turn, and is never charged twice.
+                return new \WP_Error( 'vulopilot_vulocloud_ai_busy', __( 'VuloCloud could not process this AI request right now.', 'vulopilot' ), array( 'status' => $status ) );
             }
 
             return new \WP_Error(
@@ -488,36 +501,57 @@ class AiCreditsConnection {
             );
         }
 
+        // {success:false, error:'insufficient_credits'} always comes back
+        // HTTP 200 (VuloPilot brief §15) - VuloCloud refused before calling
+        // the AI provider, so nothing was charged.
+        if ( empty( $decoded['success'] ) ) {
+            $remaining = (float) ( $decoded['creditsRemaining'] ?? 0 );
+            $buy_url   = esc_url_raw( (string) ( $decoded['buyCreditsUrl'] ?? '' ) );
+            $this->save_connection(
+                array(
+                    'credits'         => $remaining,
+                    'buy_credits_url' => $buy_url,
+                    'last_synced_at'  => current_time( 'mysql' ),
+                )
+            );
+
+            return new \WP_Error(
+                'vulopilot_ai_insufficient_credits',
+                __( 'You don’t have enough credits to complete this request.', 'vulopilot' ),
+                array(
+                    'status'            => 402,
+                    'credits_remaining' => $remaining,
+                    'can_buy_credits'   => (bool) ( $decoded['canBuyCredits'] ?? true ),
+                    'can_upgrade'       => (bool) ( $decoded['canUpgrade'] ?? false ),
+                    'buy_credits_url'   => $buy_url,
+                )
+            );
+        }
+
+        $remaining = (float) ( $decoded['creditsRemaining'] ?? 0 );
+        $this->record_known_balance( $remaining );
+
         return array(
-            'success'    => true,
-            'request_id' => (string) ( $decoded['requestId'] ?? '' ),
-            'response'   => (string) ( $decoded['response'] ?? '' ),
+            'success'           => true,
+            'request_id'        => (string) ( $decoded['requestId'] ?? $request_id ),
+            'response'          => (string) ( $decoded['response'] ?? '' ),
+            'credits_used'      => (float) ( $decoded['creditsUsed'] ?? 0 ),
+            'credits_remaining' => $remaining,
         );
     }
 
     /**
-     * A cheap boolean-only connection check, no prompt/key material
-     * involved. Used only by the Settings UI's status display
-     * (VuloCloudAiConnectionPanel.tsx), never by ActionRunner's own
-     * per-request decision (which always attempts execute() directly and
-     * reacts to a real "not configured" response instead - see that
-     * class's own docblock on why a separate pre-check there would just
-     * be a second, redundant round trip).
+     * A cheap connection-status check (`POST /plugin/ai/status`) - no
+     * prompt, no charge. Used by the Settings UI's status display
+     * (VuloCloudAiConnectionPanel.tsx); also refreshes the cached balance.
      *
-     * Returns a real `\WP_Error` only for an actual connectivity failure
-     * - `connected`/`configured` are deliberately two separate booleans,
-     * not one collapsed into the other, because "this site has no
-     * site_id/secret at all" and "this site has one, but VuloCloud says
-     * no key resolves for it" are genuinely different states the caller
-     * (RestAPI\Controllers\VuloCloudAiConnection::get_items()) needs to tell apart
-     * to decide whether to show a Connect form or a "configure a key"
-     * notice. An earlier version of this method returned plain `false`
-     * for "no credential" - indistinguishable, to a caller only checking
-     * `is_wp_error()`, from "connected but not configured" (also
-     * ultimately a falsy `configured` value), which silently always read
-     * as "connected" once that check ran on a real WP_Error only.
+     * `connected`/`configured` are deliberately two separate booleans:
+     * "this site has no site_id/secret at all" and "this site is
+     * connected, but its Organization hasn't configured an AI key yet" are
+     * genuinely different states the caller needs to tell apart (Connect
+     * button vs. "ask your Organization" notice).
      *
-     * @return array{connected: bool, configured: bool}|\WP_Error
+     * @return array{connected: bool, configured: bool}|\WP_Error A \WP_Error only for a real connectivity failure.
      */
     public function get_vulocloud_ai_status() {
         $credential = $this->get_site_credential();
@@ -529,40 +563,29 @@ class AiCreditsConnection {
             );
         }
 
-        $response = wp_remote_post(
-            untrailingslashit( VULOPILOT_VULOCLOUD_URL ) . '/plugin/ai/byok-status',
-            array(
-                'timeout' => 15,
-                'headers' => array( 'Content-Type' => 'application/json' ),
-                'body'    => wp_json_encode(
-                    array(
-                        'siteId' => $credential['site_id'],
-                        'secret' => $credential['secret'],
-                    )
-                ),
-            )
-        );
+        $result = $this->post_credits( VULOPILOT_VULOCLOUD_URL, '/plugin/ai/status', $credential['site_id'], $credential['secret'] );
 
-        if ( is_wp_error( $response ) ) {
-            return $response;
+        if ( is_wp_error( $result ) ) {
+            return $result;
         }
 
-        $decoded = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+        if ( $result['http_status'] >= 200 && $result['http_status'] < 300 ) {
+            $this->cache_status( $result['body'] );
+        }
 
         return array(
             'connected'  => true,
-            'configured' => is_array( $decoded ) && ! empty( $decoded['configured'] ),
+            'configured' => ! empty( $result['body']['configured'] ),
         );
     }
 
     /**
-     * Shared `/plugin/ai-credits/*` POST + "completed round trip vs
-     * genuine network failure" split - refresh_balance()/disconnect()'s
-     * own shared HTTP shape (site-secret authenticated, no human token
-     * involved).
+     * Shared site-secret-authenticated POST (`/plugin/ai/status`,
+     * `/plugin/ai-credits/disconnect`) + "completed round trip vs genuine
+     * network failure" split - authenticated by the site secret alone.
      *
      * @param string $base_url VuloCloud's own base URL (VULOPILOT_VULOCLOUD_URL).
-     * @param string $path     e.g. '/plugin/ai-credits/balance'.
+     * @param string $path     e.g. '/plugin/ai/status'.
      * @param string $site_id  The ConnectedSite id from this class's own stored connection.
      * @param string $secret   The plaintext site secret from that same stored connection.
      * @return array{http_status: int, body: array<string, mixed>}|\WP_Error

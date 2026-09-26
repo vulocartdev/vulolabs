@@ -1,6 +1,7 @@
 /* global vulopilotAppLocalizer */
 import { useState } from 'react';
 import axios from 'axios';
+import InsufficientCreditsNotice from '../../components/AiCredits/InsufficientCreditsNotice';
 import { __, sprintf } from '@wordpress/i18n';
 import { getApiLink } from '@zyra/core';
 import { NoticeManager, PopupComponent } from '@zyra/components';
@@ -306,6 +307,7 @@ const AiContentAssistantSidebar = () => {
 
 	return (
 		<>
+			<InsufficientCreditsNotice />
 			<AiChatCard
 				emptyDesc={sprintf(
 					/* translators: %s: the real logged-in WP user's own display name */

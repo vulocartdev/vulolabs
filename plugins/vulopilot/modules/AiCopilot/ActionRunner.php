@@ -55,10 +55,9 @@ class ActionRunner {
 
     /**
      * Real, structured `{action_id: [feature_id, action]}` mapping onto
-     * VuloCloud's own ai-gateway feature catalog (architecture plan §C,
-     * "3 representative features") - every other AI action id (not in this
-     * map) is unaffected and stays exactly on the direct VuloCloud AI path
-     * it's always used. Adding a feature to a future migration pass means adding one
+     * VuloCloud's own ai-gateway feature catalog (architecture plan §C) -
+     * every other AI action id sends its own built prompt instead (see
+     * send_prompt_or_credits()). Both are charged in AI credits. Adding a feature to a future migration pass means adding one
      * entry here plus a matching build_credit_context() case, not
      * restructuring propose() itself.
      */
@@ -159,49 +158,36 @@ class ActionRunner {
     }
 
     /**
-     * Chooses between the two ways this codebase can now actually get an
-     * AI completion for a proposed action: this site's own configured
-     * direct VuloCloud AI path - an Organization's own key, or (if allowed)
-     * a Customer backup key, resolved entirely server-side and proxied
-     * through VuloCloud (AiAssistant\AiRequestSender) - or VuloCloud's
-     * hosted AI Gateway spending real AI Credits (architecture plan §C).
+     * Gets the AI completion for a proposed action. Both routes run on the
+     * site's Organization's AI key on VuloCloud and are charged in the site
+     * owner's AI credits for their real usage:
      *
-     * Unlike the earlier, pre-VuloCloud-proxy version of this method, "is
-     * the direct path configured" can no longer be answered locally before
-     * making a call - that state lives in VuloCloud now (an
-     * Organization's/Customer's own credential store), not in a local
-     * option this site can read for free. So this always ATTEMPTS the
-     * direct path first (via AiRequestSender, same as before) and only
-     * decides whether to fall through to credits by reacting to a real
-     * VuloPilotException with TYPE_VULOCLOUD_AI_NOT_CONFIGURED
-     * - a second, separate "is it configured?" pre-check would just be a
-     * redundant network round trip for the exact same answer the real
-     * attempt already gives, and would risk a stale answer if a key was
-     * just added/removed moments earlier. Falling through only ever
-     * happens for the action ids in CREDIT_FEATURE_MAP (VuloPilot
-     * brief §9's structured-request contract only has a real feature-
-     * catalog entry for those today); every other action id's
-     * "not configured" is a final, honest error, exactly as it always was.
+     *  - an action in CREDIT_FEATURE_MAP goes through VuloCloud's structured
+     *    feature catalog (`/plugin/ai/execute`, AiCreditGatewayClient) -
+     *    VuloCloud owns that feature's prompt and model;
+     *  - every other action sends its own built prompt
+     *    (`/plugin/ai/prompt`, AiAssistant\AiRequestSender), labelled with
+     *    the action's own name for the site owner's credit history.
+     *
+     * Either way, when the balance can't cover the request VuloCloud
+     * refuses before calling the provider and this throws
+     * TYPE_INSUFFICIENT_CREDITS - nothing is charged.
      *
      * @param string                             $action_id Real, registered action id.
      * @param \VuloPilot\Utill\AIActionInterface $action    Same instance get_action_or_fail() already resolved.
      * @param array                              $input     validate_input()'s own normalized output.
      * @return \VuloPilot\AiAssistant\AIResponse
      *
-     * @throws VuloPilotException If the credits fallback was used and VuloCloud reports an empty balance.
-     * @throws \RuntimeException            If no AI is available at all - neither a direct VuloCloud AI key nor (for an eligible action) AI Credits.
+     * @throws VuloPilotException If the site owner's credits can't cover the request, or the AI request fails.
+     * @throws \RuntimeException  If this site isn't connected to VuloCloud.
      */
     private function send_prompt_or_credits( string $action_id, $action, array $input ): AIResponse {
-        try {
-            return $this->request_sender->send( $action->build_prompt( $input ), null, 'ai_action' );
-        } catch ( VuloPilotException $exception ) {
-            if ( VuloPilotException::TYPE_VULOCLOUD_AI_NOT_CONFIGURED !== $exception->get_type() ) {
-                throw $exception;
-            }
+        if ( ! isset( self::CREDIT_FEATURE_MAP[ $action_id ] ) ) {
+            return $this->request_sender->send( $action->build_prompt( $input ), null, 'ai_action', $action->get_label() );
+        }
 
-            if ( ! isset( self::CREDIT_FEATURE_MAP[ $action_id ] ) || ! $this->credits_connection->is_connected() ) {
-                throw new \RuntimeException( esc_html__( 'No AI connection is configured. Add a key in your VuloCloud account, or ask your agency to.', 'vulopilot' ) );
-            }
+        if ( ! $this->credits_connection->is_connected() ) {
+            throw new \RuntimeException( esc_html__( 'No AI connection is configured.', 'vulopilot' ) );
         }
 
         list( $feature_id, $credit_action ) = self::CREDIT_FEATURE_MAP[ $action_id ];
@@ -210,25 +196,21 @@ class ActionRunner {
         $result = $this->credit_gateway->execute( $feature_id, $credit_action, $context );
 
         if ( $result instanceof \WP_Error ) {
-            throw new \RuntimeException( esc_html( $result->get_error_message() ) );
+            throw new VuloPilotException( esc_html( $result->get_error_message() ), VuloPilotException::TYPE_GATEWAY_REQUEST );  // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- false positive: the message argument is already esc_html()-wrapped; the other arguments are not output.
         }
 
         if ( empty( $result['success'] ) ) {
-            throw new VuloPilotException(
-                esc_html__( 'You’ve used all your AI Credits.', 'vulopilot' ),
-                VuloPilotException::TYPE_INSUFFICIENT_CREDITS,  // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- false positive: flags the VuloPilotException::TYPE_* constant token itself, not unescaped output; the message argument is already esc_html()-wrapped.
-                array(
-                    'credits_remaining' => (int) ( $result['credits_remaining'] ?? 0 ),
-                    'can_buy_credits'   => (bool) ( $result['can_buy_credits'] ?? false ),
-                    'can_upgrade'       => (bool) ( $result['can_upgrade'] ?? false ),
-                )
+            $credit_context = array(
+                'credits_remaining' => (float) ( $result['credits_remaining'] ?? 0 ),
+                'can_buy_credits'   => (bool) ( $result['can_buy_credits'] ?? false ),
+                'can_upgrade'       => (bool) ( $result['can_upgrade'] ?? false ),
+                'buy_credits_url'   => esc_url_raw( (string) ( $result['buy_credits_url'] ?? '' ) ),
             );
+
+            throw new VuloPilotException( esc_html__( 'You don’t have enough credits to complete this request.', 'vulopilot' ), VuloPilotException::TYPE_INSUFFICIENT_CREDITS, $credit_context );  // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- false positive: the message argument is already esc_html()-wrapped; the other arguments are not output.
         }
 
-        // VuloCloud's own /plugin/ai/execute response DOES carry real
-        // credits_used/request_id (unlike the direct VuloCloud AI gateway) -
-        // use them rather than discarding them the way this call site used to.
-        return new AIResponse( $result['response'], (int) ( $result['credits_used'] ?? 0 ), $result['request_id'] ?? null );
+        return new AIResponse( $result['response'], (float) ( $result['credits_used'] ?? 0 ), $result['request_id'] ?? null );
     }
 
     /**

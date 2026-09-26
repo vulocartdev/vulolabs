@@ -12,9 +12,12 @@ import { getApiLink, getApiResponse } from '@zyra/core';
  */
 export interface AiCreditsStatus {
 	connected: boolean;
+	/** Fractional - exactly what VuloCloud last reported. */
 	credits: number;
 	lifetime_earned: number;
 	lifetime_used: number;
+	/** VuloCloud's own AI Credits page (Buy Credits) - '' until first synced. */
+	buy_credits_url: string;
 	connected_at: string;
 	last_synced_at: string;
 	vulocloud_account_connected: boolean;
@@ -41,3 +44,14 @@ export const useAiCredits = () => {
 
 	return { status, isLoading, refresh };
 };
+
+/** Credits are fractional: always shown to 3 decimals ("76.550"). */
+export const formatCredits = (value: number | null | undefined): string =>
+	(value ?? 0).toLocaleString(undefined, {
+		minimumFractionDigits: 3,
+		maximumFractionDigits: 3,
+	});
+
+/** Where "Buy Credits" goes: VuloCloud's own AI Credits page when known. */
+export const buyCreditsUrl = (status: Pick<AiCreditsStatus, 'buy_credits_url'> | null): string =>
+	status?.buy_credits_url || appLocalizer.shop_url;

@@ -12,7 +12,7 @@ use VuloPilot\AiAssistant\AiCreditsConnection;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * The one HTTP call every credits-metered AI feature makes -
+ * The structured credits-metered AI call -
  * `POST /plugin/ai/execute` against VuloCloud's own
  * `contexts/vulopilot/ai-gateway` (architecture plan §8/§9/§10): sends a
  * STRUCTURED `{ featureId, action, context }` payload, never a built
@@ -47,7 +47,8 @@ class AiCreditGatewayClient {
      *                                          each AiCopilot\Actions\* class's
      *                                          own credit-context mapping in
      *                                          AiCopilot\ActionRunner.
-     * @return array{success: true, request_id: string, credits_used: int, credits_remaining: int, response: string}|array{success: false, error: string, credits_remaining: int, can_buy_credits: bool, can_upgrade: bool}|\WP_Error {
+     * @param string|null          $request_id Idempotency key (a fresh one when null) - resending the same id is never charged twice.
+     * @return array{success: true, request_id: string, credits_used: float, credits_remaining: float, response: string}|array{success: false, error: string, credits_remaining: float, can_buy_credits: bool, can_upgrade: bool, buy_credits_url: string}|\WP_Error {
      *   A \WP_Error only for a genuine connectivity/configuration failure
      *   (not connected, network unreachable, malformed response) - every
      *   OTHER outcome (including "insufficient credits" and any
@@ -57,7 +58,7 @@ class AiCreditGatewayClient {
      *   outcome (VuloPilot brief §15) rather than an exception.
      * }
      */
-    public function execute( string $feature_id, string $action, array $context ) {
+    public function execute( string $feature_id, string $action, array $context, ?string $request_id = null ) {
         if ( '' === trim( VULOPILOT_VULOCLOUD_URL ) ) {
             return new \WP_Error( 'vulopilot_ai_credits_not_configured', __( 'VuloCloud isn’t configured for this build yet.', 'vulopilot' ), array( 'status' => 400 ) );
         }
@@ -83,6 +84,7 @@ class AiCreditGatewayClient {
                         'featureId' => $feature_id,
                         'action'    => $action,
                         'context'   => $context,
+                        'requestId' => $request_id ?? 'wp_' . str_replace( '-', '', wp_generate_uuid4() ),
                     )
                 ),
             )
@@ -129,12 +131,16 @@ class AiCreditGatewayClient {
         }
 
         if ( empty( $body['success'] ) ) {
+            // Refused before the provider was called - nothing charged.
+            $this->credits->record_known_balance( (float) ( $body['creditsRemaining'] ?? 0 ) );
+
             return array(
                 'success'            => false,
                 'error'              => (string) ( $body['error'] ?? 'unknown_error' ),
-                'credits_remaining'  => (int) ( $body['creditsRemaining'] ?? 0 ),
+                'credits_remaining'  => (float) ( $body['creditsRemaining'] ?? 0 ),
                 'can_buy_credits'    => (bool) ( $body['canBuyCredits'] ?? false ),
                 'can_upgrade'        => (bool) ( $body['canUpgrade'] ?? false ),
+                'buy_credits_url'   => esc_url_raw( (string) ( $body['buyCreditsUrl'] ?? '' ) ),
             );
         }
 
@@ -142,13 +148,13 @@ class AiCreditGatewayClient {
         // with VuloCloud's own authoritative post-spend balance (see
         // AiCreditsConnection::record_known_balance()'s own docblock on
         // why this is still a cache write, not an independent deduction).
-        $this->credits->record_known_balance( (int) ( $body['creditsRemaining'] ?? 0 ) );
+        $this->credits->record_known_balance( (float) ( $body['creditsRemaining'] ?? 0 ) );
 
         return array(
             'success'            => true,
             'request_id'         => (string) ( $body['requestId'] ?? '' ),
-            'credits_used'       => (int) ( $body['creditsUsed'] ?? 0 ),
-            'credits_remaining'  => (int) ( $body['creditsRemaining'] ?? 0 ),
+            'credits_used'       => (float) ( $body['creditsUsed'] ?? 0 ),
+            'credits_remaining'  => (float) ( $body['creditsRemaining'] ?? 0 ),
             'response'           => (string) ( $body['response'] ?? '' ),
         );
     }

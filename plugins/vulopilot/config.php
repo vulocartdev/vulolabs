@@ -150,7 +150,7 @@ if ( ! defined( 'VULOPILOT_VULOCLOUD_PUBLIC_URL' ) ) {
  * under some other Organization instead (e.g. a white-label fork).
  */
 if ( ! defined( 'VULOPILOT_VULOCLOUD_HOST_ORGANIZATION_ID' ) ) {
-	define( 'VULOPILOT_VULOCLOUD_HOST_ORGANIZATION_ID', '0a4dc570-c7da-47c3-900b-c7494427427a' );
+	define( 'VULOPILOT_VULOCLOUD_HOST_ORGANIZATION_ID', '9a1e8c91-bbb9-4f7b-b4f1-b5f1190287d3' );
 }
 
 /**
@@ -201,8 +201,8 @@ if ( ! defined( 'VULOPILOT_VULOCLOUD_CONFIG' ) ) {
 		'VULOPILOT_VULOCLOUD_CONFIG',
 		array(
 			'plugin_id'       => 'vulopilot',
-			'organization_id' => '0a4dc570-c7da-47c3-900b-c7494427427a',
-			'brand_id'        => '72630d95-33c1-486e-b307-25f5c4905fd7',
+			'organization_id' => '9a1e8c91-bbb9-4f7b-b4f1-b5f1190287d3',
+			'brand_id'        => '506dde24-bdff-425e-a501-a7df14ed80b5',
 			'domain'          => 'https://store.vulolabs.com',
 		)
 	);
