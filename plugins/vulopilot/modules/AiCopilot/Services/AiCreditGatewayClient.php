@@ -12,21 +12,7 @@ use VuloPilot\AiAssistant\AiCreditsConnection;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * The structured credits-metered AI call -
- * `POST /plugin/ai/execute` against VuloCloud's own
- * `contexts/vulopilot/ai-gateway` (architecture plan §8/§9/§10): sends a
- * STRUCTURED `{ featureId, action, context }` payload, never a built
- * prompt - VuloCloud's own feature catalog owns the actual system
- * prompt/model/provider choice, this site never sees or influences it.
- *
- * Deliberately its own class, separate from AiCreditsConnection (which
- * only talks to the `ai-credits` context's connect/balance endpoints) -
- * this is a different bounded context on the vulocloud side and a
- * different real caller here (AiCopilot\ActionRunner, its only real
- * caller - hence living here rather than classes/AiAssistant/ alongside
- * AiCreditsConnection, which stays there as genuinely shared core, read
- * by AiAssistant\Rest\AiCredits.php/FrontendScripts.php too, not just this
- * module).
+ * Runs structured, credit-metered AI feature calls.
  *
  * @class       AiCreditGatewayClient class
  * @version     1.0.0
@@ -52,7 +38,7 @@ class AiCreditGatewayClient {
      *   A \WP_Error only for a genuine connectivity/configuration failure
      *   (not connected, network unreachable, malformed response) - every
      *   OTHER outcome (including "insufficient credits" and any
-     *   VuloCloud-side DomainError, e.g. an unknown feature) comes back as
+     *   server-side DomainError, e.g. an unknown feature) comes back as
      *   a plain array so AiCopilot\ActionRunner's own credits branch can
      *   handle "insufficient_credits" as a real, structured, user-facing
      *   outcome (VuloPilot brief §15) rather than an exception.
@@ -72,9 +58,6 @@ class AiCreditGatewayClient {
         $response = wp_remote_post(
             untrailingslashit( VULOPILOT_VULOCLOUD_URL ) . '/plugin/ai/execute',
             array(
-                // Real provider latency lives on VuloCloud's side of this
-                // call - long enough that a slow completion doesn't time
-                // out here before VuloCloud's own response comes back.
                 'timeout' => 60,
                 'headers' => array( 'Content-Type' => 'application/json' ),
                 'body'    => wp_json_encode(
@@ -93,7 +76,7 @@ class AiCreditGatewayClient {
         if ( is_wp_error( $response ) ) {
             // VuloPilot brief §27 - never destroy local state or deduct
             // credits locally on a request that couldn't be confirmed;
-            // this simply surfaces the honest "VuloCloud unreachable"
+            // this simply surfaces the honest "server unreachable"
             // outcome to the caller.
             return new \WP_Error(
                 'vulopilot_ai_credits_unreachable',
@@ -113,15 +96,6 @@ class AiCreditGatewayClient {
             return new \WP_Error( 'vulopilot_ai_credits_unparseable_response', __( 'VuloCloud returned an unexpected response.', 'vulopilot' ), array( 'status' => 502 ) );
         }
 
-        // A structured {success:false, error:'insufficient_credits', ...}
-        // body (VuloPilot brief §15) always comes back HTTP 200 - see the
-        // vulocloud-side controller's own docblock on why that specific
-        // failure isn't a generic API error. Any other non-2xx status
-        // (site not found, feature not found, provider failure, rate
-        // limited) is a real DomainError envelope from VuloCloud's shared
-        // exception filter - never expose its internal `error`/`message`
-        // verbatim to the end user (VuloPilot brief §19/§26); translate to
-        // one honest, generic message here instead.
         if ( $status < 200 || $status >= 300 ) {
             return new \WP_Error(
                 'vulopilot_ai_credits_gateway_error',
@@ -144,10 +118,6 @@ class AiCreditGatewayClient {
             );
         }
 
-        // Real spend just happened - update the local cache immediately
-        // with VuloCloud's own authoritative post-spend balance (see
-        // AiCreditsConnection::record_known_balance()'s own docblock on
-        // why this is still a cache write, not an independent deduction).
         $this->credits->record_known_balance( (float) ( $body['creditsRemaining'] ?? 0 ) );
 
         return array(

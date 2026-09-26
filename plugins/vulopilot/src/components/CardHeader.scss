@@ -2,7 +2,7 @@
 
 // CardHeader.tsx - the common left-icon/center-details/right-action card
 // header shared across Settings → Connections (GoogleServicesPanel.tsx,
-// SiteVerificationPanel.tsx, VuloCloudAiConnectionPanel.tsx, PageSpeedStatusPanel.tsx
+// SiteVerificationPanel.tsx, PageSpeedStatusPanel.tsx
 // - same minimal-supporting-CSS posture as the `.gsc-*`/`.backup-storage-*`
 // rules elsewhere). Not feature-scoped on purpose - `.common-card*`, not
 // `.ai-provider-card*`, since the component itself isn't AI-provider-specific.

@@ -230,12 +230,6 @@ final class VuloPilot {
         $this->container['gsc_oauth_callback_handler'] = new \VuloPilot\Settings\GoogleSearchConsoleOAuthCallbackHandler();
         $this->container['google_analytics_tracker']   = new \VuloPilot\Settings\GoogleAnalyticsTracker();
 
-        // Connections → VuloCloud AI' own passwordless "Connect to
-        // VuloCloud" broker redirect handler - same unconditional-
-        // construction/self-registers-its-own-admin_post-hook reasoning as
-        // gsc_oauth_callback_handler immediately above (a request to
-        // admin-post.php never fires rest_api_init, so this can't be
-        // lazily instantiated inside a REST controller).
         $this->container['connect_broker_callback_handler'] = new \VuloPilot\AiAssistant\ConnectBrokerCallbackHandler();
 
         // Scanning → Instant Indexing (IndexNow) - real key-file serving
@@ -245,13 +239,6 @@ final class VuloPilot {
         $this->container['indexnow_key_file_server'] = new \VuloPilot\SeoVisibility\IndexNowKeyFileServer();
         $this->container['indexnow_auto_submitter']  = new \VuloPilot\SeoVisibility\IndexNowAutoSubmitter();
 
-        // Connections → VuloCloud AI' "Site tone" field - learned
-        // automatically from the site's own recent content on
-        // publish/update (deferred via WP-Cron, never inline with the
-        // save), reusing the same ai_request_sender every AIAction/
-        // geo_analyzer/content_analyzer already goes through. Self-
-        // registers its own save_post/cron hooks, same unconditional-
-        // construction shape as indexnow_auto_submitter above.
         $this->container['site_tone_learner'] = new \VuloPilot\AiAssistant\SiteToneLearner( $this->container['ai_request_sender'] );
 
         $this->container['canonical_url_manager']    = new \VuloPilot\SeoVisibility\CanonicalUrlManager();

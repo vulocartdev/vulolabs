@@ -184,7 +184,7 @@ const GoogleServiceCard = ( {
  * config.php's own docblock) - a site owner never sees or enters a
  * Client ID/Secret. `GoogleServicesConnection::get_authorization_url()`
  * (PHP) actually has 2 real ways to complete this: the embedded shared
- * Client above, OR routing through VuloLabs' own VuloCloud OAuth broker
+ * Client above, OR routing through VuloLabs' own OAuth broker
  * (`status.has_broker` - needs no embedded Client ID/Secret at all, tried
  * FIRST server-side). The button below is only replaced with the honest
  * "not available yet" state when NEITHER is configured for this build

@@ -13,9 +13,9 @@ import {
 /**
  * The one "You don't have enough credits to complete this request. [Buy
  * Credits]" prompt every AI feature shares - opened by the axios
- * interceptor in insufficientCredits.ts whenever VuloCloud refuses a
- * request for lack of credits (nothing was charged). Buy Credits goes to
- * the site owner's own AI Credits page on VuloCloud, where their
+ * interceptor in insufficientCredits.ts whenever a request is refused for lack of
+ * credits (nothing was charged). Buy Credits goes to
+ * the site owner's own AI Credits page, where their
  * Organization's credit packs are sold through the normal checkout.
  */
 const InsufficientCreditsNotice = () => {

@@ -7,16 +7,15 @@ import { getApiLink, getApiResponse } from '@zyra/core';
  * `classes/RestAPI/Controllers/`) - the real, live AI Credits balance
  * (architecture plan: "WordPress may cache/display the balance, but it
  * must never be considered the source of truth" - this hook always
- * reflects what THIS site's own local cache last synced from VuloCloud,
- * itself synced from VuloCloud's own authoritative wallet).
+ * reflects what THIS site's own local cache last synced from the server's authoritative wallet).
  */
 export interface AiCreditsStatus {
 	connected: boolean;
-	/** Fractional - exactly what VuloCloud last reported. */
+	/** Fractional - exactly what the server last reported. */
 	credits: number;
 	lifetime_earned: number;
 	lifetime_used: number;
-	/** VuloCloud's own AI Credits page (Buy Credits) - '' until first synced. */
+	/** The AI Credits page (Buy Credits) - '' until first synced. */
 	buy_credits_url: string;
 	connected_at: string;
 	last_synced_at: string;
@@ -52,6 +51,6 @@ export const formatCredits = (value: number | null | undefined): string =>
 		maximumFractionDigits: 3,
 	});
 
-/** Where "Buy Credits" goes: VuloCloud's own AI Credits page when known. */
+/** Where "Buy Credits" goes: the AI Credits page when known. */
 export const buyCreditsUrl = (status: Pick<AiCreditsStatus, 'buy_credits_url'> | null): string =>
 	status?.buy_credits_url || appLocalizer.shop_url;

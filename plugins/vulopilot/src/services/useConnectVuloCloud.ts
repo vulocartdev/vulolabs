@@ -4,15 +4,6 @@ import { __ } from '@wordpress/i18n';
 import { getApiLink, getApiResponse } from '@zyra/core';
 import { NoticeManager } from '@zyra/components';
 
-/**
- * The real "Connect to VuloCloud" redirect (`GET /vulocloud-ai-connection/broker-
- * authorize-url`, AiCreditsConnection's own docblock) - same passwordless
- * broker flow AiCreditsIndicator.tsx's own dropdown and Settings → AI
- * Providers already use, extracted here so any other "no AI service
- * configured" recovery UI (`ShowProPopup vulocloud`/`VuloCloudInlineNotice` in Popup.tsx, ContentToolPopup.tsx's
- * own inline error step) can offer the exact same real connect action
- * without duplicating the fetch/notice/loading-state wiring.
- */
 export const useConnectVuloCloud = () => {
 	const [isConnecting, setIsConnecting] = useState(false);
 

@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Single exception class for every VuloPilot-specific failure that used to
  * be its own subclass (AiRequestException, GatewayRequestException,
- * a "VuloCloud has no usable key" subclass, RateLimitExceededException,
+ * a "no usable key" subclass, RateLimitExceededException,
  * TransientGatewayException, UnsafePromptException,
  * InvalidActionInputException, InvalidActionOutputException,
  * InsufficientCreditsException) - one class, a `type` constant instead of a
@@ -34,7 +34,7 @@ defined( 'ABSPATH' ) || exit;
 class VuloPilotException extends \Exception {
 
 	/**
-	 * Common parent of every failure of an AI request to VuloCloud - the
+	 * Common parent of every failure of an AI request to the server - the
 	 * type REST controllers used to catch AiRequestException (the base
 	 * class) to turn any of TYPE_VULOCLOUD_AI_NOT_CONFIGURED/
 	 * TYPE_GATEWAY_REQUEST/TYPE_RATE_LIMIT_EXCEEDED/
@@ -43,14 +43,14 @@ class VuloPilotException extends \Exception {
 	const TYPE_AI_REQUEST = 'ai_request';
 
 	/**
-	 * Thrown by AiAssistant\AiRequestSender when VuloCloud reports that no
+	 * Thrown by AiAssistant\AiRequestSender when the server reports that no
 	 * AI key is configured for this site's Organization yet.
 	 */
 	const TYPE_VULOCLOUD_AI_NOT_CONFIGURED = 'vulocloud_ai_not_configured';
 
 	/**
 	 * A non-retryable gateway failure (a malformed request, or one
-	 * VuloCloud rejects outright). Never retried by
+	 * the server rejects outright). Never retried by
 	 * AiAssistant\AiRequestSender; bubbles straight through it.
 	 */
 	const TYPE_GATEWAY_REQUEST = 'gateway_request';
@@ -58,7 +58,7 @@ class VuloPilotException extends \Exception {
 	/**
 	 * Thrown by AiAssistant\AiRequestSender when this site's per-minute
 	 * request budget is exhausted, before the request is ever sent to
-	 * VuloCloud.
+	 * the server.
 	 */
 	const TYPE_RATE_LIMIT_EXCEEDED = 'rate_limit_exceeded';
 
@@ -96,9 +96,9 @@ class VuloPilotException extends \Exception {
 
 	/**
 	 * Thrown by AiAssistant\AiRequestSender and AiCopilot\ActionRunner when
-	 * VuloCloud refuses a request because the site owner's AI credit
+	 * the server refuses a request because the site owner's AI credit
 	 * balance can't cover it (`{success:false, error:'insufficient_credits'}`
-	 * - VuloCloud never calls the AI provider in that case). Carries
+	 * - the server never calls the AI provider in that case). Carries
 	 * `credits_remaining`/`can_buy_credits`/`can_upgrade`/`buy_credits_url`
 	 * in `$context`; REST controllers turn it into a response with
 	 * to_insufficient_credits_error(), which the React side's global
@@ -195,8 +195,8 @@ class VuloPilotException extends \Exception {
 
 	/**
 	 * TYPE_INSUFFICIENT_CREDITS convenience getter - where the site owner
-	 * can buy more credits (VuloCloud's own AI Credits page), or '' if
-	 * VuloCloud didn't say.
+	 * can buy more credits (the server's own AI Credits page), or '' if
+	 * the server didn't say.
 	 *
 	 * @return string
 	 */

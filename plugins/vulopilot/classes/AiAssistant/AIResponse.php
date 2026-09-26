@@ -10,7 +10,7 @@ namespace VuloPilot\AiAssistant;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * The response returned by the VuloCloud AI API, including the credits
+ * The response returned by the AI API, including the credits
  * consumed by the request. Immutable - sanitizing the content
  * (AISafetyValidator::sanitize_response()) produces a new instance via
  * with_content() rather than mutating this one.
@@ -27,7 +27,7 @@ final class AIResponse {
     private string $content;
 
     /**
-     * Real AI credits this call spent, exactly as VuloCloud reported it -
+     * Real AI credits this call spent, exactly as the server reported it -
      * fractional and rounded to 3 decimals for display. Never computed
      * locally.
      *
@@ -36,7 +36,7 @@ final class AIResponse {
     private float $credits_used;
 
     /**
-     * VuloCloud's own request id for this call, when the gateway that
+     * The server's own request id for this call, when the gateway that
      * produced this response returns one - null when it doesn't (never
      * fabricated).
      *
@@ -46,8 +46,8 @@ final class AIResponse {
 
     /**
      * @param string      $content      Generated content.
-     * @param float       $credits_used Real AI credits this call spent, as reported by VuloCloud.
-     * @param string|null $request_id   VuloCloud's own request id for this call, if the gateway returned one.
+     * @param float       $credits_used Real AI credits this call spent, as reported by the AI service.
+     * @param string|null $request_id   The request id for this call, if the gateway returned one.
      */
     public function __construct(
         string $content,

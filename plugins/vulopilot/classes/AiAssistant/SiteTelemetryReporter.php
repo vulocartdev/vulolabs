@@ -4,23 +4,7 @@ namespace VuloPilot\AiAssistant;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Reports this site's own real WordPress/PHP/theme/plugin details to
- * VuloCloud's generic `POST /connected-sites/ingest` endpoint - the one
- * HTTP surface that fills in the Connected Sites detail page's
- * "Site & Server"/"Plugin & Theme"/"Platform" cards (otherwise left
- * showing "-" forever, since connecting itself never sends this data -
- * see ConnectedSiteIngestController's own doc comment on the VuloCloud
- * side). Deliberately independent of which connection called it - a
- * future second connection type gets its own separate ConnectedSite row
- * with its own site_id/secret, and its own report() call against the
- * exact same payload shape.
- *
- * The "Plugin"/"Version" fields report THIS plugin's own real identity
- * (VULOPILOT_PLUGIN_NAME/VULOPILOT_PLUGIN_VERSION from config.php) -
- * never a hardcoded literal naming a different plugin (e.g.
- * "MultiVendorX"), so this reads correctly for a rebrand/fork that only
- * changes those two constants, and for any future plugin reusing this
- * same generic connect flow with its own values there.
+ * Reports this site's WordPress, PHP, theme and plugin details.
  *
  * @class       SiteTelemetryReporter class
  * @version     1.0.0
@@ -70,20 +54,11 @@ class SiteTelemetryReporter {
 	}
 
 	/**
-	 * Real `POST {VULOPILOT_VULOCLOUD_URL}/connected-sites/ingest` -
-	 * always the server-to-server URL, never
-	 * VULOPILOT_VULOCLOUD_PUBLIC_URL (that's browser-facing only, see
-	 * AiCreditsConnection::get_broker_authorize_url()'s own doc comment).
-	 * Best-effort/fire-and-forget by design: a failed ingest just means
-	 * the detail page keeps showing stale/blank telemetry until the next
-	 * successful attempt (daily cron, or the site owner's next
-	 * reconnect) - never surfaced to the site owner as an error, same
-	 * posture a "usage tracker" ping already takes elsewhere in this
-	 * plugin (Services\CoreWebVitalsBeacon, Services\PageSpeedScanner).
+	 * Sends the daily site telemetry ping.
 	 *
 	 * @param string $site_id This connection's own ConnectedSite id.
 	 * @param string $secret  This connection's own decrypted secret.
-	 * @return bool True if VuloCloud accepted the ping (2xx).
+	 * @return bool True if the ping was accepted (2xx).
 	 */
 	public function report( string $site_id, string $secret ): bool {
 		if ( '' === trim( VULOPILOT_VULOCLOUD_URL ) ) {
@@ -113,10 +88,7 @@ class SiteTelemetryReporter {
 	}
 
 	/**
-	 * The tracker payload itself - field names match
-	 * connected-site-field-mapper.ts's own recognized keys exactly
-	 * (verbatim strings, not valid JS/PHP identifiers, by design on that
-	 * side - see that file's own doc comment).
+	 * The tracker payload itself.
 	 *
 	 * @return array<string, mixed>
 	 */
@@ -158,7 +130,7 @@ class SiteTelemetryReporter {
 			// own tracker reporting on itself, not something a generic
 			// tracker for a security/management plugin can infer). Sending
 			// a guess here would be worse than leaving the console's own
-			// "-" placeholder. Country is likewise left for the VuloCloud
+			// "-" placeholder. Country is likewise left for the server
 			// side to resolve from the request's own IP at ingest time,
 			// not something this site can determine about itself.
 		);

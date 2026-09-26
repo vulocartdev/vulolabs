@@ -6,18 +6,7 @@ use VuloPilot\AiAssistant\AiCreditsConnection;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Backs the AI Credits indicator/claim CTA (VuloPilot brief §4/§21) - a
- * real `GET .../status` (composes AiCreditsConnection + the underlying
- * VuloCloudAccountConnection's own status, see that class's own
- * get_status() docblock) and a real `POST .../refresh-balance` (force a
- * live re-sync from VuloCloud's own authoritative wallet). Connecting
- * itself goes through `vulocloud-ai-connection/broker-authorize-url`'s
- * passwordless redirect (AiCreditsConnection::get_broker_authorize_url()'s
- * own docblock), not a route on this controller.
- *
- * Same "never let a raw secret reach the client" boundary
- * GoogleServices.php's own docblock documents - every method here only
- * ever returns AiCreditsConnection::get_status()'s shape.
+ * Backs the AI credits indicator.
  *
  * @class       AiCredits controller
  * @version     1.0.0

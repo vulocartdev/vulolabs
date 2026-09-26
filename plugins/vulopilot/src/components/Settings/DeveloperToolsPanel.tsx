@@ -9,7 +9,7 @@ import CardHeader from '../CardHeader';
 
 /**
  * Hand-built rather than InputRenderer-driven - same escape hatch
- * VuloCloudAiConnectionPanel.tsx/IndexNowPanel.tsx already use (Settings.tsx's
+ * IndexNowPanel.tsx already uses (Settings.tsx's
  * GetForm() special-cases `currentTab === 'developer-tools'`).
  *
  * "Keep VuloPilot data after uninstall"/"Anonymous usage data" - moved

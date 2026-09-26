@@ -9,7 +9,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Keeps `vulopilot_site_tone` (the placeholder field added earlier this
- * session - sent as a `site_tone` hint on every direct VuloCloud AI
+ * session - sent as a `site_tone` hint on every direct AI
  * request, see AiAssistant\AiRequestSender) learned
  * automatically from the site's own recent content instead of starting
  * permanently empty. Same "NOT an AIAction" posture as Geo\GeoAnalyzer/
@@ -17,7 +17,7 @@ defined( 'ABSPATH' ) || exit;
  * is mutated, so there is no Approval/Execution/Rollback lifecycle - it
  * reuses the exact same AiRequestSender every AIAction and those two
  * analyzers already go through (which is also why this needs zero new
- * VuloCloud-side code: it goes through AiRequestSender exactly like
+ * server-side code: it goes through AiRequestSender exactly like
  * every other direct caller of it).
  *
  * Triggered by content changes (`save_post`), not a schedule or an

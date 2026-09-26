@@ -13,36 +13,7 @@ use VuloPilot\Utill as UtillHelper;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * The one path every real AI call in this plugin goes through: safety-validate
- * the prompt, make sure this site is connected to VuloCloud, spend one request
- * from the per-minute budget, send `{feature, label, prompt, site_tone,
- * request_id}` to VuloCloud's credit-metered prompt endpoint (retrying
- * transient failures under the SAME request id, so a retry is never charged
- * twice), record the attempt in `vulopilot_ai_history`, then sanitize the
- * response.
- *
- * VuloCloud is the only place an AI answer comes from - it runs every request
- * on the site's Organization's AI key and charges the site owner's AI credits
- * for the real usage - so there is nothing to pick between and no
- * registry/adapter/fallback layer here, and no local credit arithmetic: the
- * credits used and the remaining balance are whatever VuloCloud reports. Request-building, safety-validation,
- * budget, retry, and history are plain private steps/methods on this one
- * class, in the same order: safety-validate, budget check on every
- * attempt, retries inside that budget, and one history row per call
- * (failures included, so the audit trail covers what was tried, not only
- * what worked).
- *
- * AIResponse stays its own class - it's the shared value object
- * AIActionInterface::parse_response() takes as its parameter type, read by
- * every one of this plugin's ~50 AI Action classes (both plugins), and
- * also constructed independently by AiCopilot\ActionRunner's
- * credits-metered gateway call - a real, cross-cutting contract type, not
- * something private to this one sender.
- *
- * The direct VuloCloud AI gateway call itself lives on AiCreditsConnection,
- * not here - it only ever reads that class's own stored credential, so
- * credits_connection doubles as both "is this site connected" and "make
- * the one real gateway call".
+ * The one path every AI call in this plugin goes through.
  *
  * @class       AiRequestSender class
  * @version     1.0.0
@@ -91,7 +62,7 @@ class AiRequestSender {
 
     /**
      * @param AiHistoryRepository|null $history            Defaults to a new instance (injectable for tests).
-     * @param AiCreditsConnection|null $credits_connection Defaults to a new instance (injectable for tests) - also the direct VuloCloud AI gateway itself (see AiCreditsConnection's own docblock).
+     * @param AiCreditsConnection|null $credits_connection Defaults to a new instance (injectable for tests).
      */
     public function __construct(
         ?AiHistoryRepository $history = null,
@@ -103,13 +74,13 @@ class AiRequestSender {
 
     /**
      * @param array<int, array{role: string, content: string}> $messages Chat-style prompt messages.
-     * @param array{mime_type: string, data: string}|null      $image    Optional inline image for the current turn. The VuloCloud gateway's wire contract doesn't carry one today, so it is recorded on the request but never sent.
+     * @param array{mime_type: string, data: string}|null      $image    Optional inline image for the current turn. The gateway's wire contract doesn't carry one today, so it is recorded on the request but never sent.
      * @param string|null                                      $surface  Optional real feature label recorded to `vulopilot_ai_history.surface`.
-     * @param string|null                                      $label    Optional human task name for the site owner's VuloCloud credit history (e.g. an AI action's own label).
+     * @param string|null                                      $label    Optional human task name for the site owner's credit history (e.g. an AI action's own label).
      * @return AIResponse
      *
-     * @throws VuloPilotException If the prompt fails safety validation, this minute's request budget is already spent, the site owner's AI credits can't cover the request (TYPE_INSUFFICIENT_CREDITS), no AI key is configured for this site's Organization, or the VuloCloud gateway rejects or fails the request.
-     * @throws \RuntimeException  If this site isn't connected to VuloCloud.
+     * @throws VuloPilotException If the prompt fails safety validation, this minute's request budget is already spent, the site owner's AI credits can't cover the request (TYPE_INSUFFICIENT_CREDITS), no AI key is configured for this site's Organization, or the gateway rejects or fails the request.
+     * @throws \RuntimeException  If no AI connection is configured.
      */
     public function send( array $messages, ?array $image = null, ?string $surface = null, ?string $label = null ): AIResponse {
         $this->validate_prompt( $messages );
@@ -118,9 +89,6 @@ class AiRequestSender {
             throw new \RuntimeException( esc_html__( 'No AI connection is configured.', 'vulopilot' ) );
         }
 
-        // One id per logical request, reused by every retry below -
-        // VuloCloud's idempotency key, so a retried request is never
-        // charged twice.
         $request_id = 'wp_' . str_replace( '-', '', wp_generate_uuid4() );
 
         try {
@@ -243,10 +211,7 @@ class AiRequestSender {
     }
 
     /**
-     * Sends one attempt to VuloCloud's credit-metered prompt endpoint and
-     * returns finished text, with the credits VuloCloud actually charged.
-     * The prompt is the messages flattened in order - VuloCloud alone turns
-     * it back into whatever message shape the serving provider expects.
+     * Sends one attempt to the AI gateway and returns the finished text.
      *
      * @param array<int, array{role: string, content: string}> $messages   Chat-style prompt messages.
      * @param string|null                                      $surface    Optional real feature label.

@@ -25,7 +25,7 @@ import { __ } from '@wordpress/i18n';
  * `/backup-storage/*` REST surface - Controllers\BackupStorage) right
  * after this tab's InputRenderer output, same "flat setting for the simple
  * bit, dedicated credential storage for the secret bit" split
- * VuloCloudAiConnectionPanel.tsx/Controllers\VuloCloudAiConnection already established.
+ * the other connection panels already established.
  */
 export const CLOUD_STORAGE_LOCKED_METHODS = [
 	{

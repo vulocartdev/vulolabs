@@ -5,7 +5,7 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Encrypts/decrypts third-party secrets (Backups' S3/Drive credentials, the
- * VuloCloud site secret, Google tokens) before they're stored. Flagged in DATABASE.md and
+ * site secret, Google tokens) before they're stored. Flagged in DATABASE.md and
  * ARCHITECTURE.md as new ground for this codebase - nothing else here
  * encrypts a secret at rest (the license system validates a license key
  * against VuloLabs's own server; it isn't a third-party credential

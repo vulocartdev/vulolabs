@@ -6,15 +6,8 @@ use VuloPilot\AiAssistant\AiCreditsConnection;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * GET /vulocloud-ai-connection, GET /vulocloud-ai-connection/broker-authorize-url -
- * backs src/components/Settings/VuloCloudAiConnectionPanel.tsx
- * (Settings → Connections → VuloCloud AI): the "Connect to VuloCloud" /
- * "Disconnect" section. VuloCloud is the only place this site gets AI from -
- * it holds every key - so this only reports whether the site is connected and
- * whether VuloCloud has an AI key that resolves for it, and hands back the URL
- * the connect button sends the browser to.
+ * Reports the AI connection status and starts the connect flow.
  *
- * @class       VuloCloudAiConnection controller
  * @version     1.0.0
  * @author      VuloLabs
  */
@@ -62,16 +55,11 @@ class VuloCloudAiConnection extends \WP_REST_Controller {
     }
 
     /**
-     * `connected` is "this site has a VuloCloud site secret"; `configured` is
-     * "this site's Organization has an AI key configured on VuloCloud right
-     * now" (every AI request runs on it, charged in AI credits).
+     * Returns the AI connection status.
      *
      * @inheritDoc
      */
     public function get_items( $request ) {
-        // A cheap connection-status check (AiCreditsConnection::get_vulocloud_ai_status(),
-        // never a key/prompt) - the real, current answer to "does AI work
-        // for this site".
         $vulocloud_status = ( new AiCreditsConnection() )->get_vulocloud_ai_status();
 
         return rest_ensure_response(
@@ -84,9 +72,7 @@ class VuloCloudAiConnection extends \WP_REST_Controller {
     }
 
     /**
-     * The URL the "Connect to VuloCloud" button itself 302s the browser
-     * to - AiCreditsConnection::get_broker_authorize_url()'s own docblock
-     * for the full passwordless sequence this kicks off.
+     * Returns the URL that starts the connect flow.
      *
      * @return \WP_REST_Response|\WP_Error
      */

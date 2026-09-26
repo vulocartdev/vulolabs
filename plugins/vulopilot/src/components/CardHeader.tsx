@@ -27,7 +27,7 @@ interface CardHeaderProps {
  * `ToggleInput`, ...), plus whatever body content the caller passes as
  * `children`, wrapped in `.common-card`. Not scoped to any one feature -
  * "common" is the point: Settings → Connections' own GoogleServicesPanel.tsx,
- * SiteVerificationPanel.tsx, VuloCloudAiConnectionPanel.tsx, and
+ * SiteVerificationPanel.tsx, and
  * PageSpeedStatusPanel.tsx each hand-rolled this same header shape (under
  * the old `ai-provider-card*` names) before this. Styling lives in
  * Settings.scss's own `.common-card`/`.common-card-header`/

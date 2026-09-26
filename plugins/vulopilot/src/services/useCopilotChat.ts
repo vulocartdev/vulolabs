@@ -250,7 +250,7 @@ export const useCopilotChat = ( noticeKey: string ) => {
 	 * `conversationId`, so sending a new message afterward appends to this
 	 * same thread server-side instead of starting a new one. No gate here -
 	 * a past conversation only exists if it was already sent for real, which
-	 * already required a connected VuloCloud AI account; reading it back doesn't
+	 * already required a connected AI account; reading it back doesn't
 	 * make a new AI call of its own.
 	 */
 	const loadConversation = ( id: number ) => {

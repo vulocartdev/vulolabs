@@ -4,27 +4,8 @@ namespace VuloPilot\AiAssistant;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Read-only from this class's own side: `FrontendScripts::localize_scripts()`
- * surfaces `get_status()` as `vulopilotAppLocalizer.vulocloud_connected`/
- * `vulocloud_account_email` (a display-only badge), and
- * AiCreditsConnection::get_status() merges the same fields in as
- * `vulocloud_account_connected`/`_email` - informational only, AiCreditsConnection
- * doesn't depend on this connection to do its own work (see that class's own
- * docblock). Nothing currently writes to the underlying
- * `vulopilot_vulocloud_account` option - the email/password login flow that
- * used to (`connect()`/`register()`) was removed once the real "Connect to
- * VuloCloud" UI (ConnectVuloCloudPopup.tsx) settled on the passwordless
- * broker flow (AiCreditsConnection::get_broker_authorize_url()) exclusively,
- * so both fields above honestly read as "not connected" today rather than
- * stale/dead code pretending otherwise.
+ * Read-only account connection state.
  *
- * Storage is one dedicated `vulopilot_vulocloud_account` option, same
- * "never round-trips to the browser, secrets encrypted at rest" posture
- * GoogleServicesConnection.php already established for its own OAuth
- * tokens (CredentialEncryption, same as that class) - `get_status()`
- * below never returns a raw token, only `connected`/`email`/`connected_at`.
- *
- * @class       VuloCloudAccountConnection class
  * @version     1.0.0
  * @author      VuloLabs
  */
@@ -54,7 +35,7 @@ class VuloCloudAccountConnection {
     }
 
     /**
-     * Never a token - see this class's own docblock.
+     * Account status; never includes a token.
      *
      * @return array{connected: bool, email: string, connected_at: string}
      */

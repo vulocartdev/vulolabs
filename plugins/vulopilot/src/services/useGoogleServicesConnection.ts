@@ -7,7 +7,7 @@ import { NoticeManager } from '@zyra/components';
 export interface GoogleServicesStatus {
 	connected: boolean;
 	has_client_credentials: boolean;
-	/** Whether "Connect Google Services" will route through the VuloCloud OAuth broker instead - GoogleServicesConnection::get_authorization_url() (PHP) already tries this FIRST, so a build can be broker-only (`has_client_credentials` false) and still have a real, working connect flow. */
+	/** Whether "Connect Google Services" will route through the OAuth broker instead - GoogleServicesConnection::get_authorization_url() (PHP) already tries this FIRST, so a build can be broker-only (`has_client_credentials` false) and still have a real, working connect flow. */
 	has_broker: boolean;
 	search_console_site: string;
 	ga4_account_id: string;

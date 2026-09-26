@@ -34,8 +34,8 @@ const SectionRow = ({
  * Services, PageSpeed Insights, Site Verification, Preferences) into this
  * one tab per direct instruction ("merge all tabs into one tab under get
  * started called connections") - each section below is the same real
- * component its own old standalone tab already used (VuloCloudAiConnectionPanel.tsx/
- * GoogleServicesPanel.tsx/SiteVerificationPanel.tsx unchanged). No real
+ * component its own old standalone tab already used
+ * (GoogleServicesPanel.tsx/SiteVerificationPanel.tsx unchanged). No real
  * setting/backend changed shape; only where the UI for it lives.
  *
  * "Preferences" (`site_tone`) moved out to the Business Information sub-tab

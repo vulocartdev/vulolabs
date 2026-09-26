@@ -17,23 +17,12 @@ defined( 'ABSPATH' ) || exit;
  * keys), the Client ID/Secret here is ONE shared Google Cloud OAuth
  * Client VuloLabs itself registers - `VULOPILOT_GOOGLE_CLIENT_ID`/
  * `VULOPILOT_GOOGLE_CLIENT_SECRET`, defined once in the plugin's own
- * config.php (see that file's docblock for the real trade-offs this
- * accepts). A site owner never sees or enters a Client ID/Secret; they
+ * config.php. A site owner never sees or enters a Client ID/Secret; they
  * only ever click "Connect Google Services". This class only handles the
  * real OAuth dance and real Search Console `sites.list` call once that's
  * done; GoogleAnalyticsClient/GoogleAdSenseClient handle their own
  * services' real API calls, reusing this class's own
  * `get_valid_access_token()`.
- *
- * Storage is one dedicated `vulopilot_google_connection` option,
- * deliberately NOT part of `Utill::VULOPILOT_SETTINGS_KEY` - that option
- * round-trips wholesale to the browser on every `GET /settings` call
- * (Controllers\Settings::get_items()), and a client secret/access/refresh
- * token must never reach the client the way AiProviderConfigRepository's
- * own `credentials` column never does (see
- * Controllers\VuloCloudAiConnection::prepare_config_for_response()). Every secret
- * value here is encrypted at rest via CredentialEncryption, same as that
- * AI credential column.
  *
  * @class       GoogleServicesConnection class
  * @version     1.0.0
@@ -101,7 +90,7 @@ class GoogleServicesConnection {
                 'adsense_account_name' => '',
                 'connected_at'       => '',
                 // 'direct' (embedded shared Client) or 'broker'
-                // (VuloCloud) - which path actually issued the current
+                // - which path actually issued the current
                 // tokens, so refresh_access_token() knows which OAuth
                 // Client the stored refresh_token belongs to. Empty
                 // string only pre-first-connect.
@@ -147,22 +136,7 @@ class GoogleServicesConnection {
     }
 
     /**
-     * Whether this build has a VuloCloud Google Connect broker configured
-     * (config.php's own docblock) - when true, `get_authorization_url()`
-     * routes through it instead of the embedded shared Client above, and
-     * every customer domain works without being individually registered
-     * in Google Cloud Console. Checked ahead of `has_client_credentials()`
-     * everywhere both are relevant: the broker needs no embedded
-     * credentials at all, so a broker-only deployment can leave
-     * VULOPILOT_GOOGLE_CLIENT_ID/SECRET undefined entirely.
-     *
-     * Requires VULOPILOT_GOOGLE_APPLICATION_ID too, not just the broker
-     * URL - VuloCloud's `/plugin/google/*` endpoints resolve which
-     * Organization's Google Cloud OAuth Client to use FROM that id (see
-     * config.php's own docblock); a broker URL with no application id
-     * configured can never complete a real request, so this honestly
-     * reports "not available" rather than sending a request VuloCloud
-     * would just reject.
+     * Whether the broker-based Google connect flow is configured.
      *
      * @return bool
      */
@@ -352,16 +326,9 @@ class GoogleServicesConnection {
     }
 
     /**
-     * Broker counterpart of `exchange_code_for_tokens()` - redeems the
-     * broker-issued `code` GoogleSearchConsoleOAuthCallbackHandler
-     * received on VuloCloud's own redirect back to this site's
-     * admin-post.php callback, via a real server-to-server
-     * `POST {broker}/plugin/google/exchange` (GoogleOAuthBrokerClient).
-     * Stores `via => 'broker'` so `refresh_access_token()` later knows
-     * this connection's refresh_token belongs to VuloCloud's OAuth
-     * Client, not the embedded one.
+     * Exchanges the broker's single-use code for tokens and stores them.
      *
-     * @param string $code The `code` query param VuloCloud's redirect carried back.
+     * @param string $code The `code` query param the redirect carried back.
      * @return true|\WP_Error
      */
     public function exchange_broker_code_for_tokens( string $code ) {
@@ -627,12 +594,6 @@ class GoogleServicesConnection {
             // panel either shows a working "Connect" button or an honest
             // "not available in this build yet" state based on this flag.
             'has_client_credentials' => $this->has_client_credentials(),
-            // Whether "Connect Google Services" will route through the
-            // VuloCloud broker (any domain works, no per-site Google
-            // Cloud Console registration) rather than the embedded
-            // shared Client above (only domains manually allowlisted on
-            // that Client's own redirect URI list will complete the
-            // handshake) - see config.php's VULOPILOT_GOOGLE_BROKER_URL.
             'has_broker'              => $this->has_broker(),
             'search_console_site'    => $connection['search_console_site'],
             'ga4_account_id'         => $connection['ga4_account_id'],

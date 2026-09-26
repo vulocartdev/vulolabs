@@ -61,13 +61,13 @@ const SUGGESTED_PROMPTS = [
  *
  * The header's "Online"/"Offline" badge reads `AiCreditsConnection::
  * is_connected()` via `useAiCredits()` (`GET /ai-credits/status`), the
- * same gate `AI\AiRequestSender::send()` actually checks - not
- * `vulopilotAppLocalizer.vulocloud_connected` (the personal VuloCloud login),
- * which is a separate, unrelated credential: a site can have AI credits
+ * same gate `AI\AiRequestSender::send()` actually checks - not the account-login
+ * flag in `vulopilotAppLocalizer`, which is a separate, unrelated credential: a
+ * site can have AI credits
  * connected with no personal login connected, so that flag would show a
  * misleading "Offline" while chat still works. Loading state fails
  * closed (`status?.connected` false-y default), same convention
- * useContentGate.tsx's `isVuloCloudLocked` uses.
+ * useContentGate.tsx uses.
  */
 const AIAssistant = () => {
 	const [chatMessage, setChatMessage] = useState('');
@@ -448,7 +448,6 @@ const AIAssistant = () => {
 								}}
 							/>
 						</PopupComponent>
-						{/* useCopilotChat.ts's own send() sets this the moment a real send is attempted (or fails) with no AI connection configured - same free "Connect to VuloCloud" popup every other free AI surface in this plugin uses for this exact condition (Popup.tsx's own docblock). */}
 						<PopupComponent
 							open={isCloudConnectPromptOpen}
 							onClose={dismissCloudConnectPrompt}

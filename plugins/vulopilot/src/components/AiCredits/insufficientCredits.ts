@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 /**
- * VuloCloud refuses an AI request the site owner's credits can't cover -
- * before the AI provider is ever called, so nothing is charged. Every AI
+ * An AI request the site owner's credits can't cover is refused before the AI
+ * provider is ever called, so nothing is charged. Every AI
  * endpoint in this plugin reports that the same way (HTTP 402,
  * `code: 'vulopilot_insufficient_credits'`, see
  * VuloPilotException::to_insufficient_credits_error()), and every AI call

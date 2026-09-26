@@ -10,22 +10,6 @@ import '../Popup/Popup.scss';
 interface PopupProps {
 	moduleName?: string;
 	plugin?: string;
-	/**
-	 * "Connect to VuloCloud / claim free AI credits" - same real
-	 * `.popup-wrapper` shape (icon header, title, desc, one centered action)
-	 * the `moduleName`/`plugin` branches below already render, replacing
-	 * the former standalone `ConnectVuloCloudPopup.tsx` (deleted - this was
-	 * its only real consumer's own shape, folded in here per direct
-	 * instruction rather than kept as a second, differently-styled popup).
-	 * Every real call site now wraps this the exact same way it already
-	 * wraps `<ShowProPopup moduleName="..." />` - its own `PopupComponent`,
-	 * not a self-contained wrapper - so this stays a dumb content component
-	 * consistent with every other branch here, with no internal
-	 * already-connected guard of its own (unlike the deleted component,
-	 * which special-cased that) - simplest fix is on the caller's own
-	 * `isCloudConnectPromptOpen` state where relevant, matching how the
-	 * `moduleName`/`plugin` branches never guard on their own state either.
-	 */
 	vulocloud?: boolean;
 
 	confirmMode?: boolean;
@@ -132,9 +116,6 @@ const proPopupContent = {
 };
 
 const ShowProPopup: React.FC<PopupProps> = (props) => {
-	// Called unconditionally (rules of hooks) - only actually used by the
-	// `vulocloud` branch below, but every other branch here returns early
-	// before reaching it either way.
 	const { isConnecting, handleConnect } = useConnectVuloCloud();
 
 	if (props.confirmMode) {
@@ -357,19 +338,6 @@ const ShowProPopup: React.FC<PopupProps> = (props) => {
 
 export default ShowProPopup;
 
-/**
- * "Connect to VuloCloud / claim free AI credits", as a `NoticeComponent`
- * instead of `ShowProPopup vulocloud`'s own full `.popup-wrapper` chrome -
- * for a caller embedding this inside a popup that already has its own
- * header (ContentToolPopup.tsx's own `PopupComponent`
- * `header={{title, icon, description}}`, AiCreditsIndicator.tsx's own
- * credit-balance popup), where a second full icon/title header would
- * duplicate that chrome rather than reading as one real message. Same real
- * passwordless broker redirect (`useConnectVuloCloud.ts`) `ShowProPopup`'s
- * own `vulocloud` branch above uses - replaces the former
- * `ConnectVuloCloudPromptContent`'s own `variant="inline-notice"` case
- * (`ConnectVuloCloudPopup.tsx`, deleted).
- */
 export const VuloCloudInlineNotice = () => {
 	const { isConnecting, handleConnect } = useConnectVuloCloud();
 

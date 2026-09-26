@@ -9,7 +9,7 @@ import IntegrationsPanel from './IntegrationsPanel';
  * of that same restructure.
  *
  * `IntegrationsPanel.tsx` and the real per-provider panel components it
- * composes (`VuloCloudAiConnectionPanel.tsx`/`GoogleServicesPanel.tsx`/
+ * composes (`GoogleServicesPanel.tsx`/
  * `PageSpeedStatusPanel.tsx`/`SiteVerificationPanel.tsx`/
  * `TagManagerPanel.tsx`) moved alongside this file into `Settings/`
  * directly - they're plain `.tsx` components, not settings-tab configs

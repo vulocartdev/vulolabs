@@ -35,7 +35,7 @@ const nonceHeaders = { headers: { 'X-WP-Nonce': vulopilotAppLocalizer.nonce } };
  * used to be rendered separately by InputRenderer against this tab's own
  * `modal` array - now fully self-contained, same "one real component per
  * section" shape ConnectionsPanel.tsx composes GoogleServicesPanel.tsx/
- * SiteVerificationPanel.tsx/VuloCloudAiConnectionPanel.tsx from.
+ * SiteVerificationPanel.tsx from.
  *
  * Reads real state from `GET /settings/test-pagespeed`
  * (Services\PageSpeedInsightsFetcher::get_status() - no live API call) on

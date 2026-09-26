@@ -73,15 +73,6 @@ interface ContentToolPopupProps {
  * generation still runs from whatever's in those two (still-editable)
  * fields, matching GenerateProductDescriptionAction's real input contract
  * exactly (it has no `product_id` concept of its own).
- *
- * The one error this popup treats specially: `ActionRunner::propose()`'s
- * own real "No AI connection is configured." (thrown when no direct
- * VuloCloud AI key nor a connected VuloCloud account exists) shows the same real
- * "Connect to VuloCloud / Claim free AI Credits" action
- * AiCreditsIndicator.tsx's own dropdown already offers
- * (useConnectVuloCloud.ts), instead of a dead-end error notice - every
- * other real error (a per-field validation message, a provider's own
- * "Invalid API Key") still shows as plain text.
  */
 const ContentToolPopup: React.FC<ContentToolPopupProps> = ({
 	tool,
@@ -104,7 +95,6 @@ const ContentToolPopup: React.FC<ContentToolPopupProps> = ({
 	);
 	const [isBusy, setIsBusy] = useState(false);
 
-	/** Same real "No AI connection is configured." condition AiContentAssistantSidebar.tsx's own sendToAi() checks for - ActionRunner::propose() throws this exact phrase (Rest.php's own docblock), so this offers the same real "Connect to VuloCloud" fix instead of a dead-end error notice. */
 	const { status: creditsStatus } = useAiCredits();
 	// Only offer "Connect" when not already connected - otherwise show the real server error.
 	const isNoProviderError =
@@ -469,11 +459,6 @@ const ContentToolPopup: React.FC<ContentToolPopupProps> = ({
 						/>
 					)}
 
-					{/* No footer button for the no-provider-error case - the
-					real `VuloCloudInlineNotice` shown in the body below
-					already carries its own "Connect to VuloCloud" button
-					(Popup.tsx's own docblock), same one real component
-					every other caller of this flow now shares. */}
 					{'error' === step && !isNoProviderError && (
 						<ButtonInput
 							buttons={{

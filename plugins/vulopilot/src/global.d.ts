@@ -36,7 +36,6 @@ declare global {
 		khali_dabba: boolean;
 		active_modules: string[];
 		vulocloud_connected: boolean;
-		/** The connected VuloCloud account's own email, empty string when not connected - see `vulocloud_connected`'s own docblock above. */
 		vulocloud_account_email: string;
 		shop_url: string;
 		pro_data: {

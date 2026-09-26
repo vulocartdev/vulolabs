@@ -206,8 +206,7 @@ class Copilot extends \WP_REST_Controller {
                 return $exception->to_insufficient_credits_error();
             }
 
-            // Returned, not rethrown - a throw from inside this catch skips
-            // the \Throwable catch below and fatals the request.
+            // Returned, not rethrown, so the \Throwable catch below doesn't fatal.
             if ( VuloPilotException::TYPE_UNSAFE_PROMPT !== $exception->get_type() ) {
                 return new \WP_Error( 'vulopilot_ai_request_failed', $exception->getMessage(), array( 'status' => 502 ) );
             }
@@ -612,7 +611,7 @@ Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly one of
      * back a real {id, url}, never a client-only blob preview; see that
      * component's own onChange contract) - into real content blocks.
      * ATTACHMENT_TEXT_MIME_TYPES are read as text. Anything else (an unsupported
-     * type, or an image - the VuloCloud gateway carries text only) gets an
+     * type, or an image - the gateway carries text only) gets an
      * honest "can't be read" note instead of silently doing nothing with it.
      *
      * @param array<int, mixed> $raw_attachments              Client-supplied {id} entries.

@@ -148,8 +148,7 @@ class ContentAssistant extends \WP_REST_Controller {
                 return $exception->to_insufficient_credits_error();
             }
 
-            // Returned, not rethrown - a throw from inside this catch skips
-            // the \Throwable catch below and fatals the request.
+            // Returned, not rethrown, so the \Throwable catch below doesn't fatal.
             if ( VuloPilotException::TYPE_UNSAFE_PROMPT !== $exception->get_type() ) {
                 return new \WP_Error( 'vulopilot_ai_request_failed', $exception->getMessage(), array( 'status' => 502 ) );
             }

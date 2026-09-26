@@ -15,14 +15,6 @@ defined( 'ABSPATH' ) || exit;
  * Console, Analytics (GA4), and AdSense, matching the reference flow's
  * own single-button/multi-service consent screen.
  *
- * Every route here delegates to GoogleServicesConnection (real OAuth) or
- * GoogleAnalyticsClient/GoogleAdSenseClient (real per-service API calls)
- * - see those classes' own docblocks. `get_status()` never returns a
- * client secret, access token, or refresh token - same
- * "repositories/REST controllers never see a raw secret" boundary
- * Controllers\VuloCloudAiConnection::prepare_config_for_response() already
- * documents for AI service credentials.
- *
  * @class       GoogleServices controller
  * @version     1.0.0
  * @author      VuloLabs

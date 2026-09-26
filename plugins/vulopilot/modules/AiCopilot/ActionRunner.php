@@ -53,14 +53,6 @@ class ActionRunner {
     private AiCreditGatewayClient $credit_gateway;
     private AiCreditsConnection $credits_connection;
 
-    /**
-     * Real, structured `{action_id: [feature_id, action]}` mapping onto
-     * VuloCloud's own ai-gateway feature catalog (architecture plan §C) -
-     * every other AI action id sends its own built prompt instead (see
-     * send_prompt_or_credits()). Both are charged in AI credits. Adding a feature to a future migration pass means adding one
-     * entry here plus a matching build_credit_context() case, not
-     * restructuring propose() itself.
-     */
     private const CREDIT_FEATURE_MAP = array(
         'write-meta-title'              => array( 'seo_title', 'generate' ),
         'write-meta-description'        => array( 'meta_description', 'generate' ),
@@ -158,20 +150,7 @@ class ActionRunner {
     }
 
     /**
-     * Gets the AI completion for a proposed action. Both routes run on the
-     * site's Organization's AI key on VuloCloud and are charged in the site
-     * owner's AI credits for their real usage:
-     *
-     *  - an action in CREDIT_FEATURE_MAP goes through VuloCloud's structured
-     *    feature catalog (`/plugin/ai/execute`, AiCreditGatewayClient) -
-     *    VuloCloud owns that feature's prompt and model;
-     *  - every other action sends its own built prompt
-     *    (`/plugin/ai/prompt`, AiAssistant\AiRequestSender), labelled with
-     *    the action's own name for the site owner's credit history.
-     *
-     * Either way, when the balance can't cover the request VuloCloud
-     * refuses before calling the provider and this throws
-     * TYPE_INSUFFICIENT_CREDITS - nothing is charged.
+     * Gets the AI completion for a proposed action.
      *
      * @param string                             $action_id Real, registered action id.
      * @param \VuloPilot\Utill\AIActionInterface $action    Same instance get_action_or_fail() already resolved.
@@ -179,7 +158,7 @@ class ActionRunner {
      * @return \VuloPilot\AiAssistant\AIResponse
      *
      * @throws VuloPilotException If the site owner's credits can't cover the request, or the AI request fails.
-     * @throws \RuntimeException  If this site isn't connected to VuloCloud.
+     * @throws \RuntimeException  If no AI connection is configured.
      */
     private function send_prompt_or_credits( string $action_id, $action, array $input ): AIResponse {
         if ( ! isset( self::CREDIT_FEATURE_MAP[ $action_id ] ) ) {
@@ -214,13 +193,7 @@ class ActionRunner {
     }
 
     /**
-     * The structured `context` payload for one of CREDIT_FEATURE_MAP's
-     * three action ids - field names translated from each Action class's
-     * own validate_input() output into the exact names VuloCloud's
-     * matching feature-catalog entry expects (ai-feature-catalog.ts on the
-     * vulocloud side) since they don't always match 1:1 (e.g.
-     * WriteMetaTitleAction's own `previous_title` vs. the catalog's
-     * `title`).
+     * Builds the structured context for a credit-metered action.
      *
      * @param string $action_id Real, registered action id - always one of CREDIT_FEATURE_MAP's own keys.
      * @param array  $input     validate_input()'s own normalized output for that same action.
