@@ -4,7 +4,19 @@
  * (`post-editor/index.tsx`).
  */
 
-export type SeoIssueEditorTab = 'general' | 'social' | 'schema' | 'page-analysis';
+export type SeoIssueEditorTab =
+	| 'general'
+	| 'social'
+	| 'schema'
+	| 'page-analysis'
+	| 'overview'
+	| 'ai-readiness'
+	| 'aeo'
+	| 'geo'
+	| 'ai-visibility'
+	| 'content-analysis'
+	| 'recommendations'
+	| 'topic-linking';
 
 export interface SeoIssueEditorTarget {
 	tab: SeoIssueEditorTab;

@@ -371,7 +371,7 @@ const HistoryDetailPanel: React.FC<HistoryDetailPanelProps> = ({
 							text: __('View findings', 'vulopilot'),
 							icon: 'search',
 							onClick: () => {
-								window.location.href = `${vulopilotAppLocalizer.admin_url}#&tab=ai-assistant&subtab=issues&scanner_id=${encodeURIComponent(row.scan?.scanner_id ?? '')}`;
+								window.location.hash = `#&tab=ai-assistant&subtab=issues&scanner_id=${encodeURIComponent(row.scan?.scanner_id ?? '')}`;
 							},
 						}}
 					/>

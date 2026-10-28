@@ -27,7 +27,7 @@ export interface GeoScoreResponse {
 		'content-freshness': GeoSignalScore;
 		'other-geo-signals': GeoSignalScore;
 	};
-	/** Real exact reconstruction (`FindingRepository::..._as_of()`, no stored snapshot needed) of the same total `lookback_days` ago. */
+	/** Exact reconstruction of the same total `lookback_days` ago, no stored snapshot needed. */
 	deltas: {
 		lookback_days: number;
 		total_open: number;

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { ComponentType } from 'react';
 import { applyFilters } from '@wordpress/hooks';
 import { __, sprintf } from '@wordpress/i18n';
+import type { Rating } from './types';
 import {
 	getApiLink,
 	getApiResponse,
@@ -36,11 +37,6 @@ const SecurityDashboardCard = applyFilters(
 ) as ComponentType<SecurityStatusCardProps> | null;
 
 /** Same real 3-tier band shape `PerformanceScoreCard.tsx`'s own `Rating` interface uses. */
-interface Rating {
-	label: string;
-	className: 'good' | 'needs-improvement' | 'poor';
-}
-
 /** Lighthouse-style real 0-100 bands, matching `PerformanceScoreCard.tsx`'s own `getScoreRating()` so a "good" security score and a "good" performance score mean the same thing. */
 const getScoreRating = (score: number): Rating => {
 	if (score >= 90) {

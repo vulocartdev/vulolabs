@@ -185,7 +185,7 @@ class SitemapManager {
 	 * @return array
 	 */
 	public function filter_users_query_args( $args ) {
-		$settings      = $this->get_settings();
+		$settings       = $this->get_settings();
 		$excluded_ids   = $this->parse_id_list( (string) ( $settings['sitemap_exclude_author_ids'] ?? '' ) );
 		$excluded_roles = array_values(
 			array_filter( array_map( 'trim', explode( ',', (string) ( $settings['sitemap_exclude_author_roles'] ?? '' ) ) ) )

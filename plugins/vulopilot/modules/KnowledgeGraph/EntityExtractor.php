@@ -77,9 +77,9 @@ class EntityExtractor {
 		$services      = $this->extract_services();
 		$locations     = $this->extract_locations();
 		$categories    = $this->extract_categories();
-		$contact        = $this->find_contact_page();
-		$override_name  = $this->get_business_name_setting();
-		$business_name  = '' !== $override_name ? $override_name : ( $organizations[0]['name'] ?? trim( (string) get_bloginfo( 'name' ) ) );
+		$contact       = $this->find_contact_page();
+		$override_name = $this->get_business_name_setting();
+		$business_name = '' !== $override_name ? $override_name : ( $organizations[0]['name'] ?? trim( (string) get_bloginfo( 'name' ) ) );
 
 		$result = array(
 			'people'                  => $people,
@@ -282,10 +282,10 @@ class EntityExtractor {
 	 * Real, deterministic, template-built candidate relationships - never AI-generated (no
 	 * AI call, no cost).
 	 *
-	 * @param string  $business_name Real organization name (extract_organizations()'s own first entry).
-	 * @param array   $services      extract_services()'s own real rows.
+	 * @param string     $business_name Real organization name (extract_organizations()'s own first entry).
+	 * @param array      $services      extract_services()'s own real rows.
 	 * @param array|null $products   extract_products()'s own real rows (null when the store platform isn't active).
-	 * @param array   $categories    extract_categories()'s own real rows.
+	 * @param array      $categories    extract_categories()'s own real rows.
 	 * @return array<int, string>
 	 */
 	private function build_suggested_relationships( string $business_name, array $services, ?array $products, array $categories ): array {

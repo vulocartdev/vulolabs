@@ -55,9 +55,9 @@ class RedirectAnalysisScanner extends ScannerUtil {
 	 * @inheritDoc
 	 */
 	public function scan(): array {
-		$settings = wp_parse_args( get_option( \VuloPilot\Utill::VULOPILOT_SETTINGS_KEY, array() ), \VuloPilot\Utill::VULOPILOT_SETTINGS_DEFAULTS );
+		$content_search_scans = \VuloPilot\Utill::get_setting( 'content_search_scans', array() );
 
-		if ( empty( $settings['content_search_scans']['links']['enable'] ) ) {
+		if ( empty( $content_search_scans['links']['enable'] ) ) {
 			return array();
 		}
 

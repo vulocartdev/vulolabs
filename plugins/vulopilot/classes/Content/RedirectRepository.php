@@ -82,11 +82,7 @@ class RedirectRepository extends RepositoryUtil {
 	}
 
 	/**
-	 * Finds the active redirect this request path matches - an exact `source_path` row if one
-	 * exists (the common case, one indexed lookup), otherwise the first active non-exact row
-	 * (`match_type` of `contains`/`start`/`end`/`regex`) whose own `source_path` pattern matches,
-	 * checked oldest-created first. Non-exact rows are rare, so this only runs the full scan when
-	 * the fast exact lookup misses.
+	 * Finds the active redirect this request path matches - an exact `source_path` row if one exists (the common case, one indexed lookup), otherwise the first active non-exact row (`match_type` of `contains`/`start`/`end`/`regex`) whose own `source_path` pattern matches, checked oldest-created first.
 	 *
 	 * @param string $requested_path Already-normalized path (see normalize_path()).
 	 * @return array<string, mixed>|null

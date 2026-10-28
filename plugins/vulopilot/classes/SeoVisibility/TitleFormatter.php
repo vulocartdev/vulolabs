@@ -45,6 +45,17 @@ class TitleFormatter {
 	 * @return string
 	 */
 	public function maybe_filter_title( string $title ): string {
+		// A per-post "SEO Title" override (General tab) always wins, same as every other per-post
+		// SEO field (canonical URL, robots, social title) - independent of whether the sitewide
+		// Title Format templates below are even enabled.
+		if ( is_singular() ) {
+			$override = trim( (string) get_post_meta( get_queried_object_id(), PostSeoMetaFields::META_KEYS['seo_title'], true ) );
+
+			if ( '' !== $override ) {
+				return $override;
+			}
+		}
+
 		$settings = wp_parse_args( get_option( Utill::VULOPILOT_SETTINGS_KEY, array() ), Utill::VULOPILOT_SETTINGS_DEFAULTS );
 
 		if ( empty( $settings['site_identity_enabled'] ) || 'enabled' !== $settings['site_identity_enabled'] ) {
@@ -113,15 +124,11 @@ class TitleFormatter {
 	}
 
 	/**
-	 * Looks up a raw template for one context key - a flat `{$prefix}{$context_key}` settings
-	 * field for the built-in contexts (home/post/page/category/tag/search/archive), or the
-	 * matching `{$prefix}post_types`/`{$prefix}taxonomies` map entry for a dynamic
-	 * `post_type:{slug}`/`taxonomy:{slug}` context key current_context_key() returns for anything
-	 * else.
+	 * Looks up a raw template for one context key - a flat `{$prefix}{$context_key}` settings field for the built-in contexts (home/post/page/category/tag/search/archive), or the matching `{$prefix}post_types`/`{$prefix}taxonomies` map entry for a dynamic `post_type:{slug}`/`taxonomy:{slug}` context key current_context_key() returns for anything else.
 	 *
 	 * @param array<string, mixed> $settings    Effective plugin settings.
-	 * @param string                $prefix      `'title_format_'` or `'description_format_'`.
-	 * @param string                $context_key current_context_key()'s own return value.
+	 * @param string               $prefix      `'title_format_'` or `'description_format_'`.
+	 * @param string               $context_key current_context_key()'s own return value.
 	 * @return string
 	 */
 	private function get_template( array $settings, string $prefix, string $context_key ): string {

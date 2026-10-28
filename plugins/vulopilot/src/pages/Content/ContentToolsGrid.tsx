@@ -176,7 +176,7 @@ export const CONTENT_TOOLS: ContentTool[] = [
 	},
 ];
 
-interface ProToolsSlot {
+export interface ProToolsSlot {
 	Popup: ComponentType<{
 		tool: ContentTool | null;
 		onClose: () => void;

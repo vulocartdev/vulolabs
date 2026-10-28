@@ -16,13 +16,7 @@ use VuloPilot\GeoAnalysis\Scanners\GeoCitationOpportunityScanner;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Generates a GeoScore for one post (GEO-MODULE.md's "Generate GEO Score"
- * / "Generate AI suggestions" capability). A plain, concrete orchestrator
- * with no interface, like Scanners\ScanRunner and RuleEngine\RuleEngine.
- *
- * Not an AIAction - it's read-only, so there is no Approval/Execution/
- * Rollback lifecycle to run. It reuses AI\AiRequestSender for its AI call
- * and the shared FindingRepository for persistence.
+ * Generates a GeoScore for one post (GEO-MODULE.md's "Generate GEO Score" / "Generate AI suggestions" capability). A plain, concrete orchestrator with no interface, like Scanners\ScanRunner and RuleEngine\RuleEngine.
  *
  * @class       GeoAnalyzer class
  * @version     1.0.0
@@ -49,7 +43,7 @@ class GeoAnalyzer {
      * this class must be given that same instance, the same reason
      * AiCopilot\ActionRunner requires it too.
      *
-     * @param AiRequestSender          $request_sender Sends a prompt through the safety-validate → send → sanitize sequence.
+     * @param AiRequestSender            $request_sender Sends a prompt through the safety-validate → send → sanitize sequence.
      * @param FindingRepository|null     $findings       Defaults to a new instance (injectable for tests).
      * @param ActivityLogRepository|null $activity_logs Defaults to a new instance (injectable for tests).
      */
@@ -115,11 +109,7 @@ class GeoAnalyzer {
     }
 
     /**
-     * Compares the overall_score against the previously stored one and
-     * emails/logs when it fell by at least `visibility_alerts['geo']['threshold']`,
-     * gated behind `email_on_visibility_alerts` and `visibility_alerts['geo']['enable']`.
-     * Must run before the new score overwrites the old one in postmeta.
-     * No-op on a post's first-ever analysis.
+     * Compares the overall_score against the previously stored one and emails/logs when it fell by at least `visibility_alerts['geo']['threshold']`, gated behind `email_on_visibility_alerts` and `visibility_alerts['geo']['enable']`.
      *
      * @param \WP_Post $post          Post just analyzed.
      * @param int      $overall_score The just-computed overall_score.
@@ -270,13 +260,7 @@ class GeoAnalyzer {
     }
 
     /**
-     * The 6 readme.txt AI-Visibility sub-metrics that don't need an AI
-     * judgment call - either a direct or composite read of specific
-     * scanner-id findings (made queryable by FindingRepository's
-     * `scanner_id` filter), or a value computed straight from the post
-     * object already in hand. Each is 0-100, same coarse-tiering posture
-     * calculate_overall_score() already documents for the site as a
-     * whole - not a claim of scientific precision.
+     * The 6 readme.txt AI-Visibility sub-metrics that don't need an AI judgment call - either a direct or composite read of specific scanner-id findings (made queryable by FindingRepository's `scanner_id` filter), or a value computed straight from the post object already in hand.
      *
      * @param int      $post_id Post to score.
      * @param \WP_Post $post    Same post, already loaded by analyze().
@@ -334,11 +318,7 @@ class GeoAnalyzer {
     }
 
     /**
-     * Coarse recency tiering off `post_modified_gmt`, scored on a 0-100 scale.
-     * Tier boundaries scale off the "Content freshness" setting's
-     * `ai_visibility_scans.freshness.stale_months`. Always runs as one of
-     * the 6 fixed inputs to the per-post GEO score, independent of that
-     * setting's own `enable` toggle.
+     * Coarse recency tiering off `post_modified_gmt`, scored on a 0-100 scale. Tier boundaries scale off the "Content freshness" setting's `ai_visibility_scans.freshness.stale_months`.
      *
      * @param \WP_Post $post Post being scored.
      * @return int 0-100.
@@ -346,7 +326,7 @@ class GeoAnalyzer {
     private function calculate_content_freshness( \WP_Post $post ): int {
         $settings            = wp_parse_args( get_option( \VuloPilot\Utill::VULOPILOT_SETTINGS_KEY, array() ), \VuloPilot\Utill::VULOPILOT_SETTINGS_DEFAULTS );
         $stale_after_days    = absint( $settings['ai_visibility_scans']['freshness']['stale_months'] ?? 12 ) * 30;
-        $days_since_modified = ( current_time( 'timestamp', true ) - strtotime( $post->post_modified_gmt ) ) / DAY_IN_SECONDS;
+        $days_since_modified = ( time() - strtotime( $post->post_modified_gmt ) ) / DAY_IN_SECONDS;
 
         if ( $days_since_modified <= $stale_after_days * 0.25 ) {
             return 100;
@@ -466,15 +446,7 @@ class GeoAnalyzer {
     }
 
     /**
-     * Simple, documented average - not a claim of scientific precision,
-     * the same posture Controllers/Dashboard.php's calculate_overall_score()
-     * already takes for the sitewide health score. Blends up to 3
-     * components: the 9-check deterministic score (structural, may be
-     * null if this site has no GEO scan history yet), the average of the
-     * 8 AI-judged dimensions, and the average of the 6 computed sub-scores
-     * (calculate_sub_scores()) - whichever of the 3 are actually known are
-     * averaged together unweighted, same "coarse, not scientific" posture
-     * as before this method grew a third component.
+     * Simple, documented average - not a claim of scientific precision, the same posture Controllers/Dashboard.php's calculate_overall_score() already takes for the sitewide health score.
      *
      * @param int|null $deterministic_score 0-100, or null.
      * @param array    $ai_scores           8 keys, each 0-100.

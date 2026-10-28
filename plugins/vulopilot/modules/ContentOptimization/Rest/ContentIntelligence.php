@@ -257,11 +257,7 @@ class ContentIntelligence extends \WP_REST_Controller {
     }
 
     /**
-     * The date range immediately preceding [$period_start, $period_end],
-     * of the same inclusive day length - same real trend math
-     * Reports\AbstractReportType::get_previous_period() already uses for
-     * the Reports page (duplicated as a small local method rather than
-     * shared, see this class's own register_routes() comment on why).
+     * The date range immediately preceding [$period_start, $period_end], of the same inclusive day length - same real trend math Reports\AbstractReportType::get_previous_period() already uses for the Reports page (duplicated as a small local method rather than shared, see this class's own register_routes() comment on why).
      *
      * @param string $period_start Y-m-d, inclusive.
      * @param string $period_end   Y-m-d, inclusive.

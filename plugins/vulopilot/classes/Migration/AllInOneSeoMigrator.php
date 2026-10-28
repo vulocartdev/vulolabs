@@ -52,14 +52,14 @@ class AllInOneSeoMigrator implements MigratorInterface {
 	 * @var array<string, string>
 	 */
 	private const TOKEN_MAP = array(
-		'#site_title'      => '%site_title%',
-		'#tagline'         => '%site_description%',
-		'#separator_sa'    => '%sep%',
-		'#post_title'      => '%post_title%',
-		'#taxonomy_title'  => '%category_title%',
-		'#archive_date'    => '%archive_title%',
-		'#author_name'     => '%author_name%',
-		'#search_term'     => '%search_term%',
+		'#site_title'     => '%site_title%',
+		'#tagline'        => '%site_description%',
+		'#separator_sa'   => '%sep%',
+		'#post_title'     => '%post_title%',
+		'#taxonomy_title' => '%category_title%',
+		'#archive_date'   => '%archive_title%',
+		'#author_name'    => '%author_name%',
+		'#search_term'    => '%search_term%',
 	);
 
 	/**
@@ -97,7 +97,11 @@ class AllInOneSeoMigrator implements MigratorInterface {
 		$this->migrate_settings( $overwrite, $migrated, $skipped );
 		$this->migrate_robots_txt( $overwrite, $migrated, $skipped );
 
-		return array( 'migrated' => $migrated, 'skipped' => $skipped, 'errors' => $errors );
+		return array(
+			'migrated' => $migrated,
+			'skipped'  => $skipped,
+			'errors'   => $errors,
+		);
 	}
 
 	// ---------------------------------------------------------------------
@@ -120,12 +124,12 @@ class AllInOneSeoMigrator implements MigratorInterface {
 		$manager = new RobotsTxtManager();
 
 		if ( '' !== $manager->get_custom_content() && ! $overwrite ) {
-			$skipped++;
+			++$skipped;
 			return;
 		}
 
 		$manager->save_custom_content( $content );
-		$migrated++;
+		++$migrated;
 	}
 
 	/**
@@ -227,12 +231,12 @@ class AllInOneSeoMigrator implements MigratorInterface {
 				$existing = get_post_meta( $post_id, PostSeoMetaFields::META_KEYS['focus_keyword'], true );
 
 				if ( ! $overwrite && '' !== (string) $existing ) {
-					$skipped++;
+					++$skipped;
 					continue;
 				}
 
 				$this->migrate_post_row( $post_id, $row );
-				$migrated++;
+				++$migrated;
 			} catch ( \Throwable $e ) {
 				$errors[] = sprintf( 'Post #%d: %s', $post_id, $e->getMessage() );
 			}
@@ -251,7 +255,7 @@ class AllInOneSeoMigrator implements MigratorInterface {
 	}
 
 	/**
-	 * @param int      $post_id Post id.
+	 * @param int       $post_id Post id.
 	 * @param \stdClass $row    One `wp_aioseo_posts` row.
 	 * @return void
 	 */
@@ -315,13 +319,13 @@ class AllInOneSeoMigrator implements MigratorInterface {
 				&& $settings[ $field ] !== ( Utill::VULOPILOT_SETTINGS_DEFAULTS[ $field ] ?? null );
 
 			if ( $is_customized && ! $overwrite ) {
-				$skipped++;
+				++$skipped;
 				continue;
 			}
 
 			$settings[ $field ] = $value;
-			$changed             = true;
-			$migrated++;
+			$changed            = true;
+			++$migrated;
 		}
 
 		if ( $changed ) {

@@ -57,15 +57,23 @@ class GenerateBlogAction extends AbstractCloudAction {
 			VuloPilotException::raise( esc_html__( 'Please provide a topic of at least 5 characters.', 'vulopilot' ), VuloPilotException::TYPE_INVALID_ACTION_INPUT );
 		}
 
-		// Both optional - a bare topic is still a complete, valid input.
+		// All optional - a bare topic is still a complete, valid input.
 		$word_count = absint( $input['word_count'] ?? 0 );
 		$word_count = $word_count > 0 ? max( 100, min( 5000, $word_count ) ) : 0;
 		$tone       = mb_substr( sanitize_text_field( (string) ( $input['tone'] ?? '' ) ), 0, 60 );
+		// Content Planner's own writing-style fields (audience/prompt) - optional for every
+		// other caller of this action, which simply won't pass them.
+		$audience  = mb_substr( sanitize_text_field( (string) ( $input['audience'] ?? '' ) ), 0, 120 );
+		$prompt    = mb_substr( sanitize_textarea_field( (string) ( $input['prompt'] ?? '' ) ), 0, 2000 );
+		$post_type = in_array( $input['post_type'] ?? 'post', array( 'post', 'page' ), true ) ? $input['post_type'] : 'post';
 
 		return array(
 			'topic'      => $topic,
 			'word_count' => $word_count,
 			'tone'       => $tone,
+			'audience'   => $audience,
+			'prompt'     => $prompt,
+			'post_type'  => $post_type,
 		);
 	}
 
@@ -143,7 +151,7 @@ class GenerateBlogAction extends AbstractCloudAction {
 				'post_title'   => sanitize_text_field( $output['title'] ),
 				'post_content' => wp_kses_post( $output['body'] ),
 				'post_status'  => 'draft',
-				'post_type'    => 'post',
+				'post_type'    => $input['post_type'] ?? 'post',
 			),
 			true
 		);

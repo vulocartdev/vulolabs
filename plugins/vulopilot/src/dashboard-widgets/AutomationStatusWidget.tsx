@@ -90,7 +90,7 @@ const AutomationStatusWidget: React.FC<WidgetProps> = ({
 						rightIcon: 'pagination-right-arrow',
 						color: 'text-purple',
 						onClick: () => {
-							window.location.href = '?page=vulopilot#&tab=automations';
+							window.location.hash = '#&tab=automations';
 						},
 					}}
 				/>

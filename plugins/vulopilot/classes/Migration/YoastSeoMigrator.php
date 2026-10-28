@@ -148,7 +148,11 @@ class YoastSeoMigrator implements MigratorInterface {
 		$this->migrate_settings( $overwrite, $migrated, $skipped );
 		$this->migrate_robots_txt( $overwrite, $migrated, $skipped, $errors );
 
-		return array( 'migrated' => $migrated, 'skipped' => $skipped, 'errors' => $errors );
+		return array(
+			'migrated' => $migrated,
+			'skipped'  => $skipped,
+			'errors'   => $errors,
+		);
 	}
 
 	/**
@@ -182,12 +186,12 @@ class YoastSeoMigrator implements MigratorInterface {
 		$manager = new RobotsTxtManager();
 
 		if ( '' !== $manager->get_custom_content() && ! $overwrite ) {
-			$skipped++;
+			++$skipped;
 			return;
 		}
 
 		$manager->save_custom_content( $content );
-		$migrated++;
+		++$migrated;
 
 		$errors[] = __(
 			'robots.txt content was copied into VuloPilot, but a real robots.txt file still exists on your server - WordPress serves that file directly and ignores every plugin\'s own robots.txt output (VuloPilot\'s included) while it\'s there. Remove or rename the physical robots.txt file at your site\'s root for VuloPilot\'s version to take effect.',
@@ -226,7 +230,7 @@ class YoastSeoMigrator implements MigratorInterface {
 				$existing = get_post_meta( $post_id, PostSeoMetaFields::META_KEYS['focus_keyword'], true );
 
 				if ( ! $overwrite && '' !== (string) $existing ) {
-					$skipped++;
+					++$skipped;
 					continue;
 				}
 
@@ -259,7 +263,7 @@ class YoastSeoMigrator implements MigratorInterface {
 
 				$this->migrate_content_score( $post_id, $overwrite, $migrated, $skipped );
 
-				$migrated++;
+				++$migrated;
 			} catch ( \Throwable $e ) {
 				$errors[] = sprintf( 'Post #%d: %s', $post_id, $e->getMessage() );
 			}
@@ -287,7 +291,7 @@ class YoastSeoMigrator implements MigratorInterface {
 		$existing = get_post_meta( $post_id, '_vulopilot_content_score', true );
 
 		if ( ! $overwrite && '' !== (string) $existing ) {
-			$skipped++;
+			++$skipped;
 			return;
 		}
 
@@ -316,7 +320,7 @@ class YoastSeoMigrator implements MigratorInterface {
 				)
 			)
 		);
-		$migrated++;
+		++$migrated;
 	}
 
 	/**
@@ -384,13 +388,13 @@ class YoastSeoMigrator implements MigratorInterface {
 				&& $settings[ $field ] !== ( Utill::VULOPILOT_SETTINGS_DEFAULTS[ $field ] ?? null );
 
 			if ( $is_customized && ! $overwrite ) {
-				$skipped++;
+				++$skipped;
 				continue;
 			}
 
 			$settings[ $field ] = $value;
-			$changed             = true;
-			$migrated++;
+			$changed            = true;
+			++$migrated;
 		}
 
 		if ( $changed ) {

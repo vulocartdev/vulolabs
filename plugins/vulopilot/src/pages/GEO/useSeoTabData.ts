@@ -33,7 +33,7 @@ export interface SeoScoreResponse {
 		low: number;
 	};
 	total_open: number;
-	/** Real exact reconstruction (`FindingRepository::..._as_of()`, no stored snapshot needed) of the same totals `lookback_days` ago. */
+	/** Exact reconstruction of the same totals `lookback_days` ago, no stored snapshot needed. */
 	deltas: {
 		lookback_days: number;
 		total_open: number;

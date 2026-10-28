@@ -71,9 +71,7 @@ class NotFoundLogger {
 	 * @return void
 	 */
 	public function maybe_log(): void {
-		$settings = wp_parse_args( get_option( Utill::VULOPILOT_SETTINGS_KEY, array() ), Utill::VULOPILOT_SETTINGS_DEFAULTS );
-
-		if ( empty( $settings['log_404s'] ) || ! is_404() ) {
+		if ( empty( Utill::get_setting( 'log_404s' ) ) || ! is_404() ) {
 			return;
 		}
 

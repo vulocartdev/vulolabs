@@ -8,7 +8,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-10-16T10:03:43+00:00\n"
+"POT-Creation-Date: 2026-10-23T10:48:37+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: vulopilot\n"
@@ -40,7 +40,7 @@ msgid "https://vulolabs.com/"
 msgstr ""
 
 #: classes/Accessibility/AccessibilityScanner.php:39
-#: classes/Admin.php:138
+#: classes/Admin.php:143
 #: modules/AiCopilot/Rest/Copilot.php:629
 #: assets/js/index.js:1
 #: assets/js/index.js:17
@@ -145,7 +145,7 @@ msgid "SEO & Visibility"
 msgstr ""
 
 #: classes/Admin.php:121
-#: modules/TechnicalSeo/Rest/Seo.php:628
+#: modules/TechnicalSeo/Rest/Seo.php:675
 #: assets/js/block/faq/index.js:1
 #: assets/js/index.js:1
 #: assets/js/index.js:5
@@ -156,6 +156,11 @@ msgid "Content"
 msgstr ""
 
 #: classes/Admin.php:126
+#: assets/js/index.js:17
+msgid "Content Planner"
+msgstr ""
+
+#: classes/Admin.php:131
 #: classes/Performance/PerformanceScanner.php:37
 #: modules/AiCopilot/Rest/Copilot.php:627
 #: assets/js/index.js:9
@@ -163,15 +168,15 @@ msgstr ""
 msgid "Performance"
 msgstr ""
 
-#: classes/Admin.php:133
-#: classes/Admin.php:307
+#: classes/Admin.php:138
+#: classes/Admin.php:312
 #: assets/js/index.js:1
 #: assets/js/index.js:9
 #: assets/js/index.js:17
 msgid "Site Health"
 msgstr ""
 
-#: classes/Admin.php:145
+#: classes/Admin.php:150
 #: modules/AiCopilot/Rest/Copilot.php:628
 #: assets/js/index.js:1
 #: assets/js/index.js:9
@@ -179,42 +184,43 @@ msgstr ""
 msgid "Security"
 msgstr ""
 
-#: classes/Admin.php:150
+#: classes/Admin.php:155
 #: assets/js/index.js:1
 #: assets/js/index.js:17
 msgid "Commerce"
 msgstr ""
 
-#: classes/Admin.php:155
+#: classes/Admin.php:160
 #: assets/js/index.js:1
 #: assets/js/index.js:17
 msgid "Automations"
 msgstr ""
 
-#: classes/Admin.php:162
+#: classes/Admin.php:167
 #: assets/js/index.js:1
 #: assets/js/index.js:9
 msgid "Reports"
 msgstr ""
 
-#: classes/Admin.php:168
+#: classes/Admin.php:173
 #: assets/js/block/faq/index.js:1
 #: assets/js/index.js:17
 msgid "Settings"
 msgstr ""
 
-#: classes/Admin.php:305
+#: classes/Admin.php:310
 #: assets/js/index.js:1
 #: assets/js/index.js:9
+#: assets/js/post-editor.js:1
 msgid "AI Visibility"
 msgstr ""
 
-#: classes/Admin.php:306
+#: classes/Admin.php:311
 #: assets/js/index.js:1
 msgid "SEO & Content"
 msgstr ""
 
-#: classes/Admin.php:308
+#: classes/Admin.php:313
 msgid "Tools"
 msgstr ""
 
@@ -1103,6 +1109,7 @@ msgstr ""
 #: assets/js/index.js:1
 #: assets/js/index.js:5
 #: assets/js/index.js:9
+#: assets/js/post-editor.js:1
 msgid "Status"
 msgstr ""
 
@@ -1559,7 +1566,7 @@ msgid "A featured image improves how this page previews when shared or displayed
 msgstr ""
 
 #: classes/SeoVisibility/MissingMetaDescriptionRule.php:39
-#: modules/TechnicalSeo/Rest/Seo.php:574
+#: modules/TechnicalSeo/Rest/Seo.php:621
 msgid "Missing meta description"
 msgstr ""
 
@@ -1573,130 +1580,264 @@ msgstr ""
 msgid "A good description improves click-through from search results: %s"
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:86
+#: classes/SeoVisibility/OnPageAnalyzer.php:97
 msgid "SEO title is empty."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:90
+#: classes/SeoVisibility/OnPageAnalyzer.php:101
 msgid "SEO title is too short - search engines may show more than this."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:94
+#: classes/SeoVisibility/OnPageAnalyzer.php:105
 msgid "SEO title may be truncated in search results."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:97
+#: classes/SeoVisibility/OnPageAnalyzer.php:108
 msgid "SEO title length is good."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:110
+#: classes/SeoVisibility/OnPageAnalyzer.php:121
 msgid "Meta description is empty."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:114
+#: classes/SeoVisibility/OnPageAnalyzer.php:125
 msgid "Meta description is shorter than the recommended length."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:118
+#: classes/SeoVisibility/OnPageAnalyzer.php:129
 msgid "Meta description may be truncated in search results."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:121
+#: classes/SeoVisibility/OnPageAnalyzer.php:132
 msgid "Meta description length is good."
 msgstr ""
 
-#. translators: 1: current word count, 2: minimum recommended word count.
-#: classes/SeoVisibility/OnPageAnalyzer.php:142
+#. translators: %d: current word count.
+#: classes/SeoVisibility/OnPageAnalyzer.php:187
 #, php-format
-msgid "Content is %1$d words - aim for at least %2$d."
+msgid "Content is %d words - good depth for search results."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:150
-msgid "Content length is good."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:163
-msgid "Focus keyword found in the SEO title."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:164
-msgid "Focus keyword is missing from the SEO title."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:176
-msgid "Focus keyword found in the meta description."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:177
-msgid "Focus keyword is missing from the meta description."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:189
-msgid "Focus keyword found in the URL."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:190
-msgid "Focus keyword is missing from the URL."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:202
-msgid "Focus keyword found in the content."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:203
-msgid "Focus keyword is missing from the content."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:218
-msgid "Focus keyword appears early in the content."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:219
-msgid "Focus keyword does not appear in the opening paragraph."
-msgstr ""
-
-#: classes/SeoVisibility/OnPageAnalyzer.php:230
-msgid "Content has subheadings."
+#. translators: 1: current word count, 2: percentage of full credit this depth earns, 3: word count the next tier up starts at.
+#: classes/SeoVisibility/OnPageAnalyzer.php:192
+#, php-format
+msgid "Content is %1$d words - only %2$d%% of full content-depth credit. Aim for %3$d+ words."
 msgstr ""
 
 #: classes/SeoVisibility/OnPageAnalyzer.php:231
+msgid "Focus keyword found in the SEO title."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:232
+msgid "Focus keyword is missing from the SEO title."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:244
+msgid "Focus keyword found in the meta description."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:245
+msgid "Focus keyword is missing from the meta description."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:257
+msgid "Focus keyword found in the URL."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:258
+msgid "Focus keyword is missing from the URL."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:270
+msgid "Focus keyword found in the content."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:271
+msgid "Focus keyword is missing from the content."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:286
+msgid "Focus keyword appears early in the content."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:287
+msgid "Focus keyword does not appear in the opening paragraph."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:298
+msgid "Content has subheadings."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:299
 msgid "Content has no subheadings - breaking it up improves readability and scannability."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:242
+#: classes/SeoVisibility/OnPageAnalyzer.php:313
 msgid "Content contains at least one link."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:243
+#: classes/SeoVisibility/OnPageAnalyzer.php:314
 msgid "Content has no links - linking to related content or sources helps both readers and search engines."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:254
-msgid "No images in this content."
+#: classes/SeoVisibility/OnPageAnalyzer.php:361
+msgid "Content links to at least one other page on this site."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:259
+#: classes/SeoVisibility/OnPageAnalyzer.php:362
+msgid "No internal links found - link to other relevant pages on this site."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:375
+msgid "Content links to at least one external source."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:376
+msgid "No external links found - linking to an authoritative outside source builds trust."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:391
+msgid "No images in this content - add at least one relevant image with descriptive alt text."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:396
 msgid "One or more images are missing alt text."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:263
+#: classes/SeoVisibility/OnPageAnalyzer.php:400
 msgid "All images have alt text."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:277
+#. translators: %s: current keyword density, as a percentage.
+#: classes/SeoVisibility/OnPageAnalyzer.php:435
+#, php-format
+msgid "Focus keyword density is %s%% - this reads as keyword stuffing. Aim for roughly 1-1.5%%."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:446
+msgid "Focus keyword density is very low - use it a little more naturally throughout the content."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:450
+msgid "Focus keyword density is good."
+msgstr ""
+
+#: classes/SeoVisibility/OnPageAnalyzer.php:464
 msgid "Focus keyword appears near the beginning of the title."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:278
+#: classes/SeoVisibility/OnPageAnalyzer.php:465
 msgid "Focus keyword appears late in the title - titles rank slightly better with it near the start."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:290
+#: classes/SeoVisibility/OnPageAnalyzer.php:477
 msgid "Title contains a number."
 msgstr ""
 
-#: classes/SeoVisibility/OnPageAnalyzer.php:291
+#: classes/SeoVisibility/OnPageAnalyzer.php:478
 msgid "Consider adding a number to the title (e.g. a year or a count) - these tend to attract more clicks."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:69
+msgid "This page is not published."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:78
+msgid "The site is set to discourage search engines (Settings → Reading)."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:97
+msgid "This page is set to noindex (General tab → Robots) - deliberate, but still excluded from search results."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:105
+msgid "This page is published and publicly indexable."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:121
+msgid "Could not verify the live page - the request failed or timed out."
+msgstr ""
+
+#. translators: %d: real HTTP status code.
+#: classes/SeoVisibility/PageTechnicalChecks.php:131
+#: classes/SeoVisibility/PageTechnicalChecks.php:146
+#, php-format
+msgid "The page responded with HTTP %d."
+msgstr ""
+
+#. translators: %d: real HTTP status code.
+#: classes/SeoVisibility/PageTechnicalChecks.php:139
+#, php-format
+msgid "The page redirects (HTTP %d) - verify the final destination is the intended one."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:162
+msgid "Could not fetch the live page to check for a canonical tag."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:171
+msgid "A canonical URL tag is present."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:178
+msgid "No canonical URL tag was found on the live page."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:194
+msgid "Could not fetch the live page to check for structured data."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:202
+msgid "No JSON-LD structured data was found on the live page."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:226
+msgid "Structured data was found but is not valid JSON."
+msgstr ""
+
+#. translators: %s: comma-separated real schema.org @type values found on the page.
+#: classes/SeoVisibility/PageTechnicalChecks.php:235
+#, php-format
+msgid "Valid structured data found: %s."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:270
+msgid "This page has not been checked for broken links yet - run a scan to verify."
+msgstr ""
+
+#. translators: %d: real number of broken links found on this page.
+#: classes/SeoVisibility/PageTechnicalChecks.php:292
+#, php-format
+msgid "%d broken link found on this page."
+msgid_plural "%d broken links found on this page."
+msgstr[0] ""
+msgstr[1] ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:301
+msgid "No broken links found on this page."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:325
+msgid "XML sitemaps are disabled - the page may still be discoverable through crawlable links, but a sitemap makes discovery more reliable."
+msgstr ""
+
+#. translators: %s: real post type name.
+#: classes/SeoVisibility/PageTechnicalChecks.php:337
+#, php-format
+msgid "The \"%s\" post type is not included in the XML sitemap settings."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:349
+msgid "This page is on the sitemap exclusion list."
+msgstr ""
+
+#: classes/SeoVisibility/PageTechnicalChecks.php:356
+msgid "This page's post type is included in the XML sitemap and it is not excluded."
+msgstr ""
+
+#: classes/SeoVisibility/Rest/CrawlerTraffic.php:91
+#: modules/ContentOptimization/Rest/ContentIntelligence.php:153
+msgid "Post not found."
 msgstr ""
 
 #: classes/SeoVisibility/Rest/IndexNow.php:77
@@ -1771,6 +1912,407 @@ msgstr ""
 msgid "Review rating"
 msgstr ""
 
+#: classes/SeoVisibility/SeoScoreEngine.php:376
+msgid "A title is set."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:378
+msgid "No SEO title is set."
+msgstr ""
+
+#. translators: %d: real character count.
+#: classes/SeoVisibility/SeoScoreEngine.php:383
+#, php-format
+msgid "Title length (%d chars) is concise."
+msgstr ""
+
+#. translators: %d: real character count.
+#: classes/SeoVisibility/SeoScoreEngine.php:385
+#, php-format
+msgid "Title is %d characters - aim for roughly 50-60."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:393
+msgid "No obvious keyword stuffing in the title."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:395
+msgid "The focus keyword repeats unnaturally often in the title."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:405
+msgid "Write a concise, descriptive SEO title around 50-60 characters."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:419
+msgid "A meta description is set."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:421
+msgid "No meta description is set."
+msgstr ""
+
+#. translators: %d: real character count.
+#: classes/SeoVisibility/SeoScoreEngine.php:426
+#, php-format
+msgid "Description length (%d chars) is appropriate."
+msgstr ""
+
+#. translators: %d: real character count.
+#: classes/SeoVisibility/SeoScoreEngine.php:428
+#, php-format
+msgid "Description is %d characters - aim for roughly 120-160."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:436
+msgid "Description appears relevant to the page topic."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:446
+msgid "Write a clear, 120-160 character meta description that summarizes the page."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:458
+msgid "No URL slug is set."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:459
+msgid "Set a short, readable URL slug."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:466
+msgid "slug is only numbers"
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:469
+msgid "slug is unusually long"
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:472
+msgid "slug has repeated hyphens"
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:480
+msgid "The URL slug is readable and reasonably sized."
+msgstr ""
+
+#. translators: %s: comma-separated list of real issues found.
+#: classes/SeoVisibility/SeoScoreEngine.php:480
+#, php-format
+msgid "Slug issues: %s."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:483
+msgid "Use a short, descriptive, hyphen-separated slug."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:495
+#: classes/SeoVisibility/SeoScoreEngine.php:738
+#: classes/SeoVisibility/SeoScoreEngine.php:789
+#: classes/SeoVisibility/SeoScoreEngine.php:840
+#: classes/SeoVisibility/SeoScoreEngine.php:868
+msgid "No focus keyword is configured."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:504
+msgid "title"
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:508
+msgid "description"
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:515
+msgid "opening paragraph"
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:523
+msgid "Focus keyword was not found in the title, description, or opening paragraph."
+msgstr ""
+
+#. translators: %s: comma-separated list of where the keyword was actually found.
+#: classes/SeoVisibility/SeoScoreEngine.php:524
+#, php-format
+msgid "Focus keyword found in: %s."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:527
+msgid "Work the focus keyword naturally into the title, description, and opening paragraph."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:549
+msgid "Content has section headings in a logical order."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:557
+msgid "An H3 appears before the first H2 - heading levels should nest in order."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:559
+msgid "Reorder headings so H3s sit under an H2, not before one."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:565
+msgid "No section headings (H2/H3) found in the content."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:567
+msgid "Break the content into sections with H2 (and H3 where needed) subheadings."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:580
+msgid "Search intent alignment needs semantic/AI assessment, which this engine does not perform - not evaluated."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:598
+msgid "Content usefulness/completeness needs human or AI judgment of what the reader actually needed - not evaluated."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:611
+msgid "Content originality needs a duplication/similarity check this engine does not perform - not evaluated."
+msgstr ""
+
+#. translators: 1: real word count, 2: configured target word count.
+#: classes/SeoVisibility/SeoScoreEngine.php:632
+#, php-format
+msgid "Content is %1$d words (target: %2$d+)."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:636
+msgid "Expand the content with real, useful detail relevant to the topic."
+msgstr ""
+
+#. translators: %d: real max paragraph length, in words.
+#: classes/SeoVisibility/SeoScoreEngine.php:660
+#, php-format
+msgid "No paragraph exceeds %d words."
+msgstr ""
+
+#. translators: 1: real count of overlong paragraphs, 2: real max paragraph length, in words.
+#: classes/SeoVisibility/SeoScoreEngine.php:669
+#, php-format
+msgid "%1$d paragraph exceeds %2$d words."
+msgid_plural "%1$d paragraphs exceed %2$d words."
+msgstr[0] ""
+msgstr[1] ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:673
+msgid "Split the longest paragraphs into shorter ones for easier reading."
+msgstr ""
+
+#. translators: %d: real word count below the configured recommendation threshold.
+#: classes/SeoVisibility/SeoScoreEngine.php:687
+#, php-format
+msgid "Article is %d words - too short to need a table of contents."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:700
+msgid "A table of contents was detected."
+msgstr ""
+
+#. translators: %d: real word count above the configured recommendation threshold.
+#: classes/SeoVisibility/SeoScoreEngine.php:706
+#, php-format
+msgid "No table of contents detected on this %d-word article."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:708
+msgid "Add a table of contents (e.g. the VuloPilot Table of Contents block) for long-form content."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:721
+msgid "Freshness/accuracy needs real-world fact verification this engine does not perform - not evaluated."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:745
+msgid "Focus keyword does not appear in the content."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:747
+msgid "Use the focus keyword a few times naturally throughout the content."
+msgstr ""
+
+#. translators: %s: real keyword density percentage.
+#: classes/SeoVisibility/SeoScoreEngine.php:754
+#, php-format
+msgid "Keyword density is %s%% - on the high side."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:756
+msgid "Vary the wording so the keyword appears a little less densely."
+msgstr ""
+
+#. translators: %s: real keyword density percentage.
+#: classes/SeoVisibility/SeoScoreEngine.php:762
+#, php-format
+msgid "Keyword density is %s%% - natural."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:776
+msgid "Related-term/topic-coverage analysis needs semantic/NLP capability this engine does not have - not evaluated."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:798
+msgid "There is no content to check keyword distribution in."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:819
+msgid "Focus keyword appears across multiple parts of the content."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:826
+msgid "Focus keyword is concentrated in one part of the content rather than spread naturally throughout."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:828
+msgid "Mention the focus keyword naturally in more than one section."
+msgstr ""
+
+#. translators: %s: real keyword density percentage.
+#: classes/SeoVisibility/SeoScoreEngine.php:847
+#, php-format
+msgid "Keyword density is %s%% - this reads as manipulative repetition."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:849
+msgid "Reduce how often the exact keyword phrase repeats; use natural variations instead."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:855
+msgid "No keyword stuffing detected."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:889
+msgid "No other published page targets this same focus keyword."
+msgstr ""
+
+#. translators: %d: real number of other published posts/pages targeting the same focus keyword.
+#: classes/SeoVisibility/SeoScoreEngine.php:898
+#, php-format
+msgid "%d other published page also targets this focus keyword."
+msgid_plural "%d other published pages also target this focus keyword."
+msgstr[0] ""
+msgstr[1] ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:902
+msgid "Review whether these pages should target different keywords, or consolidate them."
+msgstr ""
+
+#. translators: %d: real number of internal links found.
+#: classes/SeoVisibility/SeoScoreEngine.php:919
+#, php-format
+msgid "%d internal link found."
+msgid_plural "%d internal links found."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: real number of internal links found.
+#: classes/SeoVisibility/SeoScoreEngine.php:920
+msgid "No internal links found."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:922
+msgid "Link to other relevant pages on this site."
+msgstr ""
+
+#. translators: %d: real number of external links found.
+#: classes/SeoVisibility/SeoScoreEngine.php:935
+#, php-format
+msgid "%d external link found."
+msgid_plural "%d external links found."
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: real number of external links found.
+#: classes/SeoVisibility/SeoScoreEngine.php:936
+msgid "No external links found."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:938
+msgid "Consider linking to a relevant, credible external source."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:952
+msgid "Fix or remove the broken link(s)."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:972
+msgid "This page has at least one image."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:979
+msgid "No featured or inline images found - add one if a visual would help this content."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:991
+#: classes/SeoVisibility/SeoScoreEngine.php:1029
+msgid "No images in this content."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:1007
+msgid "Every image has an alt attribute (empty is fine for decorative images)."
+msgstr ""
+
+#. translators: %d: real count of images with no alt attribute at all.
+#: classes/SeoVisibility/SeoScoreEngine.php:1014
+#, php-format
+msgid "%d image has no alt attribute."
+msgid_plural "%d images have no alt attribute."
+msgstr[0] ""
+msgstr[1] ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:1016
+msgid "Add an alt attribute (can be empty for purely decorative images) to every image."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:1060
+msgid "None of this content's images are local Media Library attachments that can be inspected."
+msgstr ""
+
+#. translators: %d: real number of local images checked.
+#: classes/SeoVisibility/SeoScoreEngine.php:1068
+#, php-format
+msgid "Checked %d local image(s); none are unusually large."
+msgstr ""
+
+#. translators: 1: real count of oversized images, 2: the size threshold in KB.
+#: classes/SeoVisibility/SeoScoreEngine.php:1077
+#, php-format
+msgid "%1$d image is over %2$dKB."
+msgid_plural "%1$d images are over %2$dKB."
+msgstr[0] ""
+msgstr[1] ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:1081
+msgid "Compress or resize the oversized image(s)."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:1100
+msgid "Review publish status and Settings → Reading."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:1101
+msgid "Remove the noindex override if this page should appear in search results."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:1128
+msgid "Ensure a canonical URL tag is output for this page."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:1155
+msgid "Enable XML sitemaps in Settings → Sitemap."
+msgstr ""
+
+#. translators: 1: real canonical URL character count, 2: the configured guideline length.
+#: classes/SeoVisibility/SeoScoreEngine.php:1172
+#, php-format
+msgid "Canonical URL is %1$d characters (guideline: %2$d or fewer)."
+msgstr ""
+
+#: classes/SeoVisibility/SeoScoreEngine.php:1176
+msgid "Consider shortening unnecessary URL components."
+msgstr ""
+
 #: classes/SeoVisibility/SeoTitleRewriteRule.php:38
 msgid "Improve page title for search results"
 msgstr ""
@@ -1828,6 +2370,7 @@ msgid "Change Frequency"
 msgstr ""
 
 #: classes/SeoVisibility/SitemapStylesheet.php:99
+#: assets/js/index.js:17
 msgid "Priority"
 msgstr ""
 
@@ -2553,16 +3096,16 @@ msgstr ""
 msgid "Please provide a topic of at least 5 characters."
 msgstr ""
 
-#: modules/AiCopilot/Actions/GenerateBlogAction.php:120
+#: modules/AiCopilot/Actions/GenerateBlogAction.php:142
 msgid "The AI response did not match the expected TITLE/BODY format."
 msgstr ""
 
-#: modules/AiCopilot/Actions/GenerateBlogAction.php:126
+#: modules/AiCopilot/Actions/GenerateBlogAction.php:148
 msgid "The AI returned a post body that is too short to be useful."
 msgstr ""
 
 #. translators: %s is the generated post title.
-#: modules/AiCopilot/Actions/GenerateBlogAction.php:137
+#: modules/AiCopilot/Actions/GenerateBlogAction.php:159
 #, php-format
 msgid "Create a new draft post: %s"
 msgstr ""
@@ -2739,7 +3282,7 @@ msgid ""
 msgstr ""
 
 #: modules/AiCopilot/Rest/Copilot.php:626
-#: modules/TechnicalSeo/Scanners/SeoScanner.php:45
+#: modules/TechnicalSeo/Scanners/SeoScanner.php:46
 #: assets/js/index.js:1
 #: assets/js/index.js:9
 #: assets/js/post-editor.js:1
@@ -2828,10 +3371,6 @@ msgstr ""
 #: modules/ContentOptimization/ContentAnalyzer.php:192
 #: modules/GeoAnalysis/GeoAnalyzer.php:487
 msgid "The AI did not return any suggestions."
-msgstr ""
-
-#: modules/ContentOptimization/Rest/ContentIntelligence.php:153
-msgid "Post not found."
 msgstr ""
 
 #: modules/ContentOptimization/Scanners/ReadabilityScanner.php:55
@@ -3059,111 +3598,112 @@ msgstr ""
 msgid "Missing price"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:495
+#: modules/TechnicalSeo/Rest/Seo.php:198
+#: modules/TechnicalSeo/Rest/Seo.php:542
 msgid "That page could not be found."
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:541
+#: modules/TechnicalSeo/Rest/Seo.php:588
 msgid "Title Tag"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:545
+#: modules/TechnicalSeo/Rest/Seo.php:592
 msgid "Missing title tag"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:558
+#: modules/TechnicalSeo/Rest/Seo.php:605
 msgid "Duplicate title - shared with another published page"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:561
+#: modules/TechnicalSeo/Rest/Seo.php:608
 msgid "Title tag is unique and set"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:569
+#: modules/TechnicalSeo/Rest/Seo.php:616
 #: assets/js/post-editor.js:1
 msgid "Meta Description"
 msgstr ""
 
 #. translators: %d: real current character count.
-#: modules/TechnicalSeo/Rest/Seo.php:584
+#: modules/TechnicalSeo/Rest/Seo.php:631
 #, php-format
 msgid "Too short (%d characters)"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:590
+#: modules/TechnicalSeo/Rest/Seo.php:637
 msgid "Meta description is set"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:600
+#: modules/TechnicalSeo/Rest/Seo.php:647
 msgid "H1 Heading"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:603
+#: modules/TechnicalSeo/Rest/Seo.php:650
 msgid "H1 tag found"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:606
+#: modules/TechnicalSeo/Rest/Seo.php:653
 msgid "H1 tag not found"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:614
+#: modules/TechnicalSeo/Rest/Seo.php:661
 msgid "Subheadings"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:617
+#: modules/TechnicalSeo/Rest/Seo.php:664
 msgid "H2, H3+ tags found"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:620
+#: modules/TechnicalSeo/Rest/Seo.php:667
 msgid "No subheadings found"
 msgstr ""
 
 #. translators: 1: real word count, 2: real minimum recommended word count.
-#: modules/TechnicalSeo/Rest/Seo.php:641
+#: modules/TechnicalSeo/Rest/Seo.php:688
 #, php-format
 msgid "Thin content (%1$d words, recommended %2$d+)"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:648
+#: modules/TechnicalSeo/Rest/Seo.php:695
 msgid "Word count is good"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:658
+#: modules/TechnicalSeo/Rest/Seo.php:705
 #: modules/TechnicalSeo/Scanners/ImagesScanner.php:41
 #: assets/js/index.js:1
 #: assets/js/index.js:9
 msgid "Images"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:661
+#: modules/TechnicalSeo/Rest/Seo.php:708
 msgid "No images in this content"
 msgstr ""
 
 #. translators: %d: real number of images missing alt text on this page.
-#: modules/TechnicalSeo/Rest/Seo.php:682
+#: modules/TechnicalSeo/Rest/Seo.php:729
 #, php-format
 msgid "%d image missing alt text"
 msgid_plural "%d images missing alt text"
 msgstr[0] ""
 msgstr[1] ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:688
+#: modules/TechnicalSeo/Rest/Seo.php:735
 msgid "All images have alt text"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:702
+#: modules/TechnicalSeo/Rest/Seo.php:749
 msgid "Featured Image"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:705
+#: modules/TechnicalSeo/Rest/Seo.php:752
 msgid "Featured image is set"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:708
+#: modules/TechnicalSeo/Rest/Seo.php:755
 msgid "No featured image set"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:718
+#: modules/TechnicalSeo/Rest/Seo.php:765
 #: modules/TechnicalSeo/Scanners/BrokenLinksScanner.php:63
 #: assets/js/index.js:1
 #: assets/js/index.js:5
@@ -3171,88 +3711,88 @@ msgid "Broken Links"
 msgstr ""
 
 #. translators: %d: real number of broken links found on this page by the Broken Links scanner.
-#: modules/TechnicalSeo/Rest/Seo.php:739
+#: modules/TechnicalSeo/Rest/Seo.php:786
 #, php-format
 msgid "%d broken internal link found"
 msgid_plural "%d broken internal links found"
 msgstr[0] ""
 msgstr[1] ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:745
+#: modules/TechnicalSeo/Rest/Seo.php:792
 msgid "No broken links found"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:761
+#: modules/TechnicalSeo/Rest/Seo.php:808
 msgid "Orphan Page"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:778
+#: modules/TechnicalSeo/Rest/Seo.php:825
 msgid "0 internal links point to this page - nothing else links to it"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:782
+#: modules/TechnicalSeo/Rest/Seo.php:829
 msgid "At least one other page links to this page"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:790
+#: modules/TechnicalSeo/Rest/Seo.php:837
 msgid "Canonical"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:793
-#: modules/TechnicalSeo/Rest/Seo.php:829
-#: modules/TechnicalSeo/Rest/Seo.php:847
+#: modules/TechnicalSeo/Rest/Seo.php:840
+#: modules/TechnicalSeo/Rest/Seo.php:876
+#: modules/TechnicalSeo/Rest/Seo.php:894
 msgid "Could not fetch this page to check"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:797
+#: modules/TechnicalSeo/Rest/Seo.php:844
 msgid "Canonical is set"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:800
+#: modules/TechnicalSeo/Rest/Seo.php:847
 msgid "No canonical URL tag found"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:808
+#: modules/TechnicalSeo/Rest/Seo.php:855
 msgid "Indexability"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:811
+#: modules/TechnicalSeo/Rest/Seo.php:858
 msgid "Not published"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:815
+#: modules/TechnicalSeo/Rest/Seo.php:862
 msgid "Site is set to discourage search engines (Settings → Reading)"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:818
+#: modules/TechnicalSeo/Rest/Seo.php:865
 msgid "Content is indexed"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:826
+#: modules/TechnicalSeo/Rest/Seo.php:873
 #: modules/TechnicalSeo/Scanners/StructuredDataValidationScanner.php:39
 msgid "Structured Data"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:833
+#: modules/TechnicalSeo/Rest/Seo.php:880
 msgid "Structured data (JSON-LD) found"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:836
+#: modules/TechnicalSeo/Rest/Seo.php:883
 msgid "No schema detected"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:844
+#: modules/TechnicalSeo/Rest/Seo.php:891
 #: assets/js/index.js:1
 #: assets/js/index.js:9
 msgid "Social Metadata"
 msgstr ""
 
-#: modules/TechnicalSeo/Rest/Seo.php:860
+#: modules/TechnicalSeo/Rest/Seo.php:907
 msgid "Open Graph tags found"
 msgstr ""
 
 #. translators: %s: real comma-separated list of missing Open Graph properties.
-#: modules/TechnicalSeo/Rest/Seo.php:869
+#: modules/TechnicalSeo/Rest/Seo.php:916
 #, php-format
 msgid "Open Graph tags missing: %s"
 msgstr ""
@@ -3458,19 +3998,19 @@ msgid "A featured image is used as the preview image when this page is shared on
 msgstr ""
 
 #. translators: %s is the post/page title.
-#: modules/TechnicalSeo/Scanners/SeoScanner.php:89
+#: modules/TechnicalSeo/Scanners/SeoScanner.php:95
 #, php-format
 msgid "Title is too short for search results: %s"
 msgstr ""
 
 #. translators: %s is the post/page title.
-#: modules/TechnicalSeo/Scanners/SeoScanner.php:94
+#: modules/TechnicalSeo/Scanners/SeoScanner.php:100
 #, php-format
 msgid "Title may be truncated in search results: %s"
 msgstr ""
 
 #. translators: 1: minimum recommended title length, 2: maximum recommended title length.
-#: modules/TechnicalSeo/Scanners/SeoScanner.php:101
+#: modules/TechnicalSeo/Scanners/SeoScanner.php:107
 #, php-format
 msgid "Search engines display roughly %1$d–%2$d characters of a title before truncating."
 msgstr ""
@@ -3556,6 +4096,7 @@ msgid "Answer"
 msgstr ""
 
 #: assets/js/block/faq/index.js:3
+#: assets/js/index.js:17
 msgid "Duplicate"
 msgstr ""
 
@@ -4066,6 +4607,7 @@ msgid "Competitor comparison via connected Ahrefs account"
 msgstr ""
 
 #: assets/js/index.js:1
+#: assets/js/post-editor.js:1
 msgid "Technical SEO"
 msgstr ""
 
@@ -4424,6 +4966,7 @@ msgstr ""
 #: assets/js/index.js:1
 #: assets/js/index.js:5
 #: assets/js/index.js:17
+#: assets/js/post-editor.js:1
 msgid "Cancel"
 msgstr ""
 
@@ -4842,6 +5385,7 @@ msgid "Not Connected"
 msgstr ""
 
 #: assets/js/index.js:1
+#: assets/js/index.js:17
 msgid "More actions"
 msgstr ""
 
@@ -5857,6 +6401,7 @@ msgid "sample search"
 msgstr ""
 
 #: assets/js/index.js:1
+#: assets/js/index.js:17
 msgid "Archive"
 msgstr ""
 
@@ -5922,6 +6467,7 @@ msgstr ""
 #: assets/js/index.js:1
 #: assets/js/index.js:5
 #: assets/js/index.js:9
+#: assets/js/index.js:17
 msgid "Edit"
 msgstr ""
 
@@ -6262,6 +6808,7 @@ msgid "Pages with fewer mentions of their primary entity than this are flagged a
 msgstr ""
 
 #: assets/js/index.js:1
+#: assets/js/post-editor.js:1
 msgid "Content freshness"
 msgstr ""
 
@@ -6801,6 +7348,7 @@ msgid "Paste only the value inside content=\"...\"."
 msgstr ""
 
 #: assets/js/index.js:1
+#: assets/js/index.js:17
 msgid "Added"
 msgstr ""
 
@@ -7665,6 +8213,7 @@ msgstr[1] ""
 
 #: assets/js/index.js:1
 #: assets/js/index.js:17
+#: assets/js/post-editor.js:1
 msgid "SEO Score"
 msgstr ""
 
@@ -7728,6 +8277,7 @@ msgstr ""
 #: assets/js/index.js:1
 #: assets/js/index.js:5
 #: assets/js/index.js:9
+#: assets/js/index.js:17
 msgid "Low"
 msgstr ""
 
@@ -7941,11 +8491,13 @@ msgstr ""
 
 #: assets/js/index.js:1
 #: assets/js/index.js:9
+#: assets/js/post-editor.js:1
 msgid "GEO"
 msgstr ""
 
 #: assets/js/index.js:1
 #: assets/js/index.js:9
+#: assets/js/post-editor.js:1
 msgid "AEO"
 msgstr ""
 
@@ -8069,6 +8621,7 @@ msgid "Created a %s"
 msgstr ""
 
 #: assets/js/index.js:1
+#: assets/js/post-editor.js:1
 msgid "Proposed"
 msgstr ""
 
@@ -8099,6 +8652,7 @@ msgstr ""
 
 #: assets/js/index.js:1
 #: assets/js/index.js:9
+#: assets/js/index.js:17
 msgid "Today"
 msgstr ""
 
@@ -9087,6 +9641,7 @@ msgid "Could not run this fix - please try again."
 msgstr ""
 
 #: assets/js/index.js:1
+#: assets/js/index.js:17
 msgid "Post"
 msgstr ""
 
@@ -9345,6 +9900,7 @@ msgstr ""
 #: assets/js/index.js:1
 #: assets/js/index.js:5
 #: assets/js/index.js:9
+#: assets/js/post-editor.js:1
 msgid "Overview"
 msgstr ""
 
@@ -9590,6 +10146,7 @@ msgid "No open issues found"
 msgstr ""
 
 #: assets/js/index.js:1
+#: assets/js/post-editor.js:1
 msgid "GEO Score"
 msgstr ""
 
@@ -10132,11 +10689,15 @@ msgstr ""
 
 #: assets/js/index.js:1
 #: assets/js/index.js:5
+#: assets/js/index.js:17
+#: assets/js/post-editor.js:1
 msgid "Saving…"
 msgstr ""
 
 #: assets/js/index.js:1
 #: assets/js/index.js:5
+#: assets/js/index.js:17
+#: assets/js/post-editor.js:1
 msgid "Save"
 msgstr ""
 
@@ -10270,6 +10831,7 @@ msgid "Search by URL or redirect…"
 msgstr ""
 
 #: assets/js/index.js:5
+#: assets/js/index.js:17
 msgid "All types"
 msgstr ""
 
@@ -10370,6 +10932,7 @@ msgid "Search missing URLs…"
 msgstr ""
 
 #: assets/js/index.js:5
+#: assets/js/post-editor.js:1
 msgid "Dismiss"
 msgstr ""
 
@@ -10596,6 +11159,7 @@ msgid "Regenerating…"
 msgstr ""
 
 #: assets/js/index.js:5
+#: assets/js/post-editor.js:1
 msgid "Regenerate"
 msgstr ""
 
@@ -11590,6 +12154,7 @@ msgid "Undoing…"
 msgstr ""
 
 #: assets/js/index.js:9
+#: assets/js/index.js:17
 msgid "Undo"
 msgstr ""
 
@@ -11972,6 +12537,7 @@ msgid "Manual only"
 msgstr ""
 
 #: assets/js/index.js:9
+#: assets/js/index.js:17
 msgid "Not scheduled"
 msgstr ""
 
@@ -13619,6 +14185,7 @@ msgid "Manual"
 msgstr ""
 
 #: assets/js/index.js:9
+#: assets/js/index.js:17
 msgid "Scheduled"
 msgstr ""
 
@@ -14234,10 +14801,6 @@ msgid "Product Announcement"
 msgstr ""
 
 #: assets/js/index.js:17
-msgid "Content Planner"
-msgstr ""
-
-#: assets/js/index.js:17
 msgid "Plan and schedule content"
 msgstr ""
 
@@ -14335,6 +14898,98 @@ msgstr ""
 
 #: assets/js/index.js:17
 msgid "Ask Anything…"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Idea"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Research"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Brief Ready"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Drafting"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "In Review"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Published"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Refresh Needed"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Planned"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "In progress"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Needs review"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Grow organic traffic"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Convert visitors"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Support a product launch"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Answer customer questions"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Build topical authority"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "SEO blog"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Short & scannable"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Storytelling"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Sales-focused"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Previous month"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Next month"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Add content"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Not scheduled:"
 msgstr ""
 
 #: assets/js/index.js:17
@@ -14604,7 +15259,491 @@ msgid "Run Content Audit"
 msgstr ""
 
 #: assets/js/index.js:17
+msgid "Live on site"
+msgstr ""
+
+#: assets/js/index.js:17
+#, js-format
+msgid "%d overdue"
+msgstr ""
+
+#: assets/js/index.js:17
+#, js-format
+msgid "%d due this week"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Add a title so you can find this later."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Changes saved"
+msgstr ""
+
+#: assets/js/index.js:17
+#, js-format
+msgid "\"%s\" added to %s"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Could not save this item - try again."
+msgstr ""
+
+#: assets/js/index.js:17
+#, js-format
+msgid "Moved to %s"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Restored"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Archived"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Saved as your site default writing style."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "This requires VuloPilot Pro."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Could not analyze this topic right now - try again."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Decide what to publish next and track every piece from idea to live."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Content Planner requires VuloPilot Pro"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Upgrade to plan, research, and track content from idea to publication."
+msgstr ""
+
+#: assets/js/index.js:17
+#, js-format
+msgid "Upcoming this month · %s"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "DATE"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "unset"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Edit details"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Duplicated."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Could not duplicate this item."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Open post"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Move to"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Plan it"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Open draft"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Generate draft"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Generating draft…"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Draft created - open it from the ⋯ menu."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Could not create a draft for this item."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Send to review"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Mark published"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "custom prompt"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Overdue · "
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Topic opportunities"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "New content"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "What should we create next?"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Type a topic or keyword. VuloPilot checks it against your existing content, flags overlap, and suggests angles you can add to the plan."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Topic, title or keyword"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "e.g. holiday gift ideas for pet owners"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Goal"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Choose a goal…"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Planned date"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "optional"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Tone & writing instructions"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Tone of voice"
+msgstr ""
+
+#: assets/js/index.js:17
+#: assets/js/post-editor.js:1
+msgid "Target audience"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "e.g. small store owners new to WordPress"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Custom prompt / instructions"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "optional — sent to AI with every draft for this topic"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "e.g. Write in British English. Use short paragraphs and a FAQ at the end. Mention our free shipping offer. Avoid jargon."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Quick add:"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Save tone & instructions as site default"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Analyzing…"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Analyze topic"
+msgstr ""
+
+#: assets/js/index.js:17
+#, js-format
+msgid "Checking \"%s\" against your site content…"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Strong opportunity"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Worth creating"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Consider updating instead"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Est. monthly searches:"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Not available"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Goal:"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Planned date:"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Tone:"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Possible overlap"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Suggested angles"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Finding angles…"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "No angles available for this topic yet."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Add to plan"
+msgstr ""
+
+#: assets/js/index.js:17
+#, js-format
+msgid "Added to Planned for %s"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Added to Idea."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Customize"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Content workspace"
+msgstr ""
+
+#: assets/js/index.js:17
+#, js-format
+msgid "%1$d items — Showing %2$d of %1$d"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Cards"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Board"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Calendar"
+msgstr ""
+
+#: assets/js/index.js:17
 msgid "Search…"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "All stages"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "All priorities"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Show archived"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Clear filters"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Nothing planned yet"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Start by adding your first piece of content."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "No content matches these filters"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Try a different search or clear your filters."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Overdue"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Earlier"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Edit content"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Not sure what to write?"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Suggesting…"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Suggest"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Add a keyword or title first."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Could not generate a suggestion right now."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Basics"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Title / topic"
+msgstr ""
+
+#: assets/js/index.js:17
+#: assets/js/post-editor.js:1
+msgid "Primary keyword"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Content type"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Blog post"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Content goal"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Planning"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Stage"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Notes / outline"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Writing style"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Tone"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Choose a tone…"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Audience"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "used when generating the draft"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Delete this content?"
+msgstr ""
+
+#: assets/js/index.js:17
+#, js-format
+msgid "\"%s\" will be removed from your plan. This can't be undone."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Content plan item deleted."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Could not delete this item."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "No opportunities yet"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Run the AI Topic & SEO Opportunity Finder from any post title first."
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Est. searches/mo:"
+msgstr ""
+
+#: assets/js/index.js:17
+#, js-format
+msgid "Score %d/100"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "overlaps existing content"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Analyze"
+msgstr ""
+
+#: assets/js/index.js:17
+msgid "Add"
 msgstr ""
 
 #: assets/js/index.js:17
@@ -14636,7 +15775,7 @@ msgid "SEO Title"
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "This is the page title - shown in search results and used as the page heading."
+msgid "Shown in search results and browser tabs - leave empty to use the page's own title."
 msgstr ""
 
 #: assets/js/post-editor.js:1
@@ -14707,24 +15846,56 @@ msgstr ""
 msgid "Upgrade to fix"
 msgstr ""
 
+#. translators: %d: number of failing checks.
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "%d Error"
+msgid_plural "%d Errors"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of checks that could be improved.
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "%d Warning"
+msgid_plural "%d Warnings"
+msgstr[0] ""
+msgstr[1] ""
+
 #: assets/js/post-editor.js:1
 msgid "All Good"
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "Could Be Better"
+msgid "Fixed - the updated content is now in the editor."
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "Needs Improvement"
+msgid "Fixed."
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "General"
+msgid "Set it myself"
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "Social"
+msgid "This page's real SEO/GEO/AEO signals, last checked live."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No SEO checks to show."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No content checks to show."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No open GEO findings for this page."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No open AEO findings for this page."
 msgstr ""
 
 #: assets/js/post-editor.js:1
@@ -14792,35 +15963,843 @@ msgid "This is not valid JSON - it will be cleared on save."
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "Fixed - the updated content is now in the editor."
+msgid "N/A"
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "Fixed."
+msgid "AI Readiness"
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "Set it myself"
+msgid "GEO and AI Readiness scores require Pro - they run a real AI-backed analysis of this page."
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "This page's real SEO/GEO/AEO signals, last checked live."
+msgid "Not enough data yet to compute a reliable SEO score for this post - add more content, a focus keyword, and an SEO title/description."
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "No SEO checks to show."
+msgid "Could not run the analysis - check your VuloCloud AI connection and try again."
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "No content checks to show."
+msgid "AI Readiness checks whether this page is structured the way an LLM can actually parse and reuse - answer-first structure, conversational phrasing, and plain-language clarity."
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "No open GEO findings for this page."
+msgid "Upgrade to Pro to Unlock AI Readiness"
 msgstr ""
 
 #: assets/js/post-editor.js:1
-msgid "No open AEO findings for this page."
+msgid "Answer-first structure"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "LLM readability"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Conversation readiness"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Purpose clarity"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "AI summary/Q&A detection"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Re-analyze"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Readiness scores"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "This page hasn't been analyzed yet. Run a real AI-backed analysis to see its readiness scores."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Analyze AI Readiness"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "This asks the AI provider this page's own question (from an FAQ heading, or a question built from its title) without naming this site, then checks whether the answer names it anyway."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not run the check - check your VuloCloud AI connection and try again."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Run AEO Citation Check"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Result"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Cited"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Not cited"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Question asked"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "(generated from title - no FAQ heading found)"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "AI answer"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "AEO tests whether an AI model already cites this site, unprompted, when asked this page's own question."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Upgrade to Pro to Unlock AEO"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Entity coverage"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Question coverage"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Answer completeness"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Knowledge graph coverage"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Retrieval score"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Citation readiness"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Entity naming consistency"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Data point/evidence density"
+msgstr ""
+
+#. translators: %s: real date/time this analysis was generated.
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "Last analyzed %s"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Suggestions"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "AI-judged scores"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Deterministic sub-scores"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "This page hasn't been analyzed yet. Run a real AI-backed analysis to see its AI Visibility score."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Analyze AI Visibility"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "AI Visibility scores this page the way an AI answer engine (ChatGPT, Perplexity, AI Overviews) would read it - entity coverage, question coverage, citation readiness, and more."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Upgrade to Pro to Unlock AI Visibility"
+msgstr ""
+
+#. translators: %d: real total AI-bot visit count to this page over the last 90 days.
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "%d AI bot visit(s) to this page in the last 90 days."
+msgstr ""
+
+#. translators: %d: real percentage of those visits that hit a 404.
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "%d%% of those visits resulted in a 404 - the URL AI crawlers are requesting may not match this page's current permalink."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "By bot"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "visit(s), last seen %s"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No AI crawler (GPTBot, ClaudeBot, PerplexityBot, and similar) has visited this page yet, in the last 90 days."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Content quality"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Content depth & quality checks"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "AI-inferred from this post's own title and content - not measured data."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not analyze this post - add more content and try again."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Refresh Analysis"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Analyze Topic"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Main topic"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Search intent"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Topic cluster"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Subtopics"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Entities"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Coverage observations"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No related articles found - this post has no shared category or tag with anything else yet."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "Shared: %s"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "already linked"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "View all %d"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not find link opportunities - try again."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Find Link Opportunities"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "This link needs manual review - the anchor text could not be safely located."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Insert Link"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Review in Editor"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Content updated · Analysis refresh needed"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Analyzing updated content…"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Analysis up to date"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Unable to analyze"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Retry"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Subtopics not yet mentioned in the current text:"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Run \"Analyze Topic\" above first - content gaps are found by comparing this post's subtopics against related articles."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No content gaps found against this post's related articles."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "Find Existing Article: %s"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Improve Current Post"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Create Content Brief"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Proposed title"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Related keywords"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Suggested headings"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Relevant entities"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Relevant existing articles"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Run \"Analyze Topic\" for a richer brief - this one was generated without it."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Use \"Create Content Brief\" from a Content Gaps suggestion above, or generate one for this post as-is."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Generate Brief for This Post"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "View the checks behind this SEO score"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "View the AI/AEO findings behind this score"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Not scanned"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "On-page SEO"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Keyword optimization"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Links"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Images and media"
+msgstr ""
+
+#. translators: 1: current score out of 100, 2: number of fixable issues.
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "Your SEO score is %1$d/100 - you can reach 100 by fixing these %2$d issue(s):"
+msgstr ""
+
+#. translators: 1: score before auto-fix, 2: score after auto-fix.
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "Auto-fix ran: score went from %1$d to %2$d."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Auto-fix could not run. Try again in a moment."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Auto-Fix All Issues"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Upgrade to Pro to Auto-Fix"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not assign this keyword - try again."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Search or add a primary keyword…"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Search or add a related keyword…"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not save this keyword - try again."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "Add \"%s\" as a new keyword"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Remove keyword"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Keyword Management"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Assign a primary keyword and related keywords to this post, and see whether another article already targets the same one."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Upgrade to Pro to Unlock Keyword Management"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Primary Keyword"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+#, js-format
+msgid "Priority: %d"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Another post already targets this keyword. Review both articles before proceeding."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Related Keywords"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Suggested Keywords"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not generate suggestions - check your VuloCloud AI connection and try again."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Suggest Keywords"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "(already targeted by another post)"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Assign as Primary"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Add as Related"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No remaining suggestions."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Create a new article"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Improve an existing article"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Rethink this topic"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Not analyzed"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not analyze this topic - try again."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Analyze your website first for better topic suggestions - use the button above."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not load topic opportunities."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Content Intelligence"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Know whether this title is a genuine content gap, overlaps an existing article, or needs rethinking - before you write it."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Upgrade to Pro to Unlock Content Intelligence"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Analyzing your topic…"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Content updated · analysis refresh needed"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Ready"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Let's find the best opportunity for this article."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Analyze your website for a confident recommendation"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "This score is missing relevance and business-value signals because your site hasn't been analyzed yet. This takes one click, right here."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not analyze the website - try again."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Analyzing website…"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Analyze Website"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Keep typing a title to get a recommendation."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Opportunity score: not enough data yet."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Opportunity score:"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Last analyzed:"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Hide full analysis"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Review full analysis"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "no data"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not build a brief - try again."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Building brief…"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Build Article Brief"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Review Topic Opportunities"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Search intent:"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Primary keyword:"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Related keywords:"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Suggested outline"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Questions to answer"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Link to these existing articles"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Insert Outline"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Outline:"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Questions to answer:"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Copy Brief"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Add Keywords to List"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Save as Content Plan"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Improve Existing Article"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Hide Comparison"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "View Article Comparison"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "This draft"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Existing article"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Overlap evidence"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Finding alternatives…"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Explore Better Topics"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Keep Current Topic"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No alternative topics available yet."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Keeping your original topic. You can change your mind anytime by re-running analysis."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "General"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "On-Page & Social"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Social"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "AI Crawler Visits"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Content Analysis"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Recommendations"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No outstanding recommendations - this post is in good shape."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "SEO Score recommendations"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "GEO recommendations"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Topic & Linking"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Post Topic Profile"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Related Articles"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Internal Link Opportunities"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Content Gaps & Topic Opportunities"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Content Brief"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Understand this post's topic in context of your whole site, find related articles to link to, and close content gaps."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Upgrade to Pro to Unlock Topic & Internal Linking"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "SEO title, description and on-page details"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "AI visibility (AEO/GEO)"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Improve Selection"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Expand Section"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Explain Missing Context"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "VuloPilot AI"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not run this action - try again."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Find Internal Link"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Could not load related articles."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "No related existing articles found for this selection."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Already linked from this post."
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Open Article"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Original"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Why"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Suggested keywords"
+msgstr ""
+
+#: assets/js/post-editor.js:1
+msgid "Apply Change"
 msgstr ""
 
 #: assets/js/post-editor.js:1

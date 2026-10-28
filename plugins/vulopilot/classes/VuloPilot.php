@@ -217,9 +217,9 @@ final class VuloPilot {
 
 		// Redirects & 404s (readme.txt) - real functionality behind the
 		// enable_redirect_manager/auto_redirect_on_slug_change/log_404s settings.
-		$this->container['redirect_manager']         = new \VuloPilot\Content\RedirectManager();
-		$this->container['not_found_logger']         = new \VuloPilot\Content\NotFoundLogger();
-		$this->container['trashed_post_redirector']  = new \VuloPilot\Content\TrashedPostRedirector();
+		$this->container['redirect_manager']        = new \VuloPilot\Content\RedirectManager();
+		$this->container['not_found_logger']        = new \VuloPilot\Content\NotFoundLogger();
+		$this->container['trashed_post_redirector'] = new \VuloPilot\Content\TrashedPostRedirector();
 
 		// "Performance" Overview - Speed History's daily score snapshots (scan-completed + daily-
 		// cron triggered).

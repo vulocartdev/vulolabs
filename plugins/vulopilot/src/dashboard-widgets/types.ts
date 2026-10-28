@@ -93,3 +93,6 @@ export interface WidgetLayoutEntry {
 	id: string;
 	enabled: boolean;
 }
+
+/** Shared "last N days" trend-period selector value, used by this folder's trend-chart widgets. */
+export type PeriodDays = '7' | '30' | '90';

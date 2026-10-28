@@ -27,3 +27,20 @@ export const useFilterSlot = <T = ComponentType>(
 
 	return component;
 };
+
+/** Same slot-detection idea as useFilterSlot(), for a Pro page registered via registerVuloPilotRoute() instead of a filter. */
+export const useIsRouteRegistered = ( tab: string ): boolean => {
+	const [ isRegistered, setIsRegistered ] = useState(
+		() => window.VULOPILOT_ROUTES.some( ( route ) => route.tab === tab )
+	);
+
+	useEffect( () => {
+		const recheck = () => setIsRegistered( window.VULOPILOT_ROUTES.some( ( route ) => route.tab === tab ) );
+		recheck();
+
+		window.addEventListener( 'vulopilot-routes', recheck );
+		return () => window.removeEventListener( 'vulopilot-routes', recheck );
+	}, [ tab ] );
+
+	return isRegistered;
+};

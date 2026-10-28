@@ -213,7 +213,7 @@ const OverallScoreWidget: React.FC<WidgetProps> = ({
 						rightIcon: 'pagination-right-arrow',
 						color: 'text-purple',
 						onClick: () => {
-							window.location.href = '?page=vulopilot#&tab=reports';
+							window.location.hash = '#&tab=reports';
 						},
 					}}
 				/>

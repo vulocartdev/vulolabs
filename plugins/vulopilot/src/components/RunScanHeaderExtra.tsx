@@ -84,7 +84,7 @@ const RunScanHeaderExtra = ({
 										color: 'text-purple icon',
 										tooltip: __('Scan settings', 'vulopilot'),
 										onClick: () => {
-											window.location.href = `?page=vulopilot#&tab=settings&subtab=${settingsSubtab}`;
+											window.location.hash = `#&tab=settings&subtab=${settingsSubtab}`;
 										},
 									},
 								]),

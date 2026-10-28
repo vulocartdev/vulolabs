@@ -15,7 +15,7 @@ interface DashboardSummary {
 	};
 }
 
-interface CoreWebVitalsSummary {
+export interface CoreWebVitalsSummary {
 	lcp_ms: number | null;
 	cls: number | null;
 	inp_ms: number | null;

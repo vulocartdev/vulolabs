@@ -22,24 +22,10 @@ class ScanRunner {
 
 	private const BATCH_HOOK = 'vulopilot_scan_process_batch';
 
-	/**
-	 * Elapsed-time budget per batch tick, in seconds - same shape and reasoning as
-	 * BackupManager::BATCH_SECONDS_BUDGET: several registered scanners make their own
-	 * network calls (5-30s timeout each), so running all of them inline within one REST
-	 * request can exceed PHP's own max_execution_time (commonly 30s) and 500 the request
-	 * before every scanner even gets a turn. Scanners are run a few at a time instead,
-	 * across repeated WP-Cron ticks, the same way BackupManager chunks its own file/DB work.
-	 */
+	/** Elapsed-time budget per batch tick, in seconds - same shape and reasoning as BackupManager::BATCH_SECONDS_BUDGET: */
 	private const BATCH_SECONDS_BUDGET = 20;
 
-	/**
-	 * Transient-based mutex name - WP-Cron has no built-in protection against the same due
-	 * event firing from more than one overlapping loopback request (observed live: a stray
-	 * second `process_batch()` tick starting before the first had persisted its progress
-	 * re-read the same un-advanced queue and re-ran its first scanner instead of
-	 * continuing where the first tick left off). Held for the same duration as the batch's
-	 * own time budget plus margin.
-	 */
+	/** Transient-based mutex name - WP-Cron has no built-in protection against the same due event firing from more than one overlapping loopback request (observed live: */
 	private const LOCK_TRANSIENT = 'vulopilot_scan_batch_lock';
 
 	/**
@@ -151,8 +137,6 @@ class ScanRunner {
 		}
 
 		delete_option( self::QUEUE_OPTION );
-
-		do_action( 'vulopilot_scan_queue_completed' );
 	}
 
 	/**

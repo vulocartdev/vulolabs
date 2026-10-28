@@ -139,7 +139,7 @@ class RankMathMigrator implements MigratorInterface {
 	 * @inheritDoc
 	 */
 	public function count_available(): int {
-		$general = get_option( 'rank-math-options-general', array() );
+		$general        = get_option( 'rank-math-options-general', array() );
 		$has_robots_txt = is_array( $general ) && '' !== trim( (string) ( $general['robots_txt_content'] ?? '' ) );
 
 		return count( $this->find_post_ids() )
@@ -163,7 +163,11 @@ class RankMathMigrator implements MigratorInterface {
 		$this->migrate_404_logs( $overwrite, $migrated, $skipped );
 		$this->migrate_robots_txt( $overwrite, $migrated, $skipped, $errors );
 
-		return array( 'migrated' => $migrated, 'skipped' => $skipped, 'errors' => $errors );
+		return array(
+			'migrated' => $migrated,
+			'skipped'  => $skipped,
+			'errors'   => $errors,
+		);
 	}
 
 	/**
@@ -189,12 +193,12 @@ class RankMathMigrator implements MigratorInterface {
 		$manager = new RobotsTxtManager();
 
 		if ( '' !== $manager->get_custom_content() && ! $overwrite ) {
-			$skipped++;
+			++$skipped;
 			return;
 		}
 
 		$manager->save_custom_content( $content );
-		$migrated++;
+		++$migrated;
 
 		// Same WordPress architecture fact YoastSeoMigrator's own robots.txt step warns about: a
 		// real physical robots.txt file at the site root bypasses WordPress's whole virtual
@@ -225,7 +229,7 @@ class RankMathMigrator implements MigratorInterface {
 				$existing = get_post_meta( $post_id, PostSeoMetaFields::META_KEYS['focus_keyword'], true );
 
 				if ( ! $overwrite && '' !== (string) $existing ) {
-					$skipped++;
+					++$skipped;
 					continue;
 				}
 
@@ -245,7 +249,7 @@ class RankMathMigrator implements MigratorInterface {
 					update_post_meta( $post_id, PostSeoMetaFields::META_KEYS[ $field ], $value );
 				}
 
-				$migrated++;
+				++$migrated;
 			} catch ( \Throwable $e ) {
 				$errors[] = sprintf( 'Post #%d: %s', $post_id, $e->getMessage() );
 			}
@@ -322,13 +326,13 @@ class RankMathMigrator implements MigratorInterface {
 				&& $settings[ $field ] !== ( Utill::VULOPILOT_SETTINGS_DEFAULTS[ $field ] ?? null );
 
 			if ( $is_customized && ! $overwrite ) {
-				$skipped++;
+				++$skipped;
 				continue;
 			}
 
 			$settings[ $field ] = $value;
-			$changed             = true;
-			$migrated++;
+			$changed            = true;
+			++$migrated;
 		}
 
 		if ( $changed ) {
@@ -617,7 +621,7 @@ class RankMathMigrator implements MigratorInterface {
 				$existing     = $repository->find_by_source_path( $source_value );
 
 				if ( $existing && ! $overwrite ) {
-					$skipped++;
+					++$skipped;
 					continue;
 				}
 
@@ -637,7 +641,7 @@ class RankMathMigrator implements MigratorInterface {
 					$repository->insert( $data );
 				}
 
-				$migrated++;
+				++$migrated;
 			}
 		}
 	}
@@ -681,7 +685,7 @@ class RankMathMigrator implements MigratorInterface {
 			$existing       = $repository->find_by_requested_path( $requested_path );
 
 			if ( $existing && ! $overwrite ) {
-				$skipped++;
+				++$skipped;
 				continue;
 			}
 
@@ -698,7 +702,7 @@ class RankMathMigrator implements MigratorInterface {
 				$repository->insert( $data );
 			}
 
-			$migrated++;
+			++$migrated;
 		}
 	}
 

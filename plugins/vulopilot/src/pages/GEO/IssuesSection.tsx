@@ -67,7 +67,7 @@ export interface ContentRowTab {
  * with an open finding).
  */
 export interface ContentModeConfig {
-	/** `GenerateLandingPageAction::META_KEY` - the real page meta flag that tells a landing page apart from any other real `page` post type (see `RecentContentCard.tsx`'s own `LANDING_PAGE_META_KEY` docblock). */
+	/** The page meta flag that tells a landing page apart from any other `page` post type. */
 	landingPageMetaKey: string;
 	/** Real display label/icon per raw `categoryKey` (`'blog-post'`/`'landing-page'`/`'product'`/`'other'`). */
 	categories: Record<string, { label: string; icon: string }>;
@@ -155,12 +155,8 @@ const IssuesSection = ({
 	const [rows, setRows] = useState<PageRow[]>([]);
 	const [siteWideFindings, setSiteWideFindings] = useState<RawFinding[]>([]);
 	const [groups, setGroups] = useState<FindingGroupRow[]>([]);
-	// `content` mode's own `rowTabs` always has a real 'all' entry ("All resources"), but the
-	// default `tabs` array below (['important', ...categories]) never does - so TabsComponent's own
-	// activeIndex fallback (`Math.max(tabs.findIndex(...), 0)`) always visually highlights index 0
-	// ("Important") regardless of this state there. Starting there in sync avoids the two
-	// disagreeing on first render (visually "Important" selected while actually filtering by
-	// nothing).
+	// `content` mode's `rowTabs` always has an 'all' entry, but the default `tabs` array doesn't -
+	// starting in sync avoids TabsComponent visually highlighting "Important" while filtering by nothing.
 	const [activeTab, setActiveTab] = useState(content ? 'all' : 'important');
 	const [activePriority, setActivePriority] = useState<Priority>('all');
 	const [isLoading, setIsLoading] = useState(true);

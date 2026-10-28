@@ -200,7 +200,13 @@ class GoogleServices extends \WP_REST_Controller {
 		if ( $connection->has_broker() ) {
 			// Ask the broker first, so a broker that isn't fully set up answers with its own
 			// message here instead of sending the browser to a raw JSON error page.
-			$probe = wp_remote_get( $url, array( 'timeout' => 15, 'redirection' => 0 ) );
+			$probe = wp_remote_get(
+                $url,
+                array(
+					'timeout'     => 15,
+					'redirection' => 0,
+                )
+            );
 
 			if ( ! is_wp_error( $probe ) ) {
 				$status = (int) wp_remote_retrieve_response_code( $probe );

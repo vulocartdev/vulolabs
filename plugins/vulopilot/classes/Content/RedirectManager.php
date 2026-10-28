@@ -30,9 +30,7 @@ class RedirectManager {
 	 * @return void
 	 */
 	public function maybe_apply_redirect(): void {
-		$settings = wp_parse_args( get_option( Utill::VULOPILOT_SETTINGS_KEY, array() ), Utill::VULOPILOT_SETTINGS_DEFAULTS );
-
-		if ( empty( $settings['enable_redirect_manager'] ) ) {
+		if ( empty( Utill::get_setting( 'enable_redirect_manager' ) ) ) {
 			return;
 		}
 
@@ -77,9 +75,7 @@ class RedirectManager {
 	 * @return void
 	 */
 	public function maybe_auto_create_redirect( $post_id, $post_after, $post_before ): void {
-		$settings = wp_parse_args( get_option( Utill::VULOPILOT_SETTINGS_KEY, array() ), Utill::VULOPILOT_SETTINGS_DEFAULTS );
-
-		if ( empty( $settings['enable_redirect_manager'] ) || empty( $settings['auto_redirect_on_slug_change'] ) ) {
+		if ( empty( Utill::get_setting( 'enable_redirect_manager' ) ) || empty( Utill::get_setting( 'auto_redirect_on_slug_change' ) ) ) {
 			return;
 		}
 

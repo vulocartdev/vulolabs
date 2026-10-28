@@ -8,6 +8,7 @@ import { TableCard, TableRow } from '@zyra/table';
 import { useApiList } from '../../services/useApiList';
 import CrawlerAnalyticsSection from './CrawlerAnalyticsSection';
 import { useCrawlerAnalytics } from './useCrawlerAnalytics';
+import type { PeriodDays } from './types';
 
 const HistoricalCrawlTrendsCard = applyFilters(
 	'vulopilot_crawler_historical_trends_card',
@@ -37,7 +38,6 @@ interface CrawlerVisitRow extends TableRow {
  * Used to also render a separate "Last seen" tiles card (CrawlerSummaryCard.tsx) right here.
  */
 /** Same real 7/30/90-day trio `SeoProgressCard.tsx`'s/`GeoScoreSection.tsx`'s own identical period toggles already use. */
-type PeriodDays = '7' | '30' | '90';
 const PERIOD_OPTIONS = [
 	{ key: '7', value: '7', label: __('7D', 'vulopilot') },
 	{ key: '30', value: '30', label: __('30D', 'vulopilot') },

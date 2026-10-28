@@ -8,11 +8,7 @@ use VuloPilot\Utill\VuloPilotException;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * REST controller for the AI Content Assistant sidebar's chat turn. Each
- * blog request is collected by BlogIntake's fixed questions and handed to the
- * `generate-blog` AIAction (auto-approved, since the conversation itself is the
- * approval); anything else is answered by one AI-service call. The conversation
- * is the client's round-tripped `history` array.
+ * REST controller for the AI Content Assistant sidebar's chat turn.
  *
  * @class       ContentAssistant controller
  * @version     1.0.0

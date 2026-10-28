@@ -12,14 +12,8 @@ use VuloPilot\Utill;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * VuloPilot can't know what a deleted page's visitors should be sent to instead - a guessed
- * target (e.g. the home page) is often wrong and would silently mask a real 404 as success. So
- * instead of auto-creating a redirect, this shows a one-time, per-post admin notice the moment a
- * post/page is trashed, pointing the admin at the Redirects tab to add one themselves if the old
- * URL is worth protecting.
- *
- * Gated on the same `enable_redirect_manager` setting as RedirectManager's own slug-change
- * auto-redirect, since the notice's "Add a redirect" link leads to that same feature.
+ * Shows a one-time admin notice when a post/page is trashed, pointing to the Redirects tab
+ * to add one manually rather than guessing a target. Gated on `enable_redirect_manager`.
  *
  * @class       TrashedPostRedirector class
  * @version     2.0.0
@@ -52,9 +46,7 @@ class TrashedPostRedirector {
 	 * @return void
 	 */
 	public function maybe_queue_notice( int $post_id ): void {
-		$settings = wp_parse_args( get_option( Utill::VULOPILOT_SETTINGS_KEY, array() ), Utill::VULOPILOT_SETTINGS_DEFAULTS );
-
-		if ( empty( $settings['enable_redirect_manager'] ) ) {
+		if ( empty( Utill::get_setting( 'enable_redirect_manager' ) ) ) {
 			return;
 		}
 
@@ -80,9 +72,8 @@ class TrashedPostRedirector {
 	}
 
 	/**
-	 * Renders one dismissible notice per pending entry, each linking straight to the Redirects
-	 * tab so the admin can add one for that exact URL if they want to. Dismissal is persisted via
-	 * AJAX (`ajax_dismiss_notice()`), so once removed, the notice never comes back for that post.
+	 * Renders one dismissible notice per pending entry, linking to the Redirects tab.
+	 * Dismissal is persisted via AJAX (`ajax_dismiss_notice()`).
 	 *
 	 * @return void
 	 */
@@ -117,9 +108,8 @@ class TrashedPostRedirector {
 	}
 
 	/**
-	 * Listens for WordPress core's own dismiss click on `.vulopilot-trash-redirect-notice` and
-	 * reports it back so the notice can be removed from storage - otherwise core only hides it in
-	 * the current page's DOM, and it would reappear on the next page load.
+	 * Reports the dismiss click back to storage - otherwise core only hides it in the
+	 * current page's DOM and it reappears on the next load.
 	 *
 	 * @return void
 	 */

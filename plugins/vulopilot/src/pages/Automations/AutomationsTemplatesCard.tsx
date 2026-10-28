@@ -43,7 +43,7 @@ const AutomationsTemplatesCard: React.FC<AutomationsTemplatesCardProps> = ({
 
 	const handleItemClick = (template: AutomationTemplate) => {
 		if (template.linkOnly) {
-			window.location.href = `${vulopilotAppLocalizer.admin_url}#&tab=automations&automation_template=${template.id}`;
+			window.location.hash = `#&tab=automations&automation_template=${template.id}`;
 			return;
 		}
 

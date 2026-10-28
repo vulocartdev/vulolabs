@@ -144,15 +144,7 @@ class GeoAnalysis extends \WP_REST_Controller {
 	}
 
 	/**
-	 * `GET /geo-analysis/pages` - every published page/post with its open
-	 * GEO finding count and a deterministic visibility percentage. Backs
-	 * both the GEO tab's own "Page-by-page analysis" table and
-	 * `IssuesSection.tsx`'s "Pages & Posts" table (merged, Export CSV +
-	 * sortable). The visibility score reuses
-	 * GeoAnalyzer::calculate_deterministic_score()'s bulk-friendly formula.
-	 *
-	 * `open_findings`/`sitewide_trust_signal_failure` both come from one
-	 * shared `count_by_column()` call, avoiding N+1 queries per post.
+	 * `GET /geo-analysis/pages` - every published page/post with its open GEO finding count and a deterministic visibility percentage.
 	 *
 	 * @param \WP_REST_Request $request Full request object.
 	 * @return \WP_REST_Response

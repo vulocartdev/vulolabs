@@ -362,19 +362,19 @@ class GoogleServicesConnection {
 		$connection = $this->get_connection();
 
 		return array(
-			'connected'              => $this->is_connected(),
-			'has_broker'             => $this->has_broker(),
-			'search_console_site'    => $connection['search_console_site'],
-			'ga4_account_id'         => $connection['ga4_account_id'],
-			'ga4_account_name'       => $connection['ga4_account_name'],
-			'ga4_property_id'        => $connection['ga4_property_id'],
-			'ga4_property_name'      => $connection['ga4_property_name'],
-			'ga4_measurement_id'     => $connection['ga4_measurement_id'],
-			'adsense_account_id'     => $connection['adsense_account_id'],
-			'adsense_account_name'   => $connection['adsense_account_name'],
-			'connected_at'           => $connection['connected_at'],
+			'connected'            => $this->is_connected(),
+			'has_broker'           => $this->has_broker(),
+			'search_console_site'  => $connection['search_console_site'],
+			'ga4_account_id'       => $connection['ga4_account_id'],
+			'ga4_account_name'     => $connection['ga4_account_name'],
+			'ga4_property_id'      => $connection['ga4_property_id'],
+			'ga4_property_name'    => $connection['ga4_property_name'],
+			'ga4_measurement_id'   => $connection['ga4_measurement_id'],
+			'adsense_account_id'   => $connection['adsense_account_id'],
+			'adsense_account_name' => $connection['adsense_account_name'],
+			'connected_at'         => $connection['connected_at'],
 			// URL to register as the "Authorized redirect URI" on the Google Cloud OAuth Client.
-			'redirect_uri'           => $this->get_redirect_uri(),
+			'redirect_uri'         => $this->get_redirect_uri(),
 		);
 	}
 }

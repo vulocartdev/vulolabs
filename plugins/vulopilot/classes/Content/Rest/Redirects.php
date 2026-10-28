@@ -44,12 +44,12 @@ class Redirects extends \WP_REST_Controller {
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_items' ),
-					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
 				),
 				array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'create_item' ),
-					'permission_callback' => array( $this, 'create_item_permissions_check' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
 				),
 			)
 		);
@@ -61,7 +61,7 @@ class Redirects extends \WP_REST_Controller {
 				array(
 					'methods'             => array( \WP_REST_Server::EDITABLE, \WP_REST_Server::CREATABLE ),
 					'callback'            => array( $this, 'update_item' ),
-					'permission_callback' => array( $this, 'update_item_permissions_check' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
 				),
 			)
 		);
@@ -73,7 +73,7 @@ class Redirects extends \WP_REST_Controller {
 				array(
 					'methods'             => \WP_REST_Server::CREATABLE,
 					'callback'            => array( $this, 'delete_item' ),
-					'permission_callback' => array( $this, 'delete_item_permissions_check' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
 				),
 			)
 		);
@@ -85,7 +85,7 @@ class Redirects extends \WP_REST_Controller {
 				array(
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => array( $this, 'get_health' ),
-					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
 				),
 			)
 		);
@@ -97,37 +97,7 @@ class Redirects extends \WP_REST_Controller {
 	 * @param \WP_REST_Request $request Full request object.
 	 * @return bool
 	 */
-	public function get_items_permissions_check( $request ) {
-		return current_user_can( 'manage_options' );
-	}
-
-	/**
-	 * Same manage_options gate every other VuloPilot REST route uses.
-	 *
-	 * @param \WP_REST_Request $request Full request object.
-	 * @return bool
-	 */
-	public function create_item_permissions_check( $request ) {
-		return current_user_can( 'manage_options' );
-	}
-
-	/**
-	 * Same manage_options gate every other VuloPilot REST route uses.
-	 *
-	 * @param \WP_REST_Request $request Full request object.
-	 * @return bool
-	 */
-	public function update_item_permissions_check( $request ) {
-		return current_user_can( 'manage_options' );
-	}
-
-	/**
-	 * Same manage_options gate every other VuloPilot REST route uses.
-	 *
-	 * @param \WP_REST_Request $request Full request object.
-	 * @return bool
-	 */
-	public function delete_item_permissions_check( $request ) {
+	public function permissions_check( $request ) {
 		return current_user_can( 'manage_options' );
 	}
 
@@ -230,7 +200,7 @@ class Redirects extends \WP_REST_Controller {
 		}
 
 		if ( null !== $request->get_param( 'match_type' ) ) {
-			$match_type         = (string) $request->get_param( 'match_type' );
+			$match_type           = (string) $request->get_param( 'match_type' );
 			$update['match_type'] = in_array( $match_type, array( 'exact', 'contains', 'start', 'end', 'regex' ), true ) ? $match_type : 'exact';
 		}
 
@@ -267,10 +237,8 @@ class Redirects extends \WP_REST_Controller {
 	}
 
 	/**
-	 * Checks whether each redirect's `target_url` actually resolves, same
-	 * HEAD-request shape as BrokenLinksScanner::check_link(). Cached for
-	 * `HEALTH_CACHE_SECONDS` (`force=1` bypasses it), bounded to
-	 * `MAX_HEALTH_CHECKS` active redirects per call.
+	 * Checks whether each redirect's `target_url` resolves. Cached for `HEALTH_CACHE_SECONDS`
+	 * (`force=1` bypasses it), bounded to `MAX_HEALTH_CHECKS` redirects per call.
 	 *
 	 * @param \WP_REST_Request $request Full request object.
 	 * @return \WP_REST_Response

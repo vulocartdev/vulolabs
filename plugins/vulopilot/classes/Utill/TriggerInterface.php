@@ -28,13 +28,9 @@ interface TriggerInterface {
 	public function get_label(): string;
 
 	/**
-	 * Hooks whatever WordPress/cron mechanism this trigger needs, calling $on_fire
-	 * whenever it fires.
+	 * Hooks whatever WordPress/cron mechanism this trigger needs, calling $on_fire whenever it fires.
 	 *
 	 * @param callable $on_fire function( string $trigger_id, string $object_type, ?string $object_ref ): void.
-	 *                          $trigger_id is always $this->get_id() - passed back explicitly (rather than
-	 *                          relying on the closure's own scope) so AutomationEngine can filter automations
-	 *                          by `trigger_type` without needing a reference back to the trigger instance.
 	 * @return void
 	 */
 	public function register( callable $on_fire ): void;

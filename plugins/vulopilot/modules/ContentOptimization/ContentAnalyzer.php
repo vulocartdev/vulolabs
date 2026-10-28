@@ -35,7 +35,7 @@ class ContentAnalyzer {
 	private AiRequestSender $request_sender;
 
 	/**
-	 * @param AiRequestSender      $request_sender Sends a prompt through the safety-validate → send → sanitize sequence.
+	 * @param AiRequestSender        $request_sender Sends a prompt through the safety-validate → send → sanitize sequence.
 	 * @param FindingRepository|null $findings       Defaults to a new instance (injectable for tests).
 	 */
 	public function __construct( AiRequestSender $request_sender, ?FindingRepository $findings = null ) {

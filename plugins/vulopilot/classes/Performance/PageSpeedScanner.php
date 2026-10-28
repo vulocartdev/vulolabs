@@ -323,7 +323,7 @@ class PageSpeedScanner {
 	 * Percentile value of a CrUX field-data metric, or null when CrUX has no data.
 	 *
 	 * @param array<string, mixed> $field_data Real `loadingExperience` block from a PSI response.
-	 * @param string                $metric_key e.g. 'LARGEST_CONTENTFUL_PAINT_MS'.
+	 * @param string               $metric_key e.g. 'LARGEST_CONTENTFUL_PAINT_MS'.
 	 * @return int|null
 	 */
 	private function crux_percentile( array $field_data, string $metric_key ): ?int {
@@ -336,7 +336,7 @@ class PageSpeedScanner {
 	 * That same real metric's own Google-assigned rating - 'FAST'/'AVERAGE'/'SLOW'.
 	 *
 	 * @param array<string, mixed> $field_data Real `loadingExperience` block from a PSI response.
-	 * @param string                $metric_key e.g. 'LARGEST_CONTENTFUL_PAINT_MS'.
+	 * @param string               $metric_key e.g. 'LARGEST_CONTENTFUL_PAINT_MS'.
 	 * @return string|null
 	 */
 	private function crux_category( array $field_data, string $metric_key ): ?string {

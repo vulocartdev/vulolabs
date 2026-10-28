@@ -80,7 +80,7 @@ class LoginProtectionGuard {
 	/**
 	 * `wp_login_failed` callback - records one real failed attempt.
 	 *
-	 * @param string          $username Real username/email that was attempted.
+	 * @param string $username Real username/email that was attempted.
 	 * @return void
 	 */
 	public function record_failure( string $username ): void {
@@ -103,7 +103,7 @@ class LoginProtectionGuard {
 	/**
 	 * `wp_login` callback - records one real successful attempt.
 	 *
-	 * @param string           $user_login Real username that logged in.
+	 * @param string $user_login Real username that logged in.
 	 * @return void
 	 */
 	public function record_success( string $user_login ): void {

@@ -1,6 +1,7 @@
 /* global vulopilotAppLocalizer */
 import { useState } from 'react';
 import { __ } from '@wordpress/i18n';
+import type { PeriodDays } from './types';
 import {
 	CardComponent,
 	ChartComponent,
@@ -49,7 +50,6 @@ const DUMMY_ACCESSIBILITY_HISTORY = DUMMY_ACCESSIBILITY_SCORES.map(
 );
 
 /** Decorative only - no real per-period fetch behind it. */
-type PeriodDays = '7' | '30' | '90';
 const PERIOD_OPTIONS = [
 	{ key: '7', value: '7', label: __('7D', 'vulopilot') },
 	{ key: '30', value: '30', label: __('30D', 'vulopilot') },

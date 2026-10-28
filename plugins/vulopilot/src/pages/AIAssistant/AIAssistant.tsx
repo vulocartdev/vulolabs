@@ -236,7 +236,7 @@ const AIAssistant = () => {
 
 	/** AutomationTemplatesCard's real home is Automate Work (Automations.tsx). */
 	const handleSelectAutomationTemplate = (template: AutomationTemplate) => {
-		window.location.href = `${vulopilotAppLocalizer.admin_url}#&tab=automations&automation_template=${template.id}`;
+		window.location.hash = `#&tab=automations&automation_template=${template.id}`;
 	};
 
 	return (
@@ -493,8 +493,8 @@ const AIAssistant = () => {
 										color: 'text-purple',
 										onClick: (e) => {
 											e.preventDefault();
-											window.location.href =
-												'?page=vulopilot#&tab=reports&subtab=history';
+											window.location.hash =
+												'#&tab=reports&subtab=history';
 										},
 									}}
 								/>

@@ -7,14 +7,9 @@ import IssuesSection, { ContentModeConfig, ContentRowTab } from '../GEO/IssuesSe
 import type { PageRow } from '../GEO/seoIssuesShared';
 import ContentQualityCard from './ContentQualityCard';
 
-/**
- * `GenerateLandingPageAction::META_KEY`'s literal string.
- */
 const LANDING_PAGE_META_KEY = '_vulopilot_landing_page';
 
-/**
- * The 3 real scanners that flag per-post content-quality findings.
- */
+/** The 3 scanners that flag per-post content-quality findings. */
 const CONTENT_SCANNER_IDS = ['thin-content', 'readability', 'heading-structure'];
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -63,10 +58,7 @@ const RESOURCE_TABS: ContentRowTab[] = [
 	},
 ];
 
-/**
- * "Recent Content" - converted to a thin wrapper around the same real `IssuesSection.tsx`
- * SEO's/AEO's/GEO's own "All Issues" tables already use.
- */
+/** "Recent Content" - a thin wrapper around the same IssuesSection the SEO/AEO/GEO "All Issues" tables use. */
 const RecentContentCard = () => {
 	/** Set by a real "Analyze" click in the "Pages & Posts" table below. */
 	const [analyzingId, setAnalyzingId] = useState<number | null>(null);

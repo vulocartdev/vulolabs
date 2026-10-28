@@ -1,8 +1,6 @@
 <?php
 namespace VuloPilot\SeoVisibility;
 
-use VuloPilot\Utill;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -42,11 +40,11 @@ class OnPageAnalyzer {
 	 * @return array<int, array<string, mixed>> Each entry shaped like result()'s own return value.
 	 */
 	public function analyze( array $fields ): array {
-		$title         = trim( (string) ( $fields['title'] ?? '' ) );
-		$content_html  = (string) ( $fields['content'] ?? '' );
-		$content_text  = trim( wp_strip_all_tags( $content_html ) );
-		$excerpt       = trim( (string) ( $fields['excerpt'] ?? '' ) );
-		$slug          = (string) ( $fields['slug'] ?? '' );
+		$title        = trim( (string) ( $fields['title'] ?? '' ) );
+		$content_html = (string) ( $fields['content'] ?? '' );
+		$content_text = trim( wp_strip_all_tags( $content_html ) );
+		$excerpt      = trim( (string) ( $fields['excerpt'] ?? '' ) );
+		$slug         = (string) ( $fields['slug'] ?? '' );
 		// `focus_keyword` may carry a comma-separated list; only the primary (first) one is scored.
 		$focus_keyword = PostSeoMetaFields::primary_keyword( (string) ( $fields['focus_keyword'] ?? '' ) );
 
@@ -57,16 +55,29 @@ class OnPageAnalyzer {
 		$results[] = $this->check_content_length( $content_text );
 		$results[] = $this->check_subheadings( $content_html );
 		$results[] = $this->check_links( $content_html );
+		$results[] = $this->check_internal_link( $content_html );
+		$results[] = $this->check_external_link( $content_html );
 		$results[] = $this->check_image_alt( $content_html );
 
-		if ( '' !== $focus_keyword ) {
-			$results[] = $this->check_keyword_in_title( $focus_keyword, $title );
-			$results[] = $this->check_keyword_in_description( $focus_keyword, $excerpt );
-			$results[] = $this->check_keyword_in_slug( $focus_keyword, $slug );
-			$results[] = $this->check_keyword_in_content( $focus_keyword, $content_text );
-			$results[] = $this->check_keyword_in_first_paragraph( $focus_keyword, $content_text );
-			$results[] = $this->check_keyword_at_title_start( $focus_keyword, $title );
+		$density_result = $this->check_keyword_density( $focus_keyword, $content_text );
+
+		if ( null !== $density_result ) {
+			$results[] = $density_result;
 		}
+
+		// Always run, even with no focus keyword set - contains() already returns false for an
+		// empty keyword, so each one legitimately (not just nominally) fails on its own, the same
+		// way Rank Math's own equivalent tests each fail independently when no keyword is set,
+		// rather than being skipped/exempted or collapsed into one substitute check. A missing
+		// keyword is exactly what each of these 6 checks exists to catch - skipping them used to
+		// make an unoptimized, keyword-less post score easier than one that tried and partially
+		// failed.
+		$results[] = $this->check_keyword_in_title( $focus_keyword, $title );
+		$results[] = $this->check_keyword_in_description( $focus_keyword, $excerpt );
+		$results[] = $this->check_keyword_in_slug( $focus_keyword, $slug );
+		$results[] = $this->check_keyword_in_content( $focus_keyword, $content_text );
+		$results[] = $this->check_keyword_in_first_paragraph( $focus_keyword, $content_text );
+		$results[] = $this->check_keyword_at_title_start( $focus_keyword, $title );
 
 		$results[] = $this->check_title_has_number( $title );
 
@@ -121,33 +132,79 @@ class OnPageAnalyzer {
 		return $this->result( 'description_length', 'basic', 'pass', __( 'Meta description length is good.', 'vulopilot' ) );
 	}
 
+	/** Content-depth tiers, word count => fraction of full credit - Rank Math's own published tiers (rankmath.com/kb/seo-score-vs-content-ai-score/: */
+	private const CONTENT_DEPTH_TIERS = array(
+		2500 => 1.0,
+		2000 => 0.7,
+		1500 => 0.6,
+		1000 => 0.4,
+		600  => 0.2,
+		0    => 0.0,
+	);
+
 	/**
-	 * Checks the content's word count against the thin-content threshold setting.
+	 * Scores the content's own depth against `CONTENT_DEPTH_TIERS` - not the flat `thin_content_word_threshold` pass/fail the Thin Content scanner uses elsewhere, which only ever gates a single low bar (300 words by default) and gave full score credit to anything past it, even content far short of what actually ranks (#bug:
 	 *
 	 * @param string $content_text Plain-text content.
 	 * @return array<string, mixed>
 	 */
 	private function check_content_length( string $content_text ): array {
-		$settings  = wp_parse_args( get_option( Utill::VULOPILOT_SETTINGS_KEY, array() ), Utill::VULOPILOT_SETTINGS_DEFAULTS );
-		$threshold = absint( $settings['thin_content_word_threshold'] );
-		$count     = str_word_count( $content_text );
+		$count = str_word_count( $content_text );
 
-		if ( $count < $threshold ) {
-			return $this->result(
-				'content_length',
-				'basic',
-				'warning',
-				sprintf(
-					/* translators: 1: current word count, 2: minimum recommended word count. */
-					__( 'Content is %1$d words - aim for at least %2$d.', 'vulopilot' ),
-					$count,
-					$threshold
-				),
-				'expand-content'
-			);
+		$fraction = 0.0;
+		$tier_min = 0;
+
+		foreach ( self::CONTENT_DEPTH_TIERS as $min_words => $tier_fraction ) {
+			if ( $count >= $min_words ) {
+				$fraction = $tier_fraction;
+				$tier_min = $min_words;
+				break;
+			}
 		}
 
-		return $this->result( 'content_length', 'basic', 'pass', __( 'Content length is good.', 'vulopilot' ) );
+		if ( $fraction >= 1.0 ) {
+			$status = 'pass';
+		} elseif ( $fraction >= 0.4 ) {
+			$status = 'warning';
+		} else {
+			$status = 'fail';
+		}
+
+		$message = $fraction >= 1.0
+			? sprintf(
+				/* translators: %d: current word count. */
+				__( 'Content is %d words - good depth for search results.', 'vulopilot' ),
+				$count
+			)
+			: sprintf(
+				/* translators: 1: current word count, 2: percentage of full credit this depth earns, 3: word count the next tier up starts at. */
+				__( 'Content is %1$d words - only %2$d%% of full content-depth credit. Aim for %3$d+ words.', 'vulopilot' ),
+				$count,
+				(int) round( $fraction * 100 ),
+				$this->next_content_depth_tier( $tier_min )
+			);
+
+		$result                   = $this->result( 'content_length', 'basic', $status, $message, $fraction < 1.0 ? 'expand-content' : null );
+		$result['score_fraction'] = $fraction;
+
+		return $result;
+	}
+
+	/**
+	 * The word count the next tier up from `$tier_min` starts at, for the "aim for X+ words"
+	 * message - 2500 (the top tier) has no "next" tier, so that case is never reached by a caller
+	 * already short of full credit.
+	 *
+	 * @param int $tier_min Current tier's own minimum word count.
+	 * @return int
+	 */
+	private function next_content_depth_tier( int $tier_min ): int {
+		$mins = array_keys( self::CONTENT_DEPTH_TIERS );
+		rsort( $mins );
+		$mins = array_reverse( $mins );
+		$pos  = array_search( $tier_min, $mins, true );
+
+		return $mins[ $pos + 1 ] ?? 2500;
 	}
 
 	/**
@@ -232,7 +289,10 @@ class OnPageAnalyzer {
 	}
 
 	/**
-	 * Checks whether the content contains at least one link.
+	 * Checks whether the content contains at least one link - kept for the existing
+	 * `has_links`/`suggest-internal-links` UI deep link; `check_internal_link()`/
+	 * `check_external_link()` below score the real distinction Rank Math's own tests make
+	 * (linking anywhere at all isn't equivalent to having both an internal and an external one).
 	 *
 	 * @param string $content_html Raw post content.
 	 * @return array<string, mixed>
@@ -244,6 +304,74 @@ class OnPageAnalyzer {
 	}
 
 	/**
+	 * Every `href` found in the content, normalized to "internal" (same host as this site, or a
+	 * root-relative path) or "external".
+	 *
+	 * @param string $content_html Raw post content.
+	 * @return array{internal: int, external: int}
+	 */
+	private function count_links_by_scope( string $content_html ): array {
+		if ( ! preg_match_all( '/<a\s[^>]*href=["\']([^"\']+)["\']/i', $content_html, $matches ) ) {
+			return array(
+				'internal' => 0,
+				'external' => 0,
+			);
+		}
+
+		$home_host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
+		$internal  = 0;
+		$external  = 0;
+
+		foreach ( $matches[1] as $href ) {
+			if ( 0 === strpos( $href, '#' ) || 0 === strpos( $href, 'mailto:' ) || 0 === strpos( $href, 'tel:' ) ) {
+				continue;
+			}
+
+			$host = (string) wp_parse_url( $href, PHP_URL_HOST );
+
+			if ( '' === $host || $host === $home_host ) {
+				++$internal;
+			} else {
+				++$external;
+			}
+		}
+
+		return array(
+			'internal' => $internal,
+			'external' => $external,
+		);
+	}
+
+	/**
+	 * Rank Math's own "linking to internal resources" test - at least one link to this site
+	 * itself, distinct from `has_links`, which a page with only external links already satisfies.
+	 *
+	 * @param string $content_html Raw post content.
+	 * @return array<string, mixed>
+	 */
+	private function check_internal_link( string $content_html ): array {
+		$counts = $this->count_links_by_scope( $content_html );
+
+		return $counts['internal'] > 0
+			? $this->result( 'has_internal_link', 'additional', 'pass', __( 'Content links to at least one other page on this site.', 'vulopilot' ) )
+			: $this->result( 'has_internal_link', 'additional', 'warning', __( 'No internal links found - link to other relevant pages on this site.', 'vulopilot' ), 'suggest-internal-links' );
+	}
+
+	/**
+	 * Rank Math's own "linking to external sources" test - at least one link to another site.
+	 *
+	 * @param string $content_html Raw post content.
+	 * @return array<string, mixed>
+	 */
+	private function check_external_link( string $content_html ): array {
+		$counts = $this->count_links_by_scope( $content_html );
+
+		return $counts['external'] > 0
+			? $this->result( 'has_external_link', 'additional', 'pass', __( 'Content links to at least one external source.', 'vulopilot' ) )
+			: $this->result( 'has_external_link', 'additional', 'warning', __( 'No external links found - linking to an authoritative outside source builds trust.', 'vulopilot' ) );
+	}
+
+	/**
 	 * Checks whether every image in the content has alt text.
 	 *
 	 * @param string $content_html Raw post content.
@@ -251,7 +379,7 @@ class OnPageAnalyzer {
 	 */
 	private function check_image_alt( string $content_html ): array {
 		if ( ! preg_match_all( '/<img\s[^>]*>/i', $content_html, $images ) ) {
-			return $this->result( 'image_alt', 'additional', 'pass', __( 'No images in this content.', 'vulopilot' ) );
+			return $this->result( 'image_alt', 'additional', 'warning', __( 'No images in this content - add at least one relevant image with descriptive alt text.', 'vulopilot' ) );
 		}
 
 		foreach ( $images[0] as $image_tag ) {
@@ -261,6 +389,56 @@ class OnPageAnalyzer {
 		}
 
 		return $this->result( 'image_alt', 'additional', 'pass', __( 'All images have alt text.', 'vulopilot' ) );
+	}
+
+	/**
+	 * Rank Math's own keyword-density test ("about 1-1.5% is sufficient... Warning above 2.5%" -
+	 * rankmath.com/kb/seo-score-vs-content-ai-score/). Counted as whole-phrase occurrences of the
+	 * (possibly multi-word) focus keyword against the total word count, same convention
+	 * `contains()` already uses for every other keyword check in this class.
+	 *
+	 * @param string $keyword      Focus keyword.
+	 * @param string $content_text Plain-text content.
+	 * @return array<string, mixed>|null Null when there's no keyword to measure density for.
+	 */
+	private function check_keyword_density( string $keyword, string $content_text ): ?array {
+		if ( '' === $keyword ) {
+			return null;
+		}
+
+		$word_count = str_word_count( $content_text );
+
+		if ( 0 === $word_count ) {
+			return null;
+		}
+
+		$keyword_words   = max( 1, str_word_count( $keyword ) );
+		$occurrences     = substr_count( mb_strtolower( $content_text ), mb_strtolower( $keyword ) );
+		$density_percent = ( $occurrences * $keyword_words / $word_count ) * 100;
+
+		if ( $density_percent > 2.5 ) {
+			return $this->result(
+				'keyword_density',
+				'additional',
+				'warning',
+				sprintf(
+					/* translators: %s: current keyword density, as a percentage. */
+					__( 'Focus keyword density is %s%% - this reads as keyword stuffing. Aim for roughly 1-1.5%%.', 'vulopilot' ),
+					round( $density_percent, 1 )
+				)
+			);
+		}
+
+		if ( $density_percent < 0.5 ) {
+			return $this->result(
+				'keyword_density',
+				'additional',
+				'warning',
+				__( 'Focus keyword density is very low - use it a little more naturally throughout the content.', 'vulopilot' )
+			);
+		}
+
+		return $this->result( 'keyword_density', 'additional', 'pass', __( 'Focus keyword density is good.', 'vulopilot' ) );
 	}
 
 	/**

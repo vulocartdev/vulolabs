@@ -11,12 +11,7 @@ use VuloPilot\Utill;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * REST controller backing src/pages/Settings/Settings.tsx (zyra's
- * InputRenderer/NavigatorComponent framework). Reads/writes a single
- * wp_options row (Utill::VULOPILOT_SETTINGS_KEY); update_item() merges
- * into the existing option rather than replacing it, since each tab only
- * auto-saves its own subset of fields. No per-field type/sanitization
- * allowlist, matching sibling free plugins' Settings controllers.
+ * REST controller backing src/pages/Settings/Settings.tsx (zyra's InputRenderer/NavigatorComponent framework). Reads/writes a single wp_options row (Utill::VULOPILOT_SETTINGS_KEY);
  *
  * @class       Settings controller
  * @version     1.0.0

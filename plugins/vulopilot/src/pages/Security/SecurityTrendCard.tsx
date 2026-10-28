@@ -1,6 +1,7 @@
 /* global vulopilotAppLocalizer */
 import { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
+import type { PeriodDays } from './types';
 import {
 	AnalyticsComponent,
 	CardComponent,
@@ -17,7 +18,6 @@ interface SecurityScoreSnapshot {
 	security_score: number;
 }
 
-type PeriodDays = '7' | '30' | '90';
 const PERIOD_OPTIONS = [
 	{ key: '7', value: '7', label: __('7D', 'vulopilot') },
 	{ key: '30', value: '30', label: __('30D', 'vulopilot') },

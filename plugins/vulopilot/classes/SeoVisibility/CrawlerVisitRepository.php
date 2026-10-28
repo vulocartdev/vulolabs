@@ -229,18 +229,10 @@ class CrawlerVisitRepository extends RepositoryUtil {
 	}
 
 	/**
-	 * Current-versus-previous-period comparison for the Crawler Traffic tab, with percent
-	 * change against the preceding period of equal length.
+	 * Current-versus-previous-period comparison for the Crawler Traffic tab, with percent change against the preceding period of equal length. current_total:
 	 *
 	 * @param int $days Trailing window size (also the length of the "previous" comparison window).
 	 * @return array{
-	 *     current_total: int,
-	 *     previous_total: int,
-	 *     current_unique_bots: int,
-	 *     previous_unique_bots: int,
-	 *     top_crawlers: array<int, array{bot_name: string, total: int, previous_total: int, last_seen_at: string|null}>,
-	 *     most_crawled_pages: array<int, array{requested_url: string, total: int, previous_total: int}>,
-	 * }
 	 */
 	public function get_period_comparison( int $days = 30 ): array {
 		global $wpdb;
@@ -338,6 +330,51 @@ class CrawlerVisitRepository extends RepositoryUtil {
 		return array(
 			'rate_percent' => (int) round( ( $not_found / $sample_size ) * 100 ),
 			'sample_size'  => $sample_size,
+		);
+	}
+
+	/**
+	 * Per-bot visit counts and last-seen time for one specific URL - backs a single post's own
+	 * "AI Visibility" (crawler activity) tab, as opposed to the sitewide Crawler Traffic page.
+	 *
+	 * @param string $requested_url Exact path this plugin logs visits under (e.g. post permalink path).
+	 * @param int    $days          Trailing window size.
+	 * @return array{total: int, by_bot: array<int, array{bot_name: string, total: int, last_seen_at: string}>, is_404_rate_percent: int|null}
+	 */
+	public function get_stats_for_url( string $requested_url, int $days = 90 ): array {
+		global $wpdb;
+
+		$days = max( 1, $days );
+
+		$rows = $wpdb->get_results(  // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching  -- {$this->get_table()}-style variables here are always this plugin's own hardcoded table name, never user input.
+			$wpdb->prepare(
+				'SELECT bot_name, COUNT(*) AS total, MAX(created_at) AS last_seen_at, SUM(is_404) AS not_found FROM %i WHERE requested_url = %s AND created_at >= DATE_SUB(CURDATE(), INTERVAL %d DAY) GROUP BY bot_name ORDER BY total DESC',
+				$this->get_table(), // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$requested_url,
+				$days
+			),
+			ARRAY_A
+		);
+
+		$rows = $rows ? $rows : array();
+
+		$total     = 0;
+		$not_found = 0;
+		$by_bot    = array();
+		foreach ( $rows as $row ) {
+			$total     += (int) $row['total'];
+			$not_found += (int) $row['not_found'];
+			$by_bot[]   = array(
+				'bot_name'     => $row['bot_name'],
+				'total'        => (int) $row['total'],
+				'last_seen_at' => $row['last_seen_at'],
+			);
+		}
+
+		return array(
+			'total'               => $total,
+			'by_bot'              => $by_bot,
+			'is_404_rate_percent' => $total > 0 ? (int) round( ( $not_found / $total ) * 100 ) : null,
 		);
 	}
 

@@ -61,6 +61,40 @@ class CrawlerTraffic extends \WP_REST_Controller {
 				),
 			)
 		);
+
+		// Scoped to one post - backs the post editor's own AI Visibility (crawler activity) tab.
+		register_rest_route(
+			VuloPilot()->rest_namespace,
+			'/' . $this->rest_base . '/post/(?P<post_id>\d+)',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_post_stats' ),
+					'permission_callback' => array( $this, 'get_items_permissions_check' ),
+				),
+			)
+		);
+	}
+
+	/**
+	 * `GET /crawler-traffic/post/{post_id}` - real per-post bot-visit counts, scoped by the
+	 * post's own permalink path (not a sitewide aggregate).
+	 *
+	 * @param \WP_REST_Request $request Full request object.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_post_stats( $request ) {
+		$post_id = absint( $request->get_param( 'post_id' ) );
+		$post    = get_post( $post_id );
+
+		if ( ! $post ) {
+			return new \WP_Error( 'vulopilot_invalid_post', __( 'Post not found.', 'vulopilot' ), array( 'status' => 404 ) );
+		}
+
+		$path = wp_parse_url( get_permalink( $post ), PHP_URL_PATH );
+		$days = absint( $request->get_param( 'days' ) ) ? absint( $request->get_param( 'days' ) ) : 90;
+
+		return rest_ensure_response( ( new CrawlerVisitRepository() )->get_stats_for_url( (string) $path, $days ) );
 	}
 
 	/**

@@ -15,7 +15,7 @@ export interface AutomationRow extends TableRow {
 	last_run_actions_executed: number | null;
 	last_run_actions_failed: number | null;
 	last_run_changes_made: number | null;
-	/** Real for the 4 cron-based trigger types only (see `AutomationsRest::with_next_run()`'s own docblock). */
+	/** Set for the 4 cron-based trigger types only. */
 	next_run_at: string | null;
 	last_run_finished_at: string | null;
 }

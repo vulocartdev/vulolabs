@@ -11,9 +11,9 @@ export interface FindingSample {
 	created_at: string;
 	/** When this finding was last reconfirmed by a scan. */
 	last_seen_at?: string;
-	/** Resolved page path or 'Site-wide' - added server-side by Findings.php's add_page_field(). */
+	/** Resolved page path or 'Site-wide' - added server-side. */
 	page?: string;
-	/** Raw `wp_json_encode()`-d `Finding::get_meta()` column. */
+	/** Raw JSON-encoded meta column. */
 	meta?: string | null;
 }
 
@@ -148,13 +148,9 @@ export const formatAffected = (count: number, objectType: string | null): string
 	`${count} ${getObjectTypeNoun(count, objectType)}`;
 
 /**
- * A single scanner_id can legitimately report several unrelated finding groups
- * (FindingRepository::get_finding_groups()'s own `GROUP BY scanner_id, category, object_type` -
- * e.g. WordPressHealthScanner's `site_health_test` findings vs its own `wordpress_inactive_plugins`
- * findings, both scanner_id 'wordpress-health') - this is the real unique group identity, not bare
- * `scanner_id` alone. Every row-selection comparison/table row id in this plugin's issue tables
- * (SectionedIssuesTable.tsx, IssuesList.tsx) uses this instead of `group.scanner_id` directly, so
- * two such groups never both read as "selected" at once just because they share a scanner_id.
+ * A single scanner_id can report several unrelated finding groups - this is the real unique
+ * group identity (`scanner_id, category, object_type`), used instead of bare `scanner_id` for
+ * every row-selection/table-row id in this plugin's issue tables.
  */
 export const groupKey = (
 	group: Pick<FindingGroup, 'scanner_id' | 'object_type'>

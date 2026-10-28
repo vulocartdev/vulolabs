@@ -32,7 +32,7 @@ interface SubmitResult {
 }
 
 
-/** "Products" only ever a real, selectable option once WooCommerce is actually active (`vulopilotAppLocalizer.has_woocommerce`, `FrontendScripts::localize_scripts()`). */
+/** "Products" only a selectable option once WooCommerce is active. */
 const POST_TYPE_OPTIONS = [
 	{ value: 'post', label: __('Posts', 'vulopilot') },
 	{ value: 'page', label: __('Pages', 'vulopilot') },

@@ -3,15 +3,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { getApiLink, getApiResponse, sendApiResponse } from '@zyra/core';
 
 /**
- * `GET /ai-credits/status` (AiCredits::get_status()) returns whatever is cached in
- * `wp_options` (`AiCreditsConnection::cache_status()`) — it never talks to VuloCloud itself, so it
- * can only ever be as fresh as the last successful `POST /ai-credits/refresh-balance`
- * (`AiCreditsConnection::refresh_balance()`, the one call that actually hits the server). This
- * hook used to only ever call the cached GET, on mount and from the panel's own "Refresh balance"
- * button alike — meaning the displayed balance could go stale indefinitely (surviving even a full
- * WordPress logout/login, since the cache lives in the DB, not a session) with no way, including
- * the button meant for exactly this, to actually pull a fresh number. `refresh()` now calls the
- * live endpoint; `loadCached()` is kept only for the instant-paint read on mount.
+ * `GET /ai-credits/status` only reads the DB-cached balance, never talks to VuloCloud - only
+ * `POST /ai-credits/refresh-balance` does. `refresh()` calls the live endpoint; `loadCached()` is
+ * kept only for the instant-paint read on mount.
  */
 export interface AiCreditsStatus {
 	connected: boolean;
@@ -43,10 +37,7 @@ export const useAiCredits = () => {
 		});
 	}, []);
 
-	// The live sync — the only call that actually asks VuloCloud for the real balance. A failed
-	// sync (e.g. VuloCloud briefly unreachable) deliberately leaves `status` as whatever was last
-	// shown, same "never destroy the cached balance on a failed sync" rule the PHP side applies to
-	// its own cache.
+	// The live sync - the only call that asks VuloCloud for the real balance. A failed sync leaves `status` as whatever was last shown.
 	const refresh = useCallback(() => {
 		setIsLoading(true);
 		return sendApiResponse<AiCreditsStatus>(
@@ -59,12 +50,7 @@ export const useAiCredits = () => {
 	}, []);
 
 	useEffect(() => {
-		// Paint instantly from whatever's cached, then resync for real — so opening the panel
-		// isn't blocked on a network round trip, but always ends up showing the live balance
-		// without needing the "Refresh balance" button clicked by hand. Skipped when the site
-		// was never connected in the first place — refresh-balance always 400s
-		// (vulopilot_ai_credits_not_connected) in that case, so calling it on every mount of
-		// every AI-Credits-aware component just spams the console for nothing.
+		// Paint instantly from cache, then resync for real. Skipped when never connected - refresh-balance always 400s then.
 		loadCached().then((cached) => {
 			if (cached?.connected) {
 				refresh();

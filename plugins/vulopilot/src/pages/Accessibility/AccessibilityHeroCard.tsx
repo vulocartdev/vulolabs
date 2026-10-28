@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { getApiLink, getApiResponse, COLOR_PALETTE } from '@zyra/core';
+import type { Rating } from './types';
 import {
 	CardComponent,
 	ChartComponent,
@@ -28,11 +29,6 @@ interface AccessibilityHeroCardProps {
 }
 
 /** Same 3-tier band shape as PerformanceScoreCard.tsx's Rating. */
-interface Rating {
-	label: string;
-	className: 'good' | 'needs-improvement' | 'poor';
-}
-
 /** Lighthouse-style 0-100 bands, matching PerformanceScoreCard.tsx's getScoreRating(). */
 const getScoreRating = (score: number): Rating => {
 	if (score >= 90) {

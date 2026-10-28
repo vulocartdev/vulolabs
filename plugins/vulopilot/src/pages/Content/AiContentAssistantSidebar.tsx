@@ -299,7 +299,7 @@ const AiContentAssistantSidebar = () => {
 	 * "Chat History" - unlike AI Copilot's own per-conversation popup.
 	 */
 	const handleOpenHistory = () => {
-		window.location.href = '?page=vulopilot#&tab=reports&subtab=history';
+		window.location.hash = '#&tab=reports&subtab=history';
 	};
 
 	return (

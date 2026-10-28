@@ -7,20 +7,11 @@ interface ScanRow {
 }
 
 /**
- * The real most recent *completed* scan run's own `finished_at` (`vulopilot_scans`, `GET /scans`)
- * for one scanner group.
+ * The most recent completed scan run's `finished_at` for one scanner group.
  *
- * @param scannerIds Real scanner ids to scope to, or omit for site-wide.
- * @param categories Real category ids to scope to (e.g. `['security']`) -
- *                    resolved to their own real scanner ids server-side
- *                    (`Scans::get_items()`'s own `category`
- *                    param, the same `ScannerRegistry::get_scanners_by_category()`
- *                    mapping `POST /scans`' own `category` param already
- *                    uses to decide what to run) - lets a category page's
- *                    own header ask by the same category it scans by,
- *                    rather than every caller having to know and hardcode
- *                    that category's own raw scanner ids. Merges with
- *                    `scannerIds` when both are given.
+ * @param scannerIds Scanner ids to scope to, or omit for site-wide.
+ * @param categories Category ids to scope to (e.g. `['security']`), resolved to their
+ *                    own scanner ids server-side. Merges with `scannerIds` when both are given.
  */
 export const useLastScanTime = (
 	scannerIds?: string[],

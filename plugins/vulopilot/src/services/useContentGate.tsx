@@ -58,7 +58,7 @@ export const useContentGate = (
 
 	const handleActivate = () => {
 		if ('module' === gateReason && moduleId) {
-			window.location.href = `${vulopilotAppLocalizer.admin_url}#&tab=settings&subtab=modules&module=${moduleId}`;
+			window.location.hash = `#&tab=settings&subtab=modules&module=${moduleId}`;
 			return;
 		}
 		setIsPopupOpen(true);

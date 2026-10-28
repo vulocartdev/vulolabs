@@ -1,4 +1,4 @@
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { Button, Dropdown, Spinner } from '@wordpress/components';
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { dispatch, select } from '@wordpress/data';
@@ -15,10 +15,7 @@ interface PageAnalysisTabProps {
 	onNavigate?: ( tab: SeoIssueEditorTab, target?: string ) => void;
 }
 
-/**
- * This tab's own check `key`s (`Seo::get_page_analysis()`) → the scanner id
- * `SEO_ISSUE_EDITOR_TARGETS` already understands.
- */
+/** This tab's check keys → the scanner id SEO_ISSUE_EDITOR_TARGETS understands. */
 const CHECK_KEY_TO_SCANNER_ID: Record< string, string > = {
 	h1_heading: 'heading-structure',
 	canonical: 'canonical-url',
@@ -29,17 +26,10 @@ const CHECK_KEY_TO_SCANNER_ID: Record< string, string > = {
 	orphan_page: 'internal-linking',
 };
 
-/**
- * Saved-page checks the live checklist above them already covers, so they are left out of the "SEO
- * Issues" list.
- */
+/** Saved-page checks the live checklist already covers, left out of the "SEO Issues" list. */
 const CHECKS_COVERED_BY_LIVE_CHECKLIST = [ 'title_tag', 'meta_description', 'content', 'headings', 'images' ];
 
-/**
- * Saved-page checks with a real fix. Social Metadata is left out - its only fix is sitewide, not
- * per-post. Orphan Page has none here on purpose - it now just navigates to the real Internal
- * Linking check (`CHECK_KEY_TO_SCANNER_ID` above) instead of running the nav-menu proxy action.
- */
+/** Saved-page checks with a real fix. Social Metadata (sitewide only) and Orphan Page (navigates to Internal Linking instead) are left out on purpose. */
 const CHECK_KEY_TO_FIX_ACTION: Record< string, string > = {
 	structured_data: 'generate-schema',
 	featured_image: 'set-featured-image-from-content',
@@ -71,10 +61,7 @@ const editorTargetForCheck = ( checkKey: string ): SeoIssueEditorTarget | null =
 	return scannerId ? SEO_ISSUE_EDITOR_TARGETS[ scannerId ] ?? null : null;
 };
 
-/**
- * This tab's own local copy of GeoTab.tsx's/AeoTab.tsx's real scanner-id unions
- * (`GEO_SECTIONS`/`AEO_SECTIONS`).
- */
+/** Local copy of GeoTab.tsx's/AeoTab.tsx's own scanner-id lists. */
 const GEO_SCANNER_IDS = [
 	'geo-citation-opportunities',
 	'geo-chunking',
@@ -103,14 +90,14 @@ const STATUS_ICON: Record< PageAnalysisCheck[ 'status' ], string > = {
 	fail: 'dismiss',
 };
 
-/** `PageAnalysisCheck['status']` → this bundle's own `vulopilot-seo-checklist__item--{modifier}` CSS already ships (`--pass`/`--warning`/`--fail`). */
+/** Maps a check status to the matching vulopilot-seo-checklist__item--{modifier} CSS class. */
 const STATUS_MODIFIER: Record< PageAnalysisCheck[ 'status' ], string > = {
 	pass: 'pass',
 	warn: 'warning',
 	fail: 'fail',
 };
 
-/** GEO/AEO findings have no "pass" state (a finding only ever exists for a real open problem - same real gap `GeoAeoPageAnalysisPanel.tsx`'s own docblock documents). */
+/** GEO/AEO findings have no "pass" state - a finding only ever exists for a real open problem. */
 const SEVERITY_TO_STATUS: Record< RawFinding[ 'severity' ], PageAnalysisCheck[ 'status' ] > = {
 	critical: 'fail',
 	high: 'fail',
@@ -132,25 +119,13 @@ interface IssueRow {
 	message: string;
 	target: SeoIssueEditorTarget | null;
 	fix?: RowFix;
-	/**
-	 * A second, manual option next to `fix` - jumps to the real WordPress field instead of running
-	 * the automatic action, for checks (like Featured Image) whose fix a site owner may reasonably
-	 * want to do by hand.
-	 */
+	/** A manual option next to `fix` - jumps to the real WordPress field instead of running the automatic action. */
 	manualFix?: { label: string; onClick: () => void };
-	/**
-	 * Set right after `onFix` resolves, before the re-analysis this tab triggers comes back - so the
-	 * row shows fixed immediately instead of sitting on its old cross/"Fix" state for the length of
-	 * that round trip.
-	 */
+	/** Set right after `onFix` resolves so the row shows fixed immediately, before the re-analysis round trip returns. */
 	justFixed?: boolean;
 }
 
-/**
- * Opens the Document sidebar and expands WordPress core's own Featured Image panel - the real
- * manual field, not one of VuloPilot's own tabs, so this doesn't go through `onNavigate`/
- * `SEO_ISSUE_EDITOR_TARGETS` at all.
- */
+/** Opens the Document sidebar and expands WordPress core's own Featured Image panel. */
 const jumpToFeaturedImagePanel = () => {
 	( dispatch( 'core/edit-post' ) as any ).openGeneralSidebar( 'edit-post/document' );
 
@@ -213,7 +188,7 @@ const rowFromFinding = ( finding: RawFinding, fixedIds: Set< string > ): IssueRo
 /** Live checks about the post body itself - shown in their own "Content" section. */
 const CONTENT_CHECK_IDS = [ 'content_length', 'has_subheadings', 'has_links', 'image_alt', 'keyword_in_content', 'keyword_in_first_paragraph' ];
 
-/** AI actions that rewrite `post_content` (`PostSeoFixRest::CONTENT_MUTATING_ACTIONS`). */
+/** AI actions that rewrite post_content. */
 const CONTENT_MUTATING_ACTIONS = [ 'improve-readability', 'add-subheadings', 'expand-content', 'suggest-internal-links' ];
 
 /**
@@ -395,26 +370,46 @@ interface IssueSectionProps {
 	showSummary?: boolean;
 }
 
+/** Collapsible group: header always visible, rows expand/collapse on click. Starts open only when it contains the deep-link target. */
 function IssueSection( { heading, idPrefix, rows, isLoading, error, emptyMessage, pulsingId, onNavigate, fixControls, showSummary }: IssueSectionProps ) {
-	const summary = rows.some( ( row ) => 'fail' === row.status ) ? 'bad' : rows.some( ( row ) => 'warn' === row.status ) ? 'ok' : 'good';
-	const summaryLabel = { good: __( 'All Good', 'vulopilot' ), ok: __( 'Could Be Better', 'vulopilot' ), bad: __( 'Needs Improvement', 'vulopilot' ) }[ summary ];
+	const failCount = rows.filter( ( row ) => 'fail' === row.status ).length;
+	const warnCount = rows.filter( ( row ) => 'warn' === row.status ).length;
+	const summary = failCount > 0 ? 'bad' : warnCount > 0 ? 'ok' : 'good';
+	const summaryLabel =
+		failCount > 0
+			? sprintf( /* translators: %d: number of failing checks. */ _n( '%d Error', '%d Errors', failCount, 'vulopilot' ), failCount )
+			: warnCount > 0
+				? sprintf( /* translators: %d: number of checks that could be improved. */ _n( '%d Warning', '%d Warnings', warnCount, 'vulopilot' ), warnCount )
+				: __( 'All Good', 'vulopilot' );
+
+	const containsPulsingRow = Boolean( pulsingId ) && rows.some( ( row ) => row.id === pulsingId );
+	const [ isOpenState, setIsOpenState ] = useState( false );
+	const isOpen = isOpenState || containsPulsingRow;
 
 	return (
-		<div className="vulopilot-seo-checklist">
-			<div className="vulopilot-seo-checklist__header">
+		<div className={ `vulopilot-seo-checklist vulopilot-seo-checklist--collapsible${ isOpen ? ' vulopilot-seo-checklist--open' : '' }` }>
+			<button
+				type="button"
+				className="vulopilot-seo-checklist__header"
+				aria-expanded={ isOpen }
+				onClick={ () => setIsOpenState( ( open ) => ! open ) }
+			>
 				<span className="title vulopilot-seo-checklist__title">{ heading }</span>
 				{ showSummary && rows.length > 0 && (
 					<span className={ `vulopilot-seo-checklist__summary vulopilot-seo-checklist__summary--${ summary }` }>{ summaryLabel }</span>
 				) }
-			</div>
-			{ isLoading ? (
-				<div className="desc vulopilot-seo-checklist__error">{ __( 'Loading…', 'vulopilot' ) }</div>
-			) : error ? (
-				<div className="desc vulopilot-seo-checklist__error">{ error }</div>
-			) : 0 === rows.length ? (
-				<div className="desc vulopilot-seo-checklist__error">{ emptyMessage }</div>
-			) : (
-				<IssueList idPrefix={ idPrefix } rows={ rows } pulsingId={ pulsingId } onNavigate={ onNavigate } fixControls={ fixControls } />
+				<i className={ `dashicons dashicons-arrow-${ isOpen ? 'up' : 'down' }-alt2 vulopilot-seo-checklist__chevron` } />
+			</button>
+			{ isOpen && (
+				isLoading ? (
+					<div className="desc vulopilot-seo-checklist__error">{ __( 'Loading…', 'vulopilot' ) }</div>
+				) : error ? (
+					<div className="desc vulopilot-seo-checklist__error">{ error }</div>
+				) : 0 === rows.length ? (
+					<div className="desc vulopilot-seo-checklist__error">{ emptyMessage }</div>
+				) : (
+					<IssueList idPrefix={ idPrefix } rows={ rows } pulsingId={ pulsingId } onNavigate={ onNavigate } fixControls={ fixControls } />
+				)
 			) }
 		</div>
 	);
@@ -424,7 +419,11 @@ function IssueSection( { heading, idPrefix, rows, isLoading, error, emptyMessage
  * The metabox's "Page Analysis" tab - 3 headed sections (SEO / GEO Issues / AEO Issues).
  */
 export default function PageAnalysisTab( { highlightTarget, onNavigate }: PageAnalysisTabProps ) {
-	const { postId, title, excerpt, slug, content, meta, setTitle, setExcerpt } = usePostData();
+	const { postId, title, excerpt, slug, content, meta, setExcerpt, setMeta } = usePostData();
+	// Same per-post override GeneralTab.tsx's own SEO Title field writes - independent of the real
+	// post title, which "Fix with AI" must never silently rename (#bug: this used to call
+	// setTitle(), renaming the page itself).
+	const seoTitle = ( meta[ window.vulopilotPostSeo.metaKeys.seo_title ] as string ) || '';
 	const focusKeyword = ( meta[ window.vulopilotPostSeo.metaKeys.focus_keyword ] as string ) || '';
 
 	const [ liveResults, setLiveResults ] = useState< AnalysisResult[] >( [] );
@@ -545,7 +544,7 @@ export default function PageAnalysisTab( { highlightTarget, onNavigate }: PageAn
 		setIsAnalyzingLive( true );
 
 		const timeout = setTimeout( () => {
-			analyzePost( postId, { title, content, excerpt, slug, focus_keyword: focusKeyword } )
+			analyzePost( postId, { title: seoTitle || title, content, excerpt, slug, focus_keyword: focusKeyword } )
 				.then( ( response ) => {
 					if ( ! cancelled ) {
 						setLiveResults( response.results );
@@ -566,7 +565,7 @@ export default function PageAnalysisTab( { highlightTarget, onNavigate }: PageAn
 			cancelled = true;
 			clearTimeout( timeout );
 		};
-	}, [ postId, title, excerpt, slug, content, focusKeyword ] );
+	}, [ postId, title, seoTitle, excerpt, slug, content, focusKeyword ] );
 
 	const applyPostFix = ( actionId: string, response: FixResponse ) => {
 		if ( ! response.post ) {
@@ -574,7 +573,7 @@ export default function PageAnalysisTab( { highlightTarget, onNavigate }: PageAn
 		}
 
 		if ( 'write-meta-title' === actionId ) {
-			setTitle( response.post.title );
+			setMeta( { [ window.vulopilotPostSeo.metaKeys.seo_title ]: response.post.title } );
 		}
 
 		if ( 'write-meta-description' === actionId ) {
@@ -735,6 +734,7 @@ export default function PageAnalysisTab( { highlightTarget, onNavigate }: PageAn
 				pulsingId={ pulsingKey }
 				onNavigate={ onNavigate }
 				fixControls={ fixControls }
+				showSummary
 			/>
 
 			<IssueSection
@@ -747,6 +747,7 @@ export default function PageAnalysisTab( { highlightTarget, onNavigate }: PageAn
 				pulsingId={ pulsingKey }
 				onNavigate={ onNavigate }
 				fixControls={ fixControls }
+				showSummary
 			/>
 		</div>
 	);

@@ -7,6 +7,7 @@ import { ToggleInput } from '@zyra/inputs';
 import { formatWpDate } from '../../services/formatWpDate';
 import { nonceHeaders } from './seoIssuesShared';
 import './WhatShouldIFixFirst.scss';
+import type { PeriodDays } from './types';
 
 interface TrendPoint {
 	date: string;
@@ -26,8 +27,7 @@ interface SeoProgressResponse {
 	pages_improved: WeekStat;
 }
 
-/** Same real 7/30/90-day trio `GeoScoreSection.tsx`'s own identical "Score Snapshot" period toggle already established (`Geo::ALLOWED_PROGRESS_DAYS`). */
-type PeriodDays = '7' | '30' | '90';
+/** Same 7/30/90-day trio GeoScoreSection.tsx's "Score Snapshot" period toggle already uses. */
 const PERIOD_OPTIONS = [
 	{ key: '7', value: '7', label: __('7D', 'vulopilot') },
 	{ key: '30', value: '30', label: __('30D', 'vulopilot') },

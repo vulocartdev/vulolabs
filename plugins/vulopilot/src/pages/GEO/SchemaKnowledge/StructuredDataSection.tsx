@@ -92,20 +92,9 @@ const STATUS_SEVERITY_CLASS: Record<CoverageStatus, string> = {
 };
 
 /**
- * "Structured Data" section of the merged "Schema & Knowledge" tab.
- *
- * @type (SchemaCoverageAnalyzer::analyze() records `pages` per row, not
- * just a count) - in a persistent side panel (grid 8/4, table left / detail
- * right) rather than a popup lightbox ("the action
- * i want like above table when click inside details show but look intact
- * in Schema Coverage table" - "above table" being IssuesSection.tsx's own
- * table+`IssueDetailPanel` split immediately above this section on the
- * page): the table itself stays fully visible/unscrolled while a row's
- * detail is open, same real interaction shape, instead of a modal
- * overlaying everything. The first real row is auto-selected once a
- * snapshot loads, same "always something in the detail panel, not empty
- * until a first click" convention IssuesSection.tsx's own
- * `selectedGroup` already establishes.
+ * "Structured Data" section of the merged "Schema & Knowledge" tab - table left, detail panel
+ * right (grid 8/4), same split IssuesSection.tsx uses above it, instead of a popup lightbox.
+ * First real row auto-selects once a snapshot loads, same convention as `selectedGroup` there.
  */
 const StructuredDataSection = ({ coverage }: StructuredDataSectionProps) => {
 	const { snapshot, isLoading } = coverage;

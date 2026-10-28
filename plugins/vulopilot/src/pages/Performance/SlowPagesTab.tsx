@@ -55,7 +55,7 @@ interface PageSpeedSummary {
 	last_scanned_at: string | null;
 }
 
-interface PageSpeedIssue {
+export interface PageSpeedIssue {
 	issue: string;
 	affected_pages: number;
 }
@@ -98,7 +98,7 @@ const PAGE_TYPE_LABELS: Record<string, string> = {
 	category: __('Category Page', 'vulopilot'),
 };
 
-/** Same real 80/50/25 score bands `PageSpeedRepository::get_summary()` itself uses (`SCORE_GOOD`/`SCORE_NEEDS_IMPROVEMENT`/`SCORE_VERY_SLOW`). */
+/** Same 80/50/25 score bands the page-speed summary itself uses. */
 const avgScoreSummary = (score: number | null): string => {
 	if (null === score) {
 		return __('Not enough scanned pages yet to compute an average score.', 'vulopilot');

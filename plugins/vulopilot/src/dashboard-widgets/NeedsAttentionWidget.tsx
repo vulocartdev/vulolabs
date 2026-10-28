@@ -12,7 +12,7 @@ import {
 import DashboardWidget from './DashboardWidget';
 import { useApiList } from '../services/useApiList';
 import { formatWpDate } from '../services/formatWpDate';
-import { getCategoryTabLink } from '../services/getCategoryTabLink';
+import { getCategoryTabHash } from '../services/getCategoryTabLink';
 import { formatAffected } from '../components/Issues/issuesTypes';
 import type { FindingGroup } from '../components/Issues/issuesTypes';
 import { WidgetProps } from './types';
@@ -56,12 +56,12 @@ const NeedsAttentionWidget: React.FC<WidgetProps> = ({
 		status: 'open',
 		per_page: 5,
 	});
-	const toIssueItem = (group: FindingGroup, link: string) => ({
+	const toIssueItem = (group: FindingGroup, hash: string) => ({
 		id: `${group.scanner_id}-${group.category}`,
 		title: group.label,
 		desc: summarize(group.sample?.description),
 		action: () => {
-			window.location.href = link;
+			window.location.hash = hash;
 		},
 		tags: (
 			<>
@@ -151,7 +151,7 @@ const NeedsAttentionWidget: React.FC<WidgetProps> = ({
 								<ListComponent
 									className= "mini-card report"
 									items={openIssues.data.map((group) =>
-										toIssueItem(group, getCategoryTabLink(group.category))
+										toIssueItem(group, getCategoryTabHash(group.category))
 									)}
 								/>
 							),
@@ -177,7 +177,7 @@ const NeedsAttentionWidget: React.FC<WidgetProps> = ({
 									items={quickFixes.data.map((group) =>
 										toIssueItem(
 											group,
-											'?page=vulopilot#&tab=seo-visibility&subtab=seo'
+											'#&tab=seo-visibility&subtab=seo'
 										)
 									)}
 								/>

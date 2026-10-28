@@ -13,13 +13,7 @@ use VuloPilot\Utill\VuloPilotException;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Fetches `/ai-action-runs` to back the Dashboard's "Pending Approval"
- * widget. Creating via `/ai-action-runs` starts the lifecycle (called by
- * ContentToolRunner.tsx). `/ai-action-runs/{id}/approve|reject|rollback`
- * complete the write side via AiCopilot\ActionRunner::propose()/approve()/
- * reject()/rollback(). Each has real side effects (a site mutation, or an
- * AI provider call with cost), so each is its own route with its own
- * permission check rather than a generic PATCH.
+ * Fetches `/ai-action-runs` to back the Dashboard's "Pending Approval" widget. Creating via `/ai-action-runs` starts the lifecycle (called by ContentToolRunner.tsx).
  *
  * @class       AiActionRuns controller
  * @version     1.0.0

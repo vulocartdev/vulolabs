@@ -66,7 +66,7 @@ interface RunStats {
 	checked_at: number | null;
 }
 
-/** `ScanRepository::get_latest_completed()` - the most recent genuinely-finished run of either scanner, real `vulopilot_scans` columns. */
+/** The most recent genuinely-finished run of either scanner. */
 interface LastRunStats {
 	duration_ms: number;
 	finished_at: number;
@@ -92,18 +92,11 @@ const EMPTY_SUMMARY: BrokenFindingsSummary = {
 	ignored: 0,
 };
 
-/**
- * Same real "seo module gates its own scanners" check SeoTab.tsx and CrawlerTrafficTab.tsx already
- * use.
- */
+/** Same module-gate check SeoTab.tsx and CrawlerTrafficTab.tsx already use. */
 const isSeoModuleActive = () =>
 	vulopilotAppLocalizer.active_modules?.includes('technical-seo') ?? false;
 
-/**
- * Basic\BrokenLinksScanner/BrokenImagesScanner::scan() both store `{"url": "...", "reason":
- * "broken"|"unverified"}` in the finding's own `meta` column - this reads that JSON defensively
- * since `meta` is free-form per scanner.
- */
+/** Reads the finding's `meta` JSON defensively, since it's free-form per scanner. */
 const getFindingMeta = (
 	finding: Pick<BrokenLinkFinding, 'meta'>
 ): { url?: string; reason?: string; text?: string } => {
@@ -114,9 +107,7 @@ const getFindingMeta = (
 	}
 };
 
-/**
- * The real broken `a` tag's own visible text, for the "Link Text" column.
- */
+/** The broken `a` tag's own visible text, for the "Link Text" column. */
 const getLinkText = (finding: BrokenLinkFinding): string => {
 	const { text } = getFindingMeta(finding);
 
@@ -127,11 +118,7 @@ const getLinkText = (finding: BrokenLinkFinding): string => {
 	return text || __('(no visible text)', 'vulopilot');
 };
 
-/**
- * The real `a` tag's own raw visible text - `''` for a genuinely text-less anchor (an image-only
- * link) or a `broken-images` finding (which never captures text at all), never `getLinkText()`'s
- * own display placeholders ('-'/'(no visible text)').
- */
+/** Raw visible text, `''` when none - unlike getLinkText()'s display placeholders. */
 const getRawLinkText = (finding: BrokenLinkFinding): string =>
 	getFindingMeta(finding).text ?? '';
 
@@ -142,10 +129,7 @@ const getBrokenUrl = (finding: BrokenLinkFinding): string =>
 const truncateText = (text: string, maxLength = 15): string =>
 	text.length > maxLength ? `${text.slice(0, maxLength)}…` : text;
 
-/**
- * Resolves a broken URL down to a real, literal path `RedirectManager::maybe_apply_redirect()` can
- * actually intercept.
- */
+/** Resolves a broken URL down to a literal path a redirect rule can actually intercept. */
 const deriveSourcePath = (url: string): string | null => {
 	if (!url) {
 		return null;

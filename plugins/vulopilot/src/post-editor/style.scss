@@ -12,14 +12,80 @@
 	padding: 0 4px 12px;
 }
 
+// The editor header toolbar's own score pill cluster - `ToolbarScorePills.tsx`, portaled into
+// `.editor-header__settings` by `index.tsx`'s own `useToolbarScorePillsPortal()` (next to
+// Preview/Save). Sized down from the in-panel badges above since it has to fit a toolbar row.
+// A real <button>, not just a flex wrapper, since the whole cluster opens the sidebar on click.
+.vulopilot-toolbar-score-pills-root {
+	display: inline-flex;
+	align-items: center;
+}
+
+.vulopilot-toolbar-score-pills {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	border: none;
+	background: none;
+	padding: 0;
+	margin-right: 4px;
+	cursor: pointer;
+}
+
+.vulopilot-toolbar-score-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	padding: 2px 8px;
+	border: none;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1.4;
+	cursor: pointer;
+
+	.dashicons {
+		width: 13px;
+		height: 13px;
+		font-size: 13px;
+	}
+
+	&--good {
+		background: #d9ead1;
+		color: #2a5a1e;
+	}
+
+	&--ok {
+		background: #fcf1cd;
+		color: #8a6d1e;
+	}
+
+	&--bad {
+		background: #fadad7;
+		color: #8a1e1e;
+	}
+
+	&--loading {
+		background: #f0f0f1;
+		color: #757575;
+	}
+}
+
 .vulopilot-seo-score-badge {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
 	padding: 3px 10px;
+	border: none;
 	border-radius: 999px;
 	font-size: 12px;
 	font-weight: 600;
+	cursor: pointer;
+
+	&:hover,
+	&:focus-visible {
+		filter: brightness(0.95);
+	}
 
 	.dashicons {
 		width: 14px;
@@ -175,6 +241,8 @@
 		background: #f6f7f7;
 		border: none;
 		padding: 8px 10px;
+		margin: 0;
+		font: inherit;
 		cursor: pointer;
 		text-align: left;
 	}
@@ -184,6 +252,13 @@
 		font-weight: 600;
 		color: #1e1e1e;
 		flex-grow: 1;
+	}
+
+	&__dismiss {
+		min-width: 24px !important;
+		height: 24px !important;
+		padding: 0 !important;
+		flex-shrink: 0;
 	}
 
 	&__summary {
@@ -211,7 +286,8 @@
 			color: #8a6d1e;
 		}
 
-		&--bad {
+		&--bad,
+		&--needs_review {
 			background: #fadad7;
 			color: #8a1e1e;
 		}
@@ -355,4 +431,299 @@
 
 .vulopilot-seo-suggest-titles-toggle {
 	margin-bottom: 12px;
+}
+
+.vulopilot-seo-score-improvement {
+	margin: 0 4px 16px;
+	padding: 12px;
+	background: #f6f0ff;
+	border: 1px solid #ddc7fb;
+	border-radius: 4px;
+
+	&__headline {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 8px;
+		width: 100%;
+		margin: 0 0 8px;
+		padding: 0;
+		background: none;
+		border: none;
+		font-size: 13px;
+		font-weight: 600;
+		color: #1e1e1e;
+		text-align: left;
+		cursor: pointer;
+
+		.dashicons {
+			flex-shrink: 0;
+			color: #6c2bd9;
+		}
+	}
+
+	&__list {
+		list-style: none;
+		margin: 0 0 12px;
+		padding: 0;
+	}
+
+	&__item {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		padding: 5px 0;
+		border-bottom: 1px solid #e9ddfb;
+		font-size: 12px;
+
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+
+	&__category {
+		font-weight: 600;
+		color: #6c2bd9;
+	}
+
+	&__text {
+		color: #3c3c3c;
+	}
+
+	&__result {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		margin-top: 2px;
+		font-weight: 500;
+
+		.dashicons {
+			width: 13px;
+			height: 13px;
+			font-size: 13px;
+		}
+
+		&--fixed {
+			color: #00a32a;
+		}
+
+		&--failed {
+			color: #b32d2e;
+		}
+
+		&--skipped {
+			color: #757575;
+		}
+	}
+}
+
+.vulopilot-ai-visibility-score {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-bottom: 8px;
+
+	&__value {
+		font-size: 28px;
+		font-weight: 700;
+	}
+
+	&__max {
+		font-size: 14px;
+		color: #757575;
+	}
+
+	&__generated {
+		width: 100%;
+		font-size: 11px;
+		color: #757575;
+	}
+
+	&--good &__value {
+		color: #00a32a;
+	}
+
+	&--ok &__value {
+		color: #b26a00;
+	}
+
+	&--bad &__value {
+		color: #b32d2e;
+	}
+}
+
+.vulopilot-ai-visibility-reanalyze {
+	margin-bottom: 16px;
+}
+
+.vulopilot-topic-finder-modal {
+	width: min(900px, 90vw);
+
+	.components-tab-panel__tabs {
+		flex-wrap: wrap;
+	}
+}
+
+.vulopilot-keyword-picker {
+	margin-bottom: 12px;
+
+	&__results {
+		list-style: none;
+		margin: 4px 0 0;
+		padding: 0;
+		border: 1px solid #dcdcde;
+		border-radius: 4px;
+		max-height: 160px;
+		overflow-y: auto;
+
+		li {
+			border-bottom: 1px solid #f0f0f1;
+
+			&:last-child {
+				border-bottom: none;
+			}
+		}
+
+		.components-button {
+			width: 100%;
+			justify-content: flex-start;
+			padding: 6px 8px;
+		}
+	}
+}
+
+.vulopilot-overview-scores {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.vulopilot-overview-score {
+	flex: 1 1 100px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+	padding: 10px 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+	cursor: pointer;
+	text-align: left;
+
+	&:hover,
+	&:focus-visible {
+		background: #f6f7f7;
+	}
+
+	&__label {
+		font-size: 11px;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.3px;
+		color: #757575;
+	}
+
+	&__value {
+		font-size: 22px;
+		font-weight: 700;
+	}
+
+	&--good &__value {
+		color: #00a32a;
+	}
+
+	&--ok &__value {
+		color: #b26a00;
+	}
+
+	&--bad &__value {
+		color: #b32d2e;
+	}
+
+	&--neutral &__value,
+	&--loading &__value {
+		color: #1e1e1e;
+	}
+}
+
+.vulopilot-content-intelligence-decision {
+	position: relative;
+	margin-top: 8px;
+	padding: 10px 12px;
+	border-radius: 12px;
+	border: 1px solid #E2E8F0;
+	background: #F6F8FB;
+
+	strong {
+		display: block;
+		margin-bottom: 2px;
+		padding-right: 24px;
+	}
+
+	&__close {
+		position: absolute;
+		top: 4px;
+		right: 4px;
+		min-width: 24px !important;
+		height: 24px !important;
+		padding: 0 !important;
+	}
+
+	&.is-create {
+		border-color: #00A32A;
+		background: #EDFBF0;
+	}
+
+	&.is-improve {
+		border-color: #2563EB;
+		background: #EEF2FF;
+	}
+
+	&.is-rethink {
+		border-color: #B32D2E;
+		background: #FDEEEE;
+	}
+}
+
+.vulopilot-content-intelligence-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 8px;
+}
+
+.vulopilot-content-intelligence-explore-error {
+	width: 100%;
+	margin-top: 4px;
+
+	p {
+		margin-bottom: 6px;
+	}
+}
+
+.vulopilot-content-intelligence-brief {
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px solid #E2E8F0;
+}
+
+.vulopilot-content-intelligence-compare {
+	width: 100%;
+	margin-top: 8px;
+	font-size: 12px;
+
+	th {
+		text-align: left;
+		vertical-align: top;
+		padding: 4px 8px 4px 0;
+		color: #757575;
+		white-space: nowrap;
+	}
+
+	td {
+		padding: 4px 0;
+	}
 }

@@ -29,7 +29,7 @@ class SiteToneLearner {
 	/**
 	 * SiteToneLearner constructor.
 	 *
-	 * @param AiRequestSender          $request_sender Sends a prompt through the safety-validate → send → sanitize sequence.
+	 * @param AiRequestSender            $request_sender Sends a prompt through the safety-validate → send → sanitize sequence.
 	 * @param ActivityLogRepository|null $activity_logs  Defaults to a new instance (injectable for tests).
 	 */
 	public function __construct( AiRequestSender $request_sender, ?ActivityLogRepository $activity_logs = null ) {

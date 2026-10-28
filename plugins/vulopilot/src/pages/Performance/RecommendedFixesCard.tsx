@@ -3,11 +3,7 @@ import { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { getApiLink, sendApiResponse } from '@zyra/core';
 import { CardComponent, ListComponent, NoticeManager } from '@zyra/components';
-
-interface PageSpeedIssue {
-	issue: string;
-	affected_pages: number;
-}
+import type { PageSpeedIssue } from './SlowPagesTab';
 
 interface RecommendedFix {
 	actionId: string;

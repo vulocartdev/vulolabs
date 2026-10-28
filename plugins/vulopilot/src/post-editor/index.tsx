@@ -1,9 +1,69 @@
 import { registerPlugin } from '@wordpress/plugins';
-import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/edit-post';
+import { PluginSidebar, PluginSidebarMoreMenuItem } from '@wordpress/editor';
 import { dispatch } from '@wordpress/data';
-import { useEffect } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
+import { createPortal } from 'react-dom';
 import { __ } from '@wordpress/i18n';
 import PostSeoPanel from './PostSeoPanel';
+import ToolbarScorePills from './ToolbarScorePills';
+
+// The text-selection AI toolbar is Pro-only - vulopilot-pro's own post-editor bundle registers
+// it directly (TextSelectionActionsPanel.tsx), only while licensed.
+
+/**
+ * `PluginSidebar`'s `icon` prop can't fit our two text pills, so this portals them straight into
+ * the header's settings row (`.editor-header__settings`) instead. That row is a hardcoded
+ * `Fragment` with no public Slot/Fill, and React wipes a plain `insertBefore()` on its next
+ * re-render - so a MutationObserver re-inserts the container every time it gets evicted.
+ */
+const useToolbarScorePillsPortal = () => {
+	const [ container, setContainer ] = useState< HTMLElement | null >( null );
+
+	useEffect( () => {
+		let cancelled = false;
+		let observer: MutationObserver | null = null;
+
+		const ensureMounted = ( settingsRow: Element ) => {
+			if ( settingsRow.querySelector( '.vulopilot-toolbar-score-pills-root' ) ) {
+				return;
+			}
+
+			const root = document.createElement( 'div' );
+			root.className = 'vulopilot-toolbar-score-pills-root';
+			settingsRow.insertBefore( root, settingsRow.firstChild );
+			setContainer( root );
+		};
+
+		const findAndWatch = () => {
+			if ( cancelled ) {
+				return;
+			}
+
+			const settingsRow = document.querySelector( '.editor-header__settings' );
+
+			if ( ! settingsRow ) {
+				// The header mounts asynchronously - keep trying until it exists.
+				requestAnimationFrame( findAndWatch );
+				return;
+			}
+
+			ensureMounted( settingsRow );
+
+			observer = new MutationObserver( () => ensureMounted( settingsRow ) );
+			observer.observe( settingsRow, { childList: true } );
+		};
+
+		findAndWatch();
+
+		return () => {
+			cancelled = true;
+			observer?.disconnect();
+		};
+	}, [] );
+
+	return container;
+};
+
 import {
 	getEditorTargetForScanner,
 	SEO_ISSUE_QUERY_PARAM,
@@ -60,6 +120,60 @@ const readDeepLinkTarget = (): DeepLinkTarget => {
 // Read once at module scope, before first render - deep-link state is static for the lifetime of
 // this editor page load.
 const { wasPresent: shouldOpenSidebar, tab: deepLinkTab, target: deepLinkHighlight } = readDeepLinkTarget();
+
+/**
+ * Opens the SEO sidebar the first time the user clicks into the title field. The editor canvas
+ * (title included) renders in its own iframe since WP 5.9, so this polls for `contentDocument`
+ * the same way `useToolbarScorePillsPortal` does, and attaches the listener there instead of on
+ * the top-level `document`. Fires once per page load, never re-opens after the user closes it.
+ */
+const useOpenSidebarOnTitleClick = () => {
+	useEffect( () => {
+		let cancelled = false;
+		let attachedDoc: Document | null = null;
+		const firedRef = { current: false };
+
+		const onFocusIn = ( event: FocusEvent ) => {
+			if ( firedRef.current ) {
+				return;
+			}
+
+			const target = event.target as HTMLElement | null;
+			const isTitleField = Boolean( target?.closest( '.editor-post-title__input' ) );
+
+			if ( ! isTitleField ) {
+				return;
+			}
+
+			firedRef.current = true;
+			dispatch( 'core/edit-post' ).openGeneralSidebar( `vulopilot-seo/${ SIDEBAR_NAME }` );
+		};
+
+		const tryAttach = () => {
+			if ( cancelled || firedRef.current ) {
+				return;
+			}
+
+			const iframe = document.querySelector< HTMLIFrameElement >( 'iframe[name="editor-canvas"]' );
+			const doc = iframe?.contentDocument;
+
+			if ( doc && doc !== attachedDoc ) {
+				attachedDoc?.removeEventListener( 'focusin', onFocusIn );
+				doc.addEventListener( 'focusin', onFocusIn );
+				attachedDoc = doc;
+			}
+
+			requestAnimationFrame( tryAttach );
+		};
+
+		tryAttach();
+
+		return () => {
+			cancelled = true;
+			attachedDoc?.removeEventListener( 'focusin', onFocusIn );
+		};
+	}, [] );
+};
 
 /**
  * The post-editor SEO metabox, mounted separately from the dashboard app.
@@ -120,6 +234,20 @@ const VuloPilotIcon = () => (
  * VuloPilot SEO sidebar.
  */
 const VuloPilotSeoPlugin = () => {
+	const toolbarPortalContainer = useToolbarScorePillsPortal();
+	// Toolbar score pills live in a separate portaled tree from PostSeoPanel below, so a click
+	// on one needs to reach the panel's tab state from here, the shared parent - `requestedTab`
+	// bridges the two. Re-keys on every click (`Date.now()`) so clicking the same pill twice in a
+	// row still re-navigates even though the tab name itself didn't change.
+	const [ requestedTab, setRequestedTab ] = useState< { tab: 'general' | 'ai-visibility'; target?: string; nonce: number } | null >( null );
+
+	const openSidebarToTab = ( tab: 'general' | 'ai-visibility', target?: string ) => {
+		setRequestedTab( { tab, target, nonce: Date.now() } );
+		dispatch( 'core/edit-post' ).openGeneralSidebar( `vulopilot-seo/${ SIDEBAR_NAME }` );
+	};
+
+	useOpenSidebarOnTitleClick();
+
 	useEffect( () => {
 		if ( ! shouldOpenSidebar ) {
 			return;
@@ -148,7 +276,15 @@ const VuloPilotSeoPlugin = () => {
 
 	return (
 		<>
-			<PluginSidebarMoreMenuItem target={ SIDEBAR_NAME }>
+			{ toolbarPortalContainer && createPortal(
+				<ToolbarScorePills
+					onClickSeo={ () => openSidebarToTab( 'general', 'snippet' ) }
+					onClickAeo={ () => openSidebarToTab( 'ai-visibility' ) }
+				/>,
+				toolbarPortalContainer
+			) }
+
+			<PluginSidebarMoreMenuItem target={ SIDEBAR_NAME } icon={ <VuloPilotIcon /> }>
 				{ __( 'VuloPilot SEO', 'vulopilot' ) }
 			</PluginSidebarMoreMenuItem>
 
@@ -158,8 +294,10 @@ const VuloPilotSeoPlugin = () => {
 				icon={ <VuloPilotIcon /> }
 			>
 				<PostSeoPanel
-					initialTabName={ deepLinkTab }
-					highlightTarget={ deepLinkHighlight }
+					initialTabName={ requestedTab?.tab ?? deepLinkTab }
+					highlightTarget={ requestedTab ? undefined : deepLinkHighlight }
+					navigationNonce={ requestedTab?.nonce }
+					navigationTarget={ requestedTab?.target }
 				/>
 			</PluginSidebar>
 		</>

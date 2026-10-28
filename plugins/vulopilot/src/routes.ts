@@ -30,3 +30,5 @@ registerVuloPilotRoute({ tab: 'security', component: Security });
 registerVuloPilotRoute({ tab: 'site-health', component: SiteHealth });
 registerVuloPilotRoute({ tab: 'accessibility', component: Accessibility });
 registerVuloPilotRoute({ tab: 'content', component: Content });
+// 'content-planner' is registered by vulopilot-pro's ContentOptimization module
+// (modules/ContentOptimization/src/index.tsx) - Pro-only, no Free fallback page.

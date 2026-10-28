@@ -4,11 +4,7 @@ namespace VuloPilot\Utill;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Fetches `/scans` to list past scan runs; submitting to `/scans` triggers one synchronously
- * via VuloPilot()->scan_runner (Scanners\ScanRunner - already wired in
- * VuloPilot::init_classes()). Persistence of the result happens via
- * Services\ScanPersistenceListener's `vulopilot_scan_completed` hook, not
- * anything in this controller - it only asks the runner to run.
+ * Fetches `/scans` to list past scan runs.
  *
  * @class       Scans controller
  * @version     1.0.0
@@ -81,7 +77,11 @@ class Scans extends \WP_REST_Controller {
 		$categories  = $this->parse_comma_separated_list( $request->get_param( 'category' ) );
 
 		if ( $categories ) {
-			$registry = new ScannerRegistry();
+			// The shared, already-populated registry - a fresh `new ScannerRegistry()` has no
+			// scanner sources registered (those are merged in once, onto VuloPilot()'s own
+			// instance, via the `vulopilot_scanner_sources` filter during init_classes()), so
+			// every category lookup against it would silently resolve to zero scanners.
+			$registry = VuloPilot()->scanner_registry;
 
 			foreach ( $categories as $category ) {
 				$scanner_ids = array_merge( $scanner_ids, array_keys( $registry->get_scanners_by_category( $category ) ) );
@@ -105,18 +105,9 @@ class Scans extends \WP_REST_Controller {
 	}
 
 	/**
+	 * Comma-separated `category` scopes the run and takes precedence over `scanner_id`. Treated as a forced, user-initiated run unless the caller sends `trigger_type=scheduled`, so rate-limited scanners still run on demand.
+	 *
 	 * @inheritDoc
-	 *
-	 * Comma-separated `category` scopes the run and takes precedence over `scanner_id`.
-	 * Treated as a forced, user-initiated run unless the caller sends
-	 * `trigger_type=scheduled`, so rate-limited scanners still run on demand.
-	 *
-	 * Never runs scanners inline: there are ~85 registered scanners today, several making
-	 * their own network calls, so running them all within this one request can take far
-	 * longer than PHP's own max_execution_time (commonly 30s) and 500 the request before
-	 * most scanners even get a turn. `ScanRunner::run_queued()` instead queues them for
-	 * background batch ticks (same shape as BackupManager's own batch queue) and this
-	 * returns immediately - the frontend polls `/scans/status` for completion.
 	 */
 	public function create_item( $request ) {
 		$force      = 'scheduled' !== sanitize_key( (string) $request->get_param( 'trigger_type' ) );

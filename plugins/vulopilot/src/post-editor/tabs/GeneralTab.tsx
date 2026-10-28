@@ -1,6 +1,6 @@
 import { __ } from '@wordpress/i18n';
 import { Button, TextControl, TextareaControl, ToggleControl } from '@wordpress/components';
-import { useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import type { ComponentType } from 'react';
 import { usePostData } from '../usePostData';
 import SnippetPreview from '../SnippetPreview';
@@ -16,12 +16,18 @@ interface GeneralTabProps {
 }
 
 /**
- * The metabox's General tab - focus keyword, SEO title (native `post_title`), meta description
- * (native `post_excerpt`), a live snippet preview.
+ * The metabox's General tab - focus keyword, SEO title (its own `_vulopilot_seo_title` postmeta,
+ * independent of the real `post_title`), meta description (native `post_excerpt`), a live
+ * snippet preview.
  */
 export default function GeneralTab( { highlightTarget }: GeneralTabProps ) {
-	const { postId, title, excerpt, slug, meta, setTitle, setExcerpt, setMeta } = usePostData();
+	const { postId, title, excerpt, slug, meta, setExcerpt, setMeta } = usePostData();
 	const { metaKeys, shopUrl } = window.vulopilotPostSeo;
+	// Independent of the real post title (the editor's own Title field/`post_title`) - an empty
+	// override here just means "use the page's own title", same fallback every other SEO plugin's
+	// per-post title field uses.
+	const seoTitle = ( meta[ metaKeys.seo_title ] as string ) || '';
+	const setSeoTitle = ( value: string ) => setMeta( { [ metaKeys.seo_title ]: value } );
 	const canonicalUrl = ( meta[ metaKeys.canonical_url ] as string ) || '';
 	const noindex = Boolean( meta[ metaKeys.robots_noindex ] );
 	const nofollow = Boolean( meta[ metaKeys.robots_nofollow ] );
@@ -38,6 +44,28 @@ export default function GeneralTab( { highlightTarget }: GeneralTabProps ) {
 	const [ isEditingSnippet, setIsEditingSnippet ] = useState( false );
 	const [ isAddingKeyword, setIsAddingKeyword ] = useState( false );
 	const [ keywordDraft, setKeywordDraft ] = useState( '' );
+	const [ isSnippetPulsing, setIsSnippetPulsing ] = useState( false );
+
+	// Score pill deep link (`snippet-<nonce>` target) - opens the collapsed snippet editor and
+	// pulses it. Not `useFieldHighlight` directly, since this must open `isEditingSnippet` first
+	// before the target element exists; the nonce suffix lets a second click re-trigger even
+	// without a remount.
+	useEffect( () => {
+		if ( ! highlightTarget?.startsWith( 'snippet' ) ) {
+			return;
+		}
+
+		setIsEditingSnippet( true );
+
+		const timeout = setTimeout( () => {
+			document.getElementById( 'vulopilot-seo-field-snippet' )
+				?.scrollIntoView( { behavior: 'smooth', block: 'center' } );
+			setIsSnippetPulsing( true );
+			setTimeout( () => setIsSnippetPulsing( false ), 4000 );
+		}, 50 );
+
+		return () => clearTimeout( timeout );
+	}, [ highlightTarget ] );
 
 	/** vulopilot-pro's own "Suggest Titles" button + popup. */
 	// eslint-disable-next-line no-unused-vars
@@ -73,7 +101,7 @@ export default function GeneralTab( { highlightTarget }: GeneralTabProps ) {
 			<div className="vulopilot-seo-section-label">{ __( 'Preview', 'vulopilot' ) }</div>
 
 			<SnippetPreview
-				title={ title }
+				title={ seoTitle || title }
 				description={ excerpt }
 				url={ window.location.origin + '/' + slug }
 				siteName={ document.title.split( '‹' ).pop()?.trim() || '' }
@@ -92,16 +120,20 @@ export default function GeneralTab( { highlightTarget }: GeneralTabProps ) {
 			</Button>
 
 			{ isEditingSnippet && (
-				<div className="vulopilot-seo-snippet-editor">
+				<div
+					id="vulopilot-seo-field-snippet"
+					className={ `vulopilot-seo-snippet-editor${ isSnippetPulsing ? ' vulopilot-seo-highlight-pulse' : '' }` }
+				>
 					<TextControl
 						label={ __( 'SEO Title', 'vulopilot' ) }
-						help={ __( 'This is the page title - shown in search results and used as the page heading.', 'vulopilot' ) + ` (${ title.length }/60)` }
-						value={ title }
-						onChange={ setTitle }
+						help={ __( 'Shown in search results and browser tabs - leave empty to use the page\'s own title.', 'vulopilot' ) + ` (${ ( seoTitle || title ).length }/60)` }
+						placeholder={ title }
+						value={ seoTitle }
+						onChange={ setSeoTitle }
 					/>
 
 					{ SuggestTitlesButton ? (
-						<SuggestTitlesButton postId={ postId } onApply={ setTitle } />
+						<SuggestTitlesButton postId={ postId } onApply={ setSeoTitle } />
 					) : (
 						<Button
 							variant="tertiary"

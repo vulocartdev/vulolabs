@@ -4,8 +4,7 @@ import { __ } from '@wordpress/i18n';
 import { getApiLink, getApiResponse } from '@zyra/core';
 import InfoBanner from '../../components/InfoBanner';
 
-/** `?page=vulopilot#&tab=site-health&subtab=backups`. */
-const BACKUPS_TAB_URL = '?page=vulopilot#&tab=site-health&subtab=backups';
+const BACKUPS_TAB_HASH = '#&tab=site-health&subtab=backups';
 
 /**
  * "Backup protection: Enabled/Not enabled" - a single real status line with a link.
@@ -57,8 +56,7 @@ const BackupProtectionNotice = ({
 			onAction={
 				onNavigateToBackups ??
 				(() => {
-					window.location.href = BACKUPS_TAB_URL;
-					window.location.reload();
+					window.location.hash = BACKUPS_TAB_HASH;
 				})
 			}
 		/>

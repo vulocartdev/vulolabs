@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { getApiLink, getApiResponse } from '@zyra/core';
+import type { PeriodDays } from './types';
 import {
 	CardComponent,
 	ChartComponent,
@@ -88,7 +89,6 @@ const AREA_TILES: Record<
 	crawl: { title: __('Crawl & URLs Score', 'vulopilot'), icon: 'url' },
 };
 
-type PeriodDays = '7' | '30' | '90';
 // Same real `key` field `GeoScoreSection.tsx`'s own identical `ToggleInput` usage already
 // includes.
 const PERIOD_OPTIONS = [

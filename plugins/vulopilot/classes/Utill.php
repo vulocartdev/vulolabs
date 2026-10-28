@@ -492,6 +492,19 @@ class Utill {
 		error_log( sprintf( '[VuloPilot] %s', $exception->getMessage() ) );
 	}
 
+	/**
+	 * Reads one key from the settings option, merged over VULOPILOT_SETTINGS_DEFAULTS.
+	 *
+	 * @param string $key     Settings array key to read.
+	 * @param mixed  $default Fallback when the key isn't in the defaults either.
+	 * @return mixed
+	 */
+	public static function get_setting( string $key, $default = null ) {
+		$settings = wp_parse_args( get_option( self::VULOPILOT_SETTINGS_KEY, array() ), self::VULOPILOT_SETTINGS_DEFAULTS );
+
+		return $settings[ $key ] ?? $default;
+	}
+
 	public function is_khali_dabba(): bool {
 		return (bool) apply_filters( 'kothay_dabba_vulopilot', false ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- deliberate, shared cross-plugin filter name (same kothay_dabba/kothay_dabba_{slug} pair vulocart/Utill.php and both *-pro plugins' check_pro_active() registrations use), not an accidental unprefixed hook.
 	}

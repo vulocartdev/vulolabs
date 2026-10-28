@@ -4,11 +4,7 @@ import { __, sprintf, _n } from '@wordpress/i18n';
 import { getApiLink, getApiResponse } from '@zyra/core';
 import { AnalyticsComponent, CardComponent, ModuleGuardComponent } from '@zyra/components';
 import { ButtonInput } from '@zyra/inputs';
-
-interface PageSpeedIssue {
-	issue: string;
-	affected_pages: number;
-}
+import type { PageSpeedIssue } from './SlowPagesTab';
 
 interface PageSpeedResponse {
 	top_issues: PageSpeedIssue[];

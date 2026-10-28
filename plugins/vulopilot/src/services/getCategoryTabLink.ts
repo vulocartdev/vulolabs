@@ -38,8 +38,8 @@ const CATEGORY_TAB_LINKS: Record<string, string> = {
  * every category's open findings unfiltered, so the link always lands
  * somewhere the finding genuinely appears.
  */
-export const getCategoryTabLink = (category?: string): string => {
+export const getCategoryTabHash = (category?: string): string => {
 	const target = CATEGORY_TAB_LINKS[category ?? ''] ?? 'health';
 
-	return `?page=vulopilot#&tab=${target}`;
+	return `#&tab=${target}`;
 };

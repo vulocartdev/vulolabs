@@ -14,11 +14,7 @@ interface PluginOverlapMatch {
 }
 
 interface PluginOverlapCardProps {
-	/**
-	 * Restricts this instance to one `PluginOverlap::KNOWN_OVERLAPS` category
-	 * (`seo`/`security`/`accessibility`/`automation`/`caching`) so the card can be promoted into
-	 * each theme's own tab - e.g. only `security` matches on the Security tab.
-	 */
+	/** Restricts this instance to one category (seo/security/accessibility/automation/caching), e.g. only `security` on the Security tab. */
 	category?: string;
 }
 

@@ -22,15 +22,9 @@ interface AttentionGroup {
 }
 
 /**
- * "Needs your attention" - flags only what actually stops an automation from working or needs
- * the user to act on; a paused automation or an idle agent isn't a problem on its own. Grouped
- * by flag type (not one row per automation) so "2 automations need setup" stays a single line.
- *
- * Only the 3 flags this data can actually support are wired up: setup incomplete (draft status),
- * run failed (`last_run_status`), and a cron-triggered automation with no scheduled run at all
- * (`next_run_at` null while enabled - the schedule itself never got (re)registered). Connection
- * missing, AI credits, and approval-required have no backing signal anywhere in this plugin yet,
- * so they're deliberately left out rather than shown against data that doesn't exist.
+ * "Needs your attention" - flags only what actually blocks an automation, grouped by flag type.
+ * Only 3 flags are wired up: setup incomplete, run failed, and a cron automation with no
+ * scheduled run. Connection/credits/approval flags have no backing signal yet, left out.
  */
 const AutomationsAttentionCard = ({ onViewAll, refetchSignal }: AutomationsAttentionCardProps) => {
 	const [rows, setRows] = useState<AutomationRow[]>([]);

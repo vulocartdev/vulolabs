@@ -117,10 +117,10 @@ class ThinkRankMigrator implements MigratorInterface {
 	 * @var array<string, string>
 	 */
 	private const SITE_IDENTITY_TOKEN_MAP = array(
-		'%site_name%'   => '%site_title%',
-		'%tagline%'     => '%site_description%',
-		'%separator%'   => '%sep%',
-		'%category%'    => '%category_title%',
+		'%site_name%' => '%site_title%',
+		'%tagline%'   => '%site_description%',
+		'%separator%' => '%sep%',
+		'%category%'  => '%category_title%',
 	);
 
 	/**
@@ -187,7 +187,11 @@ class ThinkRankMigrator implements MigratorInterface {
 		$this->migrate_settings( $overwrite, $migrated, $skipped );
 		$this->migrate_robots_txt( $overwrite, $migrated, $skipped, $errors );
 
-		return array( 'migrated' => $migrated, 'skipped' => $skipped, 'errors' => $errors );
+		return array(
+			'migrated' => $migrated,
+			'skipped'  => $skipped,
+			'errors'   => $errors,
+		);
 	}
 
 	// ---------------------------------------------------------------------
@@ -228,12 +232,12 @@ class ThinkRankMigrator implements MigratorInterface {
 				$existing = get_post_meta( $post_id, PostSeoMetaFields::META_KEYS['focus_keyword'], true );
 
 				if ( ! $overwrite && '' !== (string) $existing ) {
-					$skipped++;
+					++$skipped;
 					continue;
 				}
 
 				$this->migrate_post_row( $post_id );
-				$migrated++;
+				++$migrated;
 			} catch ( \Throwable $e ) {
 				$errors[] = sprintf( 'Post #%d: %s', $post_id, $e->getMessage() );
 			}
@@ -301,8 +305,8 @@ class ThinkRankMigrator implements MigratorInterface {
 		}
 
 		$schema_form_data = get_post_meta( $post_id, '_thinkrank_schema_form_data', true );
-		$schema_json       = is_string( $schema_form_data ) ? $schema_form_data : wp_json_encode( $schema_form_data );
-		$decoded_schema    = is_string( $schema_json ) ? json_decode( $schema_json, true ) : null;
+		$schema_json      = is_string( $schema_form_data ) ? $schema_form_data : wp_json_encode( $schema_form_data );
+		$decoded_schema   = is_string( $schema_json ) ? json_decode( $schema_json, true ) : null;
 
 		if ( is_array( $decoded_schema ) && ! empty( $decoded_schema ) ) {
 			update_post_meta( $post_id, '_vulopilot_schema_json', wp_json_encode( $decoded_schema ) );
@@ -344,7 +348,7 @@ class ThinkRankMigrator implements MigratorInterface {
 				$existing = get_post_meta( $post_id, '_vulopilot_content_score', true );
 
 				if ( ! $overwrite && '' !== (string) $existing ) {
-					$skipped++;
+					++$skipped;
 					continue;
 				}
 
@@ -365,7 +369,7 @@ class ThinkRankMigrator implements MigratorInterface {
 						)
 					)
 				);
-				$migrated++;
+				++$migrated;
 			} catch ( \Throwable $e ) {
 				$errors[] = sprintf( 'Content score for post #%d: %s', $post_id, $e->getMessage() );
 			}
@@ -418,12 +422,12 @@ class ThinkRankMigrator implements MigratorInterface {
 		$manager = new RobotsTxtManager();
 
 		if ( '' !== $manager->get_custom_content() && ! $overwrite ) {
-			$skipped++;
+			++$skipped;
 			return;
 		}
 
 		$manager->save_custom_content( $content );
-		$migrated++;
+		++$migrated;
 
 		$errors[] = __( 'ThinkRank writes its managed rules into the real physical robots.txt file on disk, which (if still present) is served directly by the webserver and bypasses every plugin\'s virtual robots.txt output, including VuloPilot\'s own - remove that physical file for the migrated content to actually take effect.', 'vulopilot' );
 	}
@@ -466,13 +470,13 @@ class ThinkRankMigrator implements MigratorInterface {
 				&& $settings[ $field ] !== ( Utill::VULOPILOT_SETTINGS_DEFAULTS[ $field ] ?? null );
 
 			if ( $is_customized && ! $overwrite ) {
-				$skipped++;
+				++$skipped;
 				continue;
 			}
 
 			$settings[ $field ] = $value;
-			$changed             = true;
-			$migrated++;
+			$changed            = true;
+			++$migrated;
 		}
 
 		if ( $changed ) {
@@ -726,8 +730,8 @@ class ThinkRankMigrator implements MigratorInterface {
 				continue;
 			}
 
-			$title = $this->translate_global_seo_template( (string) ( $config['title'] ?? '' ) );
-			$desc  = $this->translate_global_seo_template( (string) ( $config['description'] ?? '' ) );
+			$title   = $this->translate_global_seo_template( (string) ( $config['title'] ?? '' ) );
+			$desc    = $this->translate_global_seo_template( (string) ( $config['description'] ?? '' ) );
 			$noindex = ! empty( $config['robots']['noindex'] );
 
 			if ( 'archive:author' === $entity_key ) {

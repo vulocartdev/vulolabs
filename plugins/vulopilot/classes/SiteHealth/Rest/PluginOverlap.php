@@ -4,20 +4,7 @@ namespace VuloPilot\SiteHealth\Rest;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Fetches `/plugin-overlap` - backs "Protect My Site" → Files & Plugins' own
- * "VuloPilot already covers this" card.
- *
- * Deliberately NOT tied to any vulnerability finding: AdvancedVulnerabilitiesScanner's
- * own feed (LocalSeedVulnerabilityFeed) is illustrative-only sample data
- * matching two fictional plugin slugs - this repo's own documented policy
- * is to never name a real, currently-maintained third-party plugin in
- * relation to a vulnerability claim (see that class's own docblock). This
- * controller makes no such claim either way; it only checks whether a
- * real, currently-*active* plugin's category (SEO, security, accessibility,
- * caching, automation) overlaps with a real VuloPilot feature, the same
- * "known caching plugin" detection `EfficiencyChecks::has_known_caching_plugin()`
- * already does for its own unrelated check, generalized here across a
- * curated list of well-known plugin slugs.
+ * Fetches `/plugin-overlap` - backs "Protect My Site" → Files & Plugins' own "VuloPilot already covers this" card. Deliberately NOT tied to any vulnerability finding:
  *
  * @class       PluginOverlap controller
  * @version     1.0.0

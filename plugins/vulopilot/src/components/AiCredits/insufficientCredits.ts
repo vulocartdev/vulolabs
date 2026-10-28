@@ -6,6 +6,14 @@ import axios from 'axios';
  */
 export const INSUFFICIENT_CREDITS_EVENT = 'vulopilot:insufficient-credits';
 
+/** Dispatched by any page after a real metered AI action succeeds, so the global header pill
+ * (AiCreditsIndicator) refreshes its balance without that page needing its own copy of the pill. */
+export const CREDITS_SPENT_EVENT = 'vulopilot:credits-spent';
+
+export const announceCreditsSpent = (): void => {
+	window.dispatchEvent(new CustomEvent(CREDITS_SPENT_EVENT));
+};
+
 export interface InsufficientCreditsDetail {
 	creditsRemaining: number;
 	buyCreditsUrl: string;

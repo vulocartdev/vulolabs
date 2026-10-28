@@ -35,8 +35,8 @@ class AutomationScheduler {
 
 	/**
 	 * @param ScanRunner                    $scan_runner Runs row 1's real action.
-	 * @param AutomationsRepository|null     $automations Defaults to a new instance - injectable for tests.
-	 * @param AutomationsRunRepository|null  $runs        Defaults to a new instance - injectable for tests.
+	 * @param AutomationsRepository|null    $automations Defaults to a new instance - injectable for tests.
+	 * @param AutomationsRunRepository|null $runs        Defaults to a new instance - injectable for tests.
 	 */
 	public function __construct( ScanRunner $scan_runner, ?AutomationsRepository $automations = null, ?AutomationsRunRepository $runs = null ) {
 		$this->scan_runner = $scan_runner;
@@ -93,8 +93,8 @@ class AutomationScheduler {
 
 	/**
 	 * @param array<string, mixed> $row               Real automation row.
-	 * @param string                $hook              This row's own cron hook.
-	 * @param string[]              $valid_frequencies Frequencies this row's own UI actually offers (excludes 'manual').
+	 * @param string               $hook              This row's own cron hook.
+	 * @param string[]             $valid_frequencies Frequencies this row's own UI actually offers (excludes 'manual').
 	 * @return void
 	 */
 	private function reconcile_row( array $row, string $hook, array $valid_frequencies ): void {

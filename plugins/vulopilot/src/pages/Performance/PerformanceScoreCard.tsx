@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { getApiLink, getApiResponse, COLOR_PALETTE } from '@zyra/core';
+import type { PeriodDays, Rating } from './types';
 import {
 	CardComponent,
 	ChartComponent,
@@ -14,6 +15,7 @@ import './Performance.scss';
 import RealTimeMonitoringCard from './RealTimeMonitoringCard';
 import SpeedHistoryCard from './SpeedHistoryCard';
 import LiveSiteInsightsCard from '../Security/LiveSiteInsightsCard';
+import type { CoreWebVitalsSummary } from '../Security/LiveSiteInsightsCard';
 
 
 interface DashboardSummary {
@@ -25,14 +27,6 @@ interface DashboardSummary {
 	};
 }
 
-interface CoreWebVitalsSummary {
-	lcp_ms: number | null;
-	cls: number | null;
-	inp_ms: number | null;
-	sample_count: number;
-}
-
-type PeriodDays = '7' | '30' | '90';
 const PERIOD_OPTIONS = [
 	{ key: '7', value: '7', label: __('7D', 'vulopilot') },
 	{ key: '30', value: '30', label: __('30D', 'vulopilot') },
@@ -44,11 +38,6 @@ interface PerformanceScoreCardProps {
 	onViewDetails: () => void;
 }
 
-
-interface Rating {
-	label: string;
-	className: 'good' | 'needs-improvement' | 'poor';
-}
 
 /** Lighthouse's own real, documented 0-100 performance-score bands. */
 const getScoreRating = (score: number): Rating => {

@@ -8,6 +8,7 @@ import { formatWpDate } from '../../services/formatWpDate';
 import { useGeoScore } from './useGeoScore';
 import type { GeoSignalScore } from './useGeoScore';
 import './SeoVisibility.scss';
+import type { PeriodDays } from './types';
 
 const getRating = (score: number): string => {
 	if (score >= 70) {
@@ -109,7 +110,6 @@ const SIGNAL_META: { key: keyof import('./useGeoScore').GeoScoreResponse['signal
 	},
 ];
 
-type PeriodDays = '7' | '30' | '90';
 const PERIOD_OPTIONS = [
 	{ key: '7', value: '7', label: __('7D', 'vulopilot') },
 	{ key: '30', value: '30', label: __('30D', 'vulopilot') },

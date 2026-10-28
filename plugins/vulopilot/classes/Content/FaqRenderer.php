@@ -4,17 +4,9 @@ namespace VuloPilot\Content;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Real render logic for the `vulopilot/faq` block (`src/blocks/faq/render.php` calls
- * straight into this - see TableOfContentsRenderer's own docblock for why render.php
- * itself must stay declaration-free).
- *
- * Real `<details name="…">` exclusive-group accordion (native HTML, no JS needed for the
- * open/close interaction itself) when `allowMultipleOpen` is false - every browser that supports
- * `<details>` in the first place now supports `name` grouping, so closing a sibling when another
- * opens needs no hand-rolled JS. `layoutMode: 'expanded'` renders plain, always-visible
- * `<div>`s instead (no `<details>` at all), matching `FaqAccordion.js`'s own identical branch for
- * the editor's two real JS-rendered surfaces (canvas, live style preview) - see that file's own
- * docblock for why this is the one place the three can't literally share one component.
+ * Render logic for the `vulopilot/faq` block. Uses native `<details name="…">` exclusive-group
+ * accordion markup when `allowMultipleOpen` is false; `layoutMode: 'expanded'` renders plain
+ * always-visible `<div>`s instead, matching `FaqAccordion.js`'s editor branch.
  *
  * @class       FaqRenderer class
  * @version     1.0.0
@@ -22,10 +14,21 @@ defined( 'ABSPATH' ) || exit;
  */
 class FaqRenderer {
 
+	use StyleVarsTrait;
+
 	const ICON_GLYPHS = array(
-		'plus-minus' => array( 'closed' => '+', 'open' => '&#8722;' ),
-		'chevron'    => array( 'closed' => '&#8963;', 'open' => '&#8964;' ),
-		'arrow'      => array( 'closed' => '&#8594;', 'open' => '&#8595;' ),
+		'plus-minus' => array(
+			'closed' => '+',
+			'open'   => '&#8722;',
+		),
+		'chevron'    => array(
+			'closed' => '&#8963;',
+			'open'   => '&#8964;',
+		),
+		'arrow'      => array(
+			'closed' => '&#8594;',
+			'open'   => '&#8595;',
+		),
 	);
 
 	/**
@@ -39,23 +42,23 @@ class FaqRenderer {
 			return '';
 		}
 
-		$layout_mode          = 'expanded' === ( $attributes['layoutMode'] ?? 'accordion' ) ? 'expanded' : 'accordion';
-		$allow_multiple_open  = ! isset( $attributes['allowMultipleOpen'] ) || ! empty( $attributes['allowMultipleOpen'] );
-		$initial_open_index   = isset( $attributes['initialOpenIndex'] ) && is_numeric( $attributes['initialOpenIndex'] )
+		$layout_mode         = 'expanded' === ( $attributes['layoutMode'] ?? 'accordion' ) ? 'expanded' : 'accordion';
+		$allow_multiple_open = ! isset( $attributes['allowMultipleOpen'] ) || ! empty( $attributes['allowMultipleOpen'] );
+		$initial_open_index  = isset( $attributes['initialOpenIndex'] ) && is_numeric( $attributes['initialOpenIndex'] )
 			? (int) $attributes['initialOpenIndex']
 			: null;
-		$icon_style           = isset( self::ICON_GLYPHS[ $attributes['iconStyle'] ?? '' ] ) ? $attributes['iconStyle'] : 'plus-minus';
-		$icon_position        = 'left' === ( $attributes['iconPosition'] ?? 'right' ) ? 'left' : 'right';
-		$heading_level        = isset( $attributes['headingLevel'] ) ? (int) $attributes['headingLevel'] : 0;
-		$heading_level        = ( $heading_level >= 2 && $heading_level <= 6 ) ? $heading_level : 0;
+		$icon_style          = isset( self::ICON_GLYPHS[ $attributes['iconStyle'] ?? '' ] ) ? $attributes['iconStyle'] : 'plus-minus';
+		$icon_position       = 'left' === ( $attributes['iconPosition'] ?? 'right' ) ? 'left' : 'right';
+		$heading_level       = isset( $attributes['headingLevel'] ) ? (int) $attributes['headingLevel'] : 0;
+		$heading_level       = ( $heading_level >= 2 && $heading_level <= 6 ) ? $heading_level : 0;
 		// Real exclusive-group name, unique per block instance so independent FAQ blocks on the
 		// same page (or two instances of this same block) never fight over which item is open.
-		$group_name           = wp_unique_id( 'vulopilot-faq-' );
+		$group_name = wp_unique_id( 'vulopilot-faq-' );
 
-		$wrapper_class       = 'vulopilot-faq vulopilot-faq--icon-' . $icon_position
+		$wrapper_class      = 'vulopilot-faq vulopilot-faq--icon-' . $icon_position
 			. ( 'expanded' === $layout_mode ? ' vulopilot-faq--expanded' : '' )
 			. ( empty( $attributes['animationEnabled'] ) ? ' vulopilot-faq--no-animation' : '' );
-		$wrapper_attributes  = get_block_wrapper_attributes(
+		$wrapper_attributes = get_block_wrapper_attributes(
 			array(
 				'class' => $wrapper_class,
 				'style' => self::build_style_attribute( $attributes ),
@@ -105,10 +108,10 @@ class FaqRenderer {
 	}
 
 	/**
+	 * Both glyphs always render; CSS toggles which one shows via `[open]`, no JS needed.
+	 *
 	 * @param string $icon_style One of `self::ICON_GLYPHS`'s own keys.
-	 * @return string The real `.vulopilot-faq__icon` markup - both glyphs always render, CSS
-	 *                `[open] .vulopilot-faq__icon-open`/`-closed` toggles which one shows, same
-	 *                technique `FaqAccordion.js` uses so there's no JS needed to swap the glyph.
+	 * @return string The `.vulopilot-faq__icon` markup.
 	 */
 	private static function build_icon_html( string $icon_style ): string {
 		$glyph = self::ICON_GLYPHS[ $icon_style ] ?? self::ICON_GLYPHS['plus-minus'];
@@ -121,12 +124,9 @@ class FaqRenderer {
 	}
 
 	/**
-	 * Real PHP mirror of `faqStyleVars.js`'s own `buildFaqStyleVars()` - same `style.*` attribute
-	 * → CSS custom property mapping `public/styles/blocks.scss`'s own `.vulopilot-faq` rules read
-	 * (`var(--faq-*, <fallback>)`), including the same legacy `questionColor`/`questionFontSize`/
-	 * `answerColor`/`answerFontSize` fallback for a FAQ block saved before the `style` attribute
-	 * existed. An unset/empty value is simply omitted, same as the JS side, so the stylesheet's
-	 * own fallback (including the theme `--color-primary` chain for accent colors) applies.
+	 * PHP mirror of `faqStyleVars.js`'s `buildFaqStyleVars()`. Keeps the legacy
+	 * `questionColor`/`questionFontSize`/`answerColor`/`answerFontSize` fallback for FAQ
+	 * blocks saved before the `style` attribute existed.
 	 *
 	 * @param array<string, mixed> $attributes Real block attributes.
 	 * @return string A `--name:value;` CSS custom-property declaration list, or '' if nothing is set.
@@ -146,38 +146,20 @@ class FaqRenderer {
 
 		$vars = array();
 
-		$set = static function ( string $name, $value ) use ( &$vars ): void {
-			if ( '' !== $value && null !== $value ) {
-				$vars[ $name ] = $value;
-			}
-		};
-
-		$set_box = static function ( string $prefix, $box ) use ( &$vars, $set ): void {
-			if ( ! is_array( $box ) ) {
-				return;
-			}
-
-			foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) {
-				if ( isset( $box[ $side ] ) ) {
-					$set( "{$prefix}-{$side}", $box[ $side ] );
-				}
-			}
-		};
-
-		$set_border = static function ( string $prefix, $border ) use ( &$vars, $set ): void {
+		$set_border = static function ( string $prefix, $border ) use ( &$vars ): void {
 			if ( ! is_array( $border ) ) {
 				return;
 			}
 
-			$set( "{$prefix}-color", $border['color'] ?? '' );
-			$set( "{$prefix}-width", $border['width'] ?? '' );
-			$set( "{$prefix}-style", $border['style'] ?? '' );
+			self::set_style_var( $vars, "{$prefix}-color", $border['color'] ?? '' );
+			self::set_style_var( $vars, "{$prefix}-width", $border['width'] ?? '' );
+			self::set_style_var( $vars, "{$prefix}-style", $border['style'] ?? '' );
 		};
 
 		// Layout.
-		$set( '--faq-item-gap', $layout['itemGap'] ?? '' );
-		$set( 'width', $layout['width'] ?? '' );
-		$set( 'max-width', $layout['maxWidth'] ?? '' );
+		self::set_style_var( $vars, '--faq-item-gap', $layout['itemGap'] ?? '' );
+		self::set_style_var( $vars, 'width', $layout['width'] ?? '' );
+		self::set_style_var( $vars, 'max-width', $layout['maxWidth'] ?? '' );
 		if ( ! empty( $layout['maxWidth'] ) ) {
 			if ( 'center' === ( $layout['align'] ?? '' ) ) {
 				$vars['margin-left']  = 'auto';
@@ -188,66 +170,66 @@ class FaqRenderer {
 		}
 
 		// Container.
-		$set( '--faq-container-background', $container['background'] ?? '' );
-		$set_box( '--faq-container-padding', $container['padding'] ?? null );
+		self::set_style_var( $vars, '--faq-container-background', $container['background'] ?? '' );
+		self::set_style_box_vars( $vars, '--faq-container-padding', $container['padding'] ?? null );
 		$set_border( '--faq-container-border', $container['border'] ?? null );
-		$set( '--faq-container-radius', $container['radius'] ?? '' );
-		$set( '--faq-container-shadow', $container['shadow'] ?? '' );
+		self::set_style_var( $vars, '--faq-container-radius', $container['radius'] ?? '' );
+		self::set_style_var( $vars, '--faq-container-shadow', $container['shadow'] ?? '' );
 
 		// FAQ item.
-		$set( '--faq-item-background', $item['background'] ?? '' );
+		self::set_style_var( $vars, '--faq-item-background', $item['background'] ?? '' );
 		$set_border( '--faq-item-border', $item['border'] ?? null );
-		$set( '--faq-item-radius', $item['radius'] ?? '' );
-		$set( '--faq-item-shadow', $item['shadow'] ?? '' );
+		self::set_style_var( $vars, '--faq-item-radius', $item['radius'] ?? '' );
+		self::set_style_var( $vars, '--faq-item-shadow', $item['shadow'] ?? '' );
 
 		// Question - legacy `questionColor`/`questionFontSize` fallback.
-		$set( '--faq-question-font-family', $question['fontFamily'] ?? '' );
-		$set( '--faq-question-font-size', $question['fontSize'] ?? ( $attributes['questionFontSize'] ?? '' ) );
-		$set( '--faq-question-font-weight', $question['fontWeight'] ?? '' );
-		$set( '--faq-question-line-height', $question['lineHeight'] ?? null );
-		$set( '--faq-question-letter-spacing', $question['letterSpacing'] ?? '' );
-		$set( '--faq-question-text-align', $question['textAlign'] ?? '' );
-		$set( '--faq-question-color', $question['color'] ?? ( $attributes['questionColor'] ?? '' ) );
-		$set( '--faq-question-background', $question['background'] ?? '' );
-		$set_box( '--faq-question-padding', $question['padding'] ?? null );
+		self::set_style_var( $vars, '--faq-question-font-family', $question['fontFamily'] ?? '' );
+		self::set_style_var( $vars, '--faq-question-font-size', $question['fontSize'] ?? ( $attributes['questionFontSize'] ?? '' ) );
+		self::set_style_var( $vars, '--faq-question-font-weight', $question['fontWeight'] ?? '' );
+		self::set_style_var( $vars, '--faq-question-line-height', $question['lineHeight'] ?? null );
+		self::set_style_var( $vars, '--faq-question-letter-spacing', $question['letterSpacing'] ?? '' );
+		self::set_style_var( $vars, '--faq-question-text-align', $question['textAlign'] ?? '' );
+		self::set_style_var( $vars, '--faq-question-color', $question['color'] ?? ( $attributes['questionColor'] ?? '' ) );
+		self::set_style_var( $vars, '--faq-question-background', $question['background'] ?? '' );
+		self::set_style_box_vars( $vars, '--faq-question-padding', $question['padding'] ?? null );
 
 		// Answer - legacy `answerColor`/`answerFontSize` fallback.
-		$set( '--faq-answer-font-family', $answer['fontFamily'] ?? '' );
-		$set( '--faq-answer-font-size', $answer['fontSize'] ?? ( $attributes['answerFontSize'] ?? '' ) );
-		$set( '--faq-answer-font-weight', $answer['fontWeight'] ?? '' );
-		$set( '--faq-answer-line-height', $answer['lineHeight'] ?? null );
-		$set( '--faq-answer-color', $answer['color'] ?? ( $attributes['answerColor'] ?? '' ) );
-		$set( '--faq-answer-background', $answer['background'] ?? '' );
-		$set_box( '--faq-answer-padding', $answer['padding'] ?? null );
-		$set( '--faq-answer-link-color', $answer['linkColor'] ?? '' );
+		self::set_style_var( $vars, '--faq-answer-font-family', $answer['fontFamily'] ?? '' );
+		self::set_style_var( $vars, '--faq-answer-font-size', $answer['fontSize'] ?? ( $attributes['answerFontSize'] ?? '' ) );
+		self::set_style_var( $vars, '--faq-answer-font-weight', $answer['fontWeight'] ?? '' );
+		self::set_style_var( $vars, '--faq-answer-line-height', $answer['lineHeight'] ?? null );
+		self::set_style_var( $vars, '--faq-answer-color', $answer['color'] ?? ( $attributes['answerColor'] ?? '' ) );
+		self::set_style_var( $vars, '--faq-answer-background', $answer['background'] ?? '' );
+		self::set_style_box_vars( $vars, '--faq-answer-padding', $answer['padding'] ?? null );
+		self::set_style_var( $vars, '--faq-answer-link-color', $answer['linkColor'] ?? '' );
 
 		// Icon.
-		$set( '--faq-icon-size', $icon['size'] ?? '' );
-		$set( '--faq-icon-color', $icon['color'] ?? '' );
-		$set( '--faq-icon-spacing', $icon['spacing'] ?? '' );
-		$set( '--faq-icon-background', $icon['background'] ?? '' );
-		$set( '--faq-icon-radius', $icon['radius'] ?? '' );
+		self::set_style_var( $vars, '--faq-icon-size', $icon['size'] ?? '' );
+		self::set_style_var( $vars, '--faq-icon-color', $icon['color'] ?? '' );
+		self::set_style_var( $vars, '--faq-icon-spacing', $icon['spacing'] ?? '' );
+		self::set_style_var( $vars, '--faq-icon-background', $icon['background'] ?? '' );
+		self::set_style_var( $vars, '--faq-icon-radius', $icon['radius'] ?? '' );
 
 		// Interaction states.
-		$set( '--faq-hover-border-color', $states['hoverBorderColor'] ?? '' );
-		$set( '--faq-expanded-border-color', $states['expandedBorderColor'] ?? '' );
-		$set( '--faq-expanded-background', $states['expandedBackground'] ?? '' );
-		$set( '--faq-expanded-shadow', $states['expandedShadow'] ?? '' );
-		$set( '--faq-expanded-question-color', $states['expandedQuestionColor'] ?? '' );
-		$set( '--faq-expanded-icon-background', $states['expandedIconBackground'] ?? '' );
-		$set( '--faq-expanded-icon-color', $states['expandedIconColor'] ?? '' );
-		$set( '--faq-focus-color', $states['focusColor'] ?? '' );
+		self::set_style_var( $vars, '--faq-hover-border-color', $states['hoverBorderColor'] ?? '' );
+		self::set_style_var( $vars, '--faq-expanded-border-color', $states['expandedBorderColor'] ?? '' );
+		self::set_style_var( $vars, '--faq-expanded-background', $states['expandedBackground'] ?? '' );
+		self::set_style_var( $vars, '--faq-expanded-shadow', $states['expandedShadow'] ?? '' );
+		self::set_style_var( $vars, '--faq-expanded-question-color', $states['expandedQuestionColor'] ?? '' );
+		self::set_style_var( $vars, '--faq-expanded-icon-background', $states['expandedIconBackground'] ?? '' );
+		self::set_style_var( $vars, '--faq-expanded-icon-color', $states['expandedIconColor'] ?? '' );
+		self::set_style_var( $vars, '--faq-focus-color', $states['focusColor'] ?? '' );
 
 		// Responsive overrides.
-		$set( '--faq-tablet-question-font-size', $tablet['questionFontSize'] ?? '' );
-		$set( '--faq-tablet-answer-font-size', $tablet['answerFontSize'] ?? '' );
-		$set( '--faq-tablet-item-gap', $tablet['itemGap'] ?? '' );
-		$set( '--faq-tablet-icon-size', $tablet['iconSize'] ?? '' );
+		self::set_style_var( $vars, '--faq-tablet-question-font-size', $tablet['questionFontSize'] ?? '' );
+		self::set_style_var( $vars, '--faq-tablet-answer-font-size', $tablet['answerFontSize'] ?? '' );
+		self::set_style_var( $vars, '--faq-tablet-item-gap', $tablet['itemGap'] ?? '' );
+		self::set_style_var( $vars, '--faq-tablet-icon-size', $tablet['iconSize'] ?? '' );
 
-		$set( '--faq-mobile-question-font-size', $mobile['questionFontSize'] ?? '' );
-		$set( '--faq-mobile-answer-font-size', $mobile['answerFontSize'] ?? '' );
-		$set( '--faq-mobile-item-gap', $mobile['itemGap'] ?? '' );
-		$set( '--faq-mobile-icon-size', $mobile['iconSize'] ?? '' );
+		self::set_style_var( $vars, '--faq-mobile-question-font-size', $mobile['questionFontSize'] ?? '' );
+		self::set_style_var( $vars, '--faq-mobile-answer-font-size', $mobile['answerFontSize'] ?? '' );
+		self::set_style_var( $vars, '--faq-mobile-item-gap', $mobile['itemGap'] ?? '' );
+		self::set_style_var( $vars, '--faq-mobile-icon-size', $mobile['iconSize'] ?? '' );
 
 		// Animation.
 		if ( isset( $attributes['animationEnabled'] ) && ! $attributes['animationEnabled'] ) {

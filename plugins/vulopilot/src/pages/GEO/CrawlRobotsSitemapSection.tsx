@@ -659,7 +659,7 @@ const CrawlRobotsSitemapSection = () => {
 										)}
 										buttonText={__('Open Settings', 'vulopilot')}
 										onButtonClick={() => {
-											window.location.href = `${vulopilotAppLocalizer.site_url}/wp-admin/admin.php?page=vulopilot#&tab=settings&subtab=ai-visibility`;
+											window.location.hash = '#&tab=settings&subtab=ai-visibility';
 										}}
 									/>
 								)}
@@ -711,7 +711,7 @@ const CrawlRobotsSitemapSection = () => {
 										icon: 'setting',
 										color: 'purple',
 										onClick: () => {
-											window.location.href = '?page=vulopilot#&tab=settings&subtab=sitemap';
+											window.location.hash = '#&tab=settings&subtab=sitemap';
 										},
 									},
 								]}

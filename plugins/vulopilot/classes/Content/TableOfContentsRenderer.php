@@ -4,20 +4,18 @@ namespace VuloPilot\Content;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Render logic for the `vulopilot/table-of-contents` block, kept out of render.php because
- * WP loads that file with `require`.
- *
- * Mirrors `index.js`'s own filter/tree/numbering logic by hand (same "one mapping, two renderers"
- * shape `styleVars.js`'s own docblock already documents for the style attributes) - a real anchor
- * (`HeadingAnchorResolver::collect()`) is only ever computed here, never in JS (see `headingTree.js`'s
- * own docblock), so heading `level:text` pairs (`heading_key()`) are what both sides key an
- * exclusion/identity on.
+ * Render logic for the `vulopilot/table-of-contents` block. Mirrors `index.js`'s own
+ * filter/tree/numbering logic by hand; the real anchor is only ever computed here
+ * (`HeadingAnchorResolver::collect()`), so `heading_key()`'s `level:text` pair is what
+ * both sides key an exclusion on.
  *
  * @class       TableOfContentsRenderer class
  * @version     1.0.0
  * @author      VuloLabs
  */
 class TableOfContentsRenderer {
+
+	use StyleVarsTrait;
 
 	/**
 	 * @param array<string, mixed> $attributes Real block attributes.
@@ -102,9 +100,8 @@ class TableOfContentsRenderer {
 	}
 
 	/**
-	 * Same real `level:text` identifier `headingTree.js`'s own `headingKey()` computes - a real
-	 * anchor isn't known on the JS side (see that file's own docblock), so this is what both sides
-	 * key an `excludedHeadings` entry on.
+	 * Same `level:text` identifier `headingTree.js`'s `headingKey()` computes - what both
+	 * sides key an `excludedHeadings` entry on.
 	 *
 	 * @param array{level: int, text: string} $heading A single real heading.
 	 * @return string
@@ -179,11 +176,8 @@ class TableOfContentsRenderer {
 	 * @param array<int, array<string, mixed>> $nodes        `build_tree()` output (or one node's own 'children').
 	 * @param bool                             $hierarchical Whether to compute "1"/"1.1" numbering.
 	 * @param string                           $prefix       Already-resolved parent number, e.g. '1' - '' at the root.
-	 * @param string                           $list_id      Real `id` attribute - only ever passed by the *top-level*
-	 *                                                        call (`render()`); recursive sub-list calls below never
-	 *                                                        pass one, so only the outermost `<ul>` ever gets an id
-	 *                                                        (and the `vulopilot-toc-sublist` modifier class, which
-	 *                                                        also only applies to a nested sub-list, not the root).
+	 * @param string                           $list_id      Real `id` attribute - only the top-level `render()` call
+	 *                                                        passes one, so only the outermost `<ul>` gets it.
 	 * @return string
 	 */
 	private static function build_nested_list( array $nodes, bool $hierarchical, string $prefix = '', string $list_id = '' ): string {
@@ -248,11 +242,7 @@ class TableOfContentsRenderer {
 	}
 
 	/**
-	 * Real PHP mirror of `styleVars.js`'s own `buildTocStyleVars()` - same attribute → CSS custom
-	 * property mapping `public/styles/blocks.scss`'s own `.vulopilot-toc` rules read
-	 * (`var(--toc-*, <fallback>)`), so a style set in the editor renders identically on the live
-	 * page. An unset/empty attribute is simply omitted, same as the JS side, so the stylesheet's
-	 * own fallback value applies.
+	 * Real PHP mirror of `styleVars.js`'s own `buildTocStyleVars()` - same attribute → CSS custom property mapping `public/styles/blocks.scss`'s own `.vulopilot-toc` rules read (`var(--toc-*, <fallback>)`), so a style set in the editor renders identically on the live page.
 	 *
 	 * @param array<string, mixed> $attributes Real block attributes.
 	 * @return string A `--name: value;` CSS custom-property declaration list, or '' if nothing is set.
@@ -260,39 +250,21 @@ class TableOfContentsRenderer {
 	private static function build_style_attribute( array $attributes ): string {
 		$vars = array();
 
-		$set = static function ( string $name, $value ) use ( &$vars ): void {
-			if ( '' !== $value && null !== $value ) {
-				$vars[ $name ] = $value;
-			}
-		};
+		self::set_style_var( $vars, '--toc-content-font-size', $attributes['contentFontSize'] ?? '' );
+		self::set_style_var( $vars, '--toc-content-color', $attributes['contentColor'] ?? '' );
+		self::set_style_var( $vars, '--toc-content-line-height', $attributes['contentLineHeight'] ?? null );
+		self::set_style_var( $vars, '--toc-content-list-style', $attributes['contentListStyle'] ?? '' );
+		self::set_style_var( $vars, '--toc-content-gap', $attributes['contentGap'] ?? '' );
 
-		$set_box = static function ( string $prefix, $box ) use ( &$vars, $set ): void {
-			if ( ! is_array( $box ) ) {
-				return;
-			}
+		self::set_style_var( $vars, '--toc-title-font-size', $attributes['titleFontSize'] ?? '' );
+		self::set_style_var( $vars, '--toc-title-color', $attributes['titleColor'] ?? '' );
+		self::set_style_var( $vars, '--toc-title-line-height', $attributes['titleLineHeight'] ?? null );
+		self::set_style_box_vars( $vars, '--toc-title-padding', $attributes['titlePadding'] ?? null );
+		self::set_style_box_vars( $vars, '--toc-title-margin', $attributes['titleMargin'] ?? null );
 
-			foreach ( array( 'top', 'right', 'bottom', 'left' ) as $side ) {
-				if ( isset( $box[ $side ] ) ) {
-					$set( "{$prefix}-{$side}", $box[ $side ] );
-				}
-			}
-		};
-
-		$set( '--toc-content-font-size', $attributes['contentFontSize'] ?? '' );
-		$set( '--toc-content-color', $attributes['contentColor'] ?? '' );
-		$set( '--toc-content-line-height', $attributes['contentLineHeight'] ?? null );
-		$set( '--toc-content-list-style', $attributes['contentListStyle'] ?? '' );
-		$set( '--toc-content-gap', $attributes['contentGap'] ?? '' );
-
-		$set( '--toc-title-font-size', $attributes['titleFontSize'] ?? '' );
-		$set( '--toc-title-color', $attributes['titleColor'] ?? '' );
-		$set( '--toc-title-line-height', $attributes['titleLineHeight'] ?? null );
-		$set_box( '--toc-title-padding', $attributes['titlePadding'] ?? null );
-		$set_box( '--toc-title-margin', $attributes['titleMargin'] ?? null );
-
-		$set( '--toc-section-background', $attributes['sectionBackground'] ?? '' );
-		$set_box( '--toc-section-padding', $attributes['sectionPadding'] ?? null );
-		$set_box( '--toc-section-margin', $attributes['sectionMargin'] ?? null );
+		self::set_style_var( $vars, '--toc-section-background', $attributes['sectionBackground'] ?? '' );
+		self::set_style_box_vars( $vars, '--toc-section-padding', $attributes['sectionPadding'] ?? null );
+		self::set_style_box_vars( $vars, '--toc-section-margin', $attributes['sectionMargin'] ?? null );
 
 		$declarations = array();
 

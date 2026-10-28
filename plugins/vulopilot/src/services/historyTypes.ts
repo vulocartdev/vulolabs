@@ -92,10 +92,6 @@ export const FILTER_TABS: { id: HistoryFilter; label: string }[] = [
 	{ id: 'automations', label: __('Automations', 'vulopilot') },
 ];
 
-/**
- * `ContentCreationOrchestrator::CONTENT_CREATION_ACTIONS`'s own noun values
- * (`classes/AIActions/ContentCreationOrchestrator.php`).
- */
 const CONTENT_CREATION_NOUNS: Record<string, string> = {
 	'generate-blog': __('blog post', 'vulopilot'),
 	'generate-landing-page': __('landing page', 'vulopilot'),

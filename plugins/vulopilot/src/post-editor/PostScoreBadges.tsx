@@ -1,97 +1,41 @@
-import { sprintf } from '@wordpress/i18n';
-import { useEffect, useState } from '@wordpress/element';
-import { fetchOpenFindings, getPostSeoScore } from './api';
-
-/**
- * This tab's own local copy of `PageAnalysisTab.tsx`'s `AEO_SCANNER_IDS` - same real scanner-id
- * union, kept in sync by hand the same way that file's own docblock already notes for its
- * GEO/AEO copies.
- */
-const AEO_SCANNER_IDS = [ 'geo-faq-opportunity', 'geo-summary-block', 'aeo-schema' ];
-
-/**
- * Same real severity-weighted formula `AeoScoreSummaryCard.tsx`'s own `calculateScore()` (the
- * dashboard-wide "AEO Score" card) already uses - there is no per-post AEO score anywhere yet, so
- * this reuses that exact formula narrowed to this one post's own open AEO findings instead of
- * inventing a new metric.
- */
-const calculateAeoScore = ( breakdown: { critical: number; high: number; medium: number; low: number } ): number => {
-	const score =
-		100 -
-		breakdown.critical * 15 -
-		breakdown.high * 8 -
-		breakdown.medium * 3 -
-		breakdown.low * 1;
-
-	return Math.max( 0, Math.min( 100, score ) );
-};
+import { __, sprintf } from '@wordpress/i18n';
 
 interface PostScoreBadgesProps {
-	postId: number;
+	seoScore: number | null;
+	aeoScore: number | null;
+	/** `PostSeoPanel.tsx`'s own tab switch - both badges jump to "Page Analysis", the one tab that shows the checks/findings behind each score. */
+	// eslint-disable-next-line no-unused-vars
+	onNavigate?: ( tab: 'page-analysis' ) => void;
 }
 
 /**
- * The two score badges shown at the top of every post/page's "VuloPilot SEO" sidebar - real SEO
- * score (`Seo::calculate_score()`, narrowed server-side to this post) and real AI/AEO score
- * (this post's own open AEO findings, scored client-side with the same formula the dashboard's
- * AEO Score card uses).
+ * The two score badges shown at the top of every post/page's "VuloPilot SEO" sidebar. Reads
+ * scores as props (one `usePostScores()` call lives in `PostSeoPanel.tsx` now, shared with
+ * `ScoreImprovementCard.tsx`) rather than fetching its own copy.
  */
-export default function PostScoreBadges( { postId }: PostScoreBadgesProps ) {
-	const [ seoScore, setSeoScore ] = useState< number | null >( null );
-	const [ aeoScore, setAeoScore ] = useState< number | null >( null );
-
-	useEffect( () => {
-		if ( ! postId ) {
-			return;
-		}
-
-		let cancelled = false;
-
-		getPostSeoScore( postId )
-			.then( ( response ) => {
-				if ( ! cancelled ) {
-					setSeoScore( response.score );
-				}
-			} )
-			.catch( () => {
-				// Left as "…" - the tabs below show the real error if the underlying fetch failed.
-			} );
-
-		fetchOpenFindings( AEO_SCANNER_IDS )
-			.then( ( findings ) => {
-				if ( cancelled ) {
-					return;
-				}
-
-				const breakdown = { critical: 0, high: 0, medium: 0, low: 0 };
-
-				findings
-					.filter( ( finding ) => finding.object_ref === String( postId ) )
-					.forEach( ( finding ) => {
-						if ( finding.severity in breakdown ) {
-							breakdown[ finding.severity as keyof typeof breakdown ] += 1;
-						}
-					} );
-
-				setAeoScore( calculateAeoScore( breakdown ) );
-			} )
-			.catch( () => {} );
-
-		return () => {
-			cancelled = true;
-		};
-	}, [ postId ] );
+export default function PostScoreBadges( { seoScore, aeoScore, onNavigate }: PostScoreBadgesProps ) {
+	const goToPageAnalysis = () => onNavigate?.( 'page-analysis' );
 
 	return (
 		<div className="vulopilot-seo-score-badges">
-			<span className="vulopilot-seo-score-badge vulopilot-seo-score-badge--seo">
+			<button
+				type="button"
+				className="vulopilot-seo-score-badge vulopilot-seo-score-badge--seo"
+				onClick={ goToPageAnalysis }
+				title={ __( 'View the checks behind this SEO score', 'vulopilot' ) }
+			>
 				<i className="dashicons dashicons-awards" />
 				{ null === seoScore ? sprintf( '… / %d', 100 ) : sprintf( '%d / %d', seoScore, 100 ) }
-			</span>
-			<span className="vulopilot-seo-score-badge vulopilot-seo-score-badge--ai">
+			</button>
+			<button
+				type="button"
+				className="vulopilot-seo-score-badge vulopilot-seo-score-badge--ai"
+				onClick={ goToPageAnalysis }
+				title={ __( 'View the AI/AEO findings behind this score', 'vulopilot' ) }
+			>
 				<i className="dashicons dashicons-lightbulb" />
-				{ null === aeoScore ? sprintf( '… / %d', 100 ) : sprintf( '%d / %d', aeoScore, 100 ) }
-			</span>
+				{ null === aeoScore ? __( 'Not scanned', 'vulopilot' ) : sprintf( '%d / %d', aeoScore, 100 ) }
+			</button>
 		</div>
 	);
 }

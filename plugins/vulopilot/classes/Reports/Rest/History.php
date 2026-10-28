@@ -10,11 +10,7 @@ use VuloPilot\Utill\ScanRepository;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * REST controller for the AI Copilot page's History tab: a day-groupable
- * activity timeline scoped to `scan.completed`/`ai_action.*`/conversation
- * events, each enriched from its source table. "Automations" is a filter
- * the client sends but has no backing table yet, so it always returns
- * zero rows.
+ * REST controller for the AI Copilot page's History tab: a day-groupable activity timeline scoped to `scan.completed`/`ai_action.*`/conversation events, each enriched from its source table.
  *
  * @class       History controller
  * @version     1.0.0
@@ -176,12 +172,12 @@ class History extends \WP_REST_Controller {
 	private function get_combined_timeline( array $args ): array {
 		global $wpdb;
 
-		$log_table = $wpdb->prefix . \VuloPilot\Utill::TABLES['activity_log'];
-		$ai_table  = $wpdb->prefix . \VuloPilot\Utill::TABLES['ai_history'];
-		$event_types = array_merge( ...array_values( self::EVENT_TYPES_BY_CATEGORY ) );
+		$log_table     = $wpdb->prefix . \VuloPilot\Utill::TABLES['activity_log'];
+		$ai_table      = $wpdb->prefix . \VuloPilot\Utill::TABLES['ai_history'];
+		$event_types   = array_merge( ...array_values( self::EVENT_TYPES_BY_CATEGORY ) );
 		$chat_surfaces = array( 'copilot_chat', 'content_assistant_chat' );
 
-		$log_where = implode(
+		$log_where  = implode(
 			' AND ',
 			array(
 				'event_type IN (' . implode( ', ', array_fill( 0, count( $event_types ), '%s' ) ) . ')',
@@ -201,7 +197,7 @@ class History extends \WP_REST_Controller {
 			$log_values[] = (string) $args['date_to'];
 		}
 
-		$ai_where = implode(
+		$ai_where  = implode(
 			' AND ',
 			array(
 				'surface IN (' . implode( ', ', array_fill( 0, count( $chat_surfaces ), '%s' ) ) . ')',
@@ -226,10 +222,10 @@ class History extends \WP_REST_Controller {
 		$total_log = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the query is prepared.
 			$wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE {$log_where}", $log_table, ...$log_values ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- the table and optional filters are picked from fixed literals and every value is a bound placeholder; only the placeholder count varies at runtime.
 		);
-		$total_ai = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the query is prepared.
+		$total_ai  = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the query is prepared.
 			$wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE {$ai_where}", $ai_table, ...$ai_values ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- the table and optional filters are picked from fixed literals and every value is a bound placeholder; only the placeholder count varies at runtime.
 		);
-		$total = $total_log + $total_ai;
+		$total     = $total_log + $total_ai;
 
 		if ( 0 === $total ) {
 			return array(
@@ -256,10 +252,10 @@ class History extends \WP_REST_Controller {
 			$offset = ( $page - 1 ) * $per_page;
 
 			if ( $target_created_at ) {
-				$newer_log = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the query is prepared.
+				$newer_log       = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the query is prepared.
 					$wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE {$log_where} AND ( created_at > %s OR ( created_at = %s AND id > %d ) )", $log_table, ...array_merge( $log_values, array( $target_created_at, $target_created_at, $around_id ) ) ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- same runtime-sized-array case as above.
 				);
-				$newer_ai = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the query is prepared.
+				$newer_ai        = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the query is prepared.
 					$wpdb->prepare( "SELECT COUNT(*) FROM %i WHERE {$ai_where} AND created_at > %s", $ai_table, ...array_merge( $ai_values, array( $target_created_at ) ) ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- same runtime-sized-array case as above.
 				);
 				$newer_rows      = $newer_log + $newer_ai;
@@ -296,17 +292,17 @@ class History extends \WP_REST_Controller {
 		// many rows and would otherwise bury conversations for pages at a time.
 		$conversation_quota = max( 1, (int) round( $per_page * 0.2 ) );
 
-		$ai_offset  = 0;
-		$log_offset = 0;
+		$ai_offset     = 0;
+		$log_offset    = 0;
 		$ai_remaining  = $total_ai;
 		$log_remaining = $total_log;
 
 		for ( $seek_page = 1; $seek_page < $page; $seek_page++ ) {
 			[ $seek_ai_take, $seek_log_take ] = $this->split_page_quota( $per_page, $conversation_quota, $ai_remaining, $log_remaining );
-			$ai_offset      += $seek_ai_take;
-			$log_offset     += $seek_log_take;
-			$ai_remaining   -= $seek_ai_take;
-			$log_remaining  -= $seek_log_take;
+			$ai_offset                       += $seek_ai_take;
+			$log_offset                      += $seek_log_take;
+			$ai_remaining                    -= $seek_ai_take;
+			$log_remaining                   -= $seek_log_take;
 		}
 
 		[ $ai_take, $log_take ] = $this->split_page_quota( $per_page, $conversation_quota, $ai_remaining, $log_remaining );
@@ -382,8 +378,8 @@ class History extends \WP_REST_Controller {
 	 * enriched rows, in the same order.
 	 *
 	 * @param array<int, array{id: string, src: string}> $ordered
-	 * @param string $log_table
-	 * @param string $ai_table
+	 * @param string                                     $log_table
+	 * @param string                                     $ai_table
 	 * @return array<int, array<string, mixed>>
 	 */
 	private function hydrate_combined_rows( array $ordered, string $log_table, string $ai_table ): array {

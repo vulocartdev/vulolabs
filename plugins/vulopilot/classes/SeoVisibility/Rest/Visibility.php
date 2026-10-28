@@ -11,11 +11,7 @@ use VuloPilot\Settings\GoogleServicesConnection;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * REST controller for "SEO & Visibility → Overview": a combined score
- * across Brand/SEO/GEO/Crawl & URLs, read directly from each area's own
- * controller method so the numbers can never disagree. Only the 7-day-ago
- * delta per area is computed locally, via `AREA_SCANNER_IDS` kept in sync
- * manually with each source controller's own scanner-id list.
+ * REST controller for "SEO & Visibility → Overview": a combined score across Brand/SEO/GEO/Crawl & URLs, read directly from each area's own controller method so the numbers can never disagree.
  *
  * @class       Visibility controller
  * @version     1.0.0
@@ -29,11 +25,7 @@ class Visibility extends \WP_REST_Controller {
 	protected $rest_base = 'visibility';
 
 	/**
-	 * Scanner ids behind each area's score, kept in sync manually with
-	 * each source controller's own list (`content-freshness` excluded,
-	 * same reasoning as GEO's own progress trend). Used only for the
-	 * 7-day-ago delta and combined trend - the current score always comes
-	 * from that area's own endpoint.
+	 * Scanner ids behind each area's score, kept in sync manually with each source controller's own list (`content-freshness` excluded, same reasoning as GEO's own progress trend).
 	 *
 	 * @var array<string, string[]>
 	 */
@@ -267,11 +259,7 @@ class Visibility extends \WP_REST_Controller {
 	}
 
 	/**
-	 * "Visibility by Source": GA4 sessions grouped by
-	 * `sessionDefaultChannelGroup` over the last `TRAFFIC_SOURCE_WINDOW_DAYS`
-	 * days. `connected: false` (empty `sources`) covers both "never
-	 * connected" and "GA4 call failed" - the frontend shows the same
-	 * "connect" prompt either way.
+	 * "Visibility by Source": GA4 sessions grouped by `sessionDefaultChannelGroup` over the last `TRAFFIC_SOURCE_WINDOW_DAYS` days. `connected:
 	 *
 	 * @return \WP_REST_Response
 	 */

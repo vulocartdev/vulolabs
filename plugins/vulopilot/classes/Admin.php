@@ -61,7 +61,7 @@ class Admin {
 			return;
 		}
 
-		$sources = ( new \VuloPilot\Migration\MigrationManager() )->list_sources();
+		$sources             = ( new \VuloPilot\Migration\MigrationManager() )->list_sources();
 		$has_migratable_data = (bool) array_filter(
 			$sources,
 			static function ( $source ) {
@@ -102,69 +102,69 @@ class Admin {
 		$submenus = apply_filters(
 			'vulopilot_submenus',
 			array(
-				'dashboard'      => array(
+				'dashboard'       => array(
 					'name'     => __( 'Dashboard', 'vulopilot' ),
 					'priority' => 10,
 					'icon'     => 'dashicons-dashboard',
 				),
-				'ai-assistant'   => array(
+				'ai-assistant'    => array(
 					'name'     => __( 'AI Copilot', 'vulopilot' ),
 					'priority' => 20,
 					'icon'     => 'dashicons-lightbulb',
 				),
-				'seo-visibility' => array(
+				'seo-visibility'  => array(
 					'name'     => __( 'SEO & Visibility', 'vulopilot' ),
 					'priority' => 30,
 					'icon'     => 'dashicons-chart-line',
 				),
-				'content'        => array(
+				'content'         => array(
 					'name'     => __( 'Content', 'vulopilot' ),
 					'priority' => 40,
 					'icon'     => 'dashicons-media-text',
 				),
-				'performance'    => array(
+				'performance'     => array(
 					'name'     => __( 'Performance', 'vulopilot' ),
 					'priority' => 50,
 					'icon'     => 'dashicons-performance',
 				),
 				// Promoted out of "Protect My Site"'s own former 3-tab shell (Security.tsx) along
 				// with Backups, which is now merged into this page.
-				'site-health'    => array(
+				'site-health'     => array(
 					'name'     => __( 'Site Health', 'vulopilot' ),
 					'priority' => 55,
 					'icon'     => 'dashicons-heart',
 				),
-				'accessibility'  => array(
+				'accessibility'   => array(
 					'name'     => __( 'Accessibility', 'vulopilot' ),
 					'priority' => 65,
 					'icon'     => 'dashicons-universal-access',
 				),
 				// "Protect My Site"'s own remaining tab, now standalone -
 				// see pages/Security/Security.tsx's own docblock.
-				'security'       => array(
+				'security'        => array(
 					'name'     => __( 'Security', 'vulopilot' ),
 					'priority' => 67,
 					'icon'     => 'dashicons-shield',
 				),
-				'commerce'       => array(
+				'commerce'        => array(
 					'name'     => __( 'Commerce', 'vulopilot' ),
 					'priority' => 70,
 					'icon'     => 'dashicons-cart',
 				),
-				'automations'    => array(
+				'automations'     => array(
 					'name'     => __( 'Automations', 'vulopilot' ),
 					'priority' => 80,
 					'icon'     => 'dashicons-update',
 				),
 				// 'divider' draws a thin rule before this item in the native submenu (admin-menu-
 				// groups.js's addDividers()).
-				'reports'        => array(
+				'reports'         => array(
 					'name'     => __( 'Reports', 'vulopilot' ),
 					'priority' => 90,
 					'icon'     => 'dashicons-chart-bar',
 					'divider'  => true,
 				),
-				'settings'       => array(
+				'settings'        => array(
 					'name'     => __( 'Settings', 'vulopilot' ),
 					'priority' => 100,
 					'icon'     => 'dashicons-admin-generic',

@@ -1,5 +1,6 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { COLOR_PALETTE } from '@zyra/core';
+import type { Rating } from './types';
 import {
 	CardComponent,
 	ChartComponent,
@@ -22,11 +23,6 @@ const calculateScore = (high: number, medium: number, low: number): number =>
 	Math.max(0, Math.min(100, 100 - high * 8 - medium * 3 - low * 1));
 
 /** Same real 3-tier band shape `PerformanceScoreCard.tsx`'s own `Rating` interface uses. */
-interface Rating {
-	label: string;
-	className: 'good' | 'needs-improvement' | 'poor';
-}
-
 /**
  * Same 3-tier 0-100 thresholds seoRating.ts's own `getRating()` already establishes elsewhere in
  * this codebase.

@@ -153,7 +153,10 @@ class Seo extends \WP_REST_Controller {
 			'/' . $this->rest_base . '/post-score',
 			array(
 				array(
-					'methods'             => \WP_REST_Server::READABLE,
+					// CREATABLE (POST) too, same as post-seo/{id}/analyze - the frontend posts the
+					// editor's own live (possibly-unsaved) title/content/excerpt/slug/focus_keyword
+					// as the body so this score reacts to typing, not just to the saved post.
+					'methods'             => array( \WP_REST_Server::READABLE, \WP_REST_Server::CREATABLE ),
 					'callback'            => array( $this, 'get_post_score' ),
 					'permission_callback' => array( $this, 'get_score_permissions_check' ),
 					'args'                => array(
@@ -174,15 +177,54 @@ class Seo extends \WP_REST_Controller {
 	 * @param \WP_REST_Request $request Full request object.
 	 * @return \WP_REST_Response
 	 */
+	/**
+	 * VuloPilot's own SEO Score Engine (`SeoScoreEngine`) - 6 categories, 28 rules, weights summing to exactly 100, run against this post's current (possibly live/unsaved) field values.
+	 *
+	 * @param \WP_REST_Request $request Full request object.
+	 * @return \WP_REST_Response|\WP_Error
+	 */
 	public function get_post_score( \WP_REST_Request $request ) {
-		$post_id         = (int) $request->get_param( 'post_id' );
-		$findings        = new FindingRepository();
-		$all_scanner_ids = array_merge( ...array_values( self::CATEGORY_SCANNER_IDS ) );
-		$breakdown       = $findings->get_severity_breakdown_for_scanner_ids_by_post_id( $all_scanner_ids, $post_id );
+		$post_id = (int) $request->get_param( 'post_id' );
+		$post    = get_post( $post_id );
+
+		if ( ! $post || ! in_array( $post->post_type, array( 'post', 'page' ), true ) ) {
+			return new \WP_Error(
+				'vulopilot_page_not_found',
+				__( 'That page could not be found.', 'vulopilot' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		// Live, possibly-unsaved editor state - same override pattern analyze_post() already
+		// supports, so the toolbar score pill reacts to typing, not just to the last save.
+		$seo_title     = trim( (string) get_post_meta( $post_id, \VuloPilot\SeoVisibility\PostSeoMetaFields::META_KEYS['seo_title'], true ) );
+		$focus_keyword = (string) get_post_meta( $post_id, \VuloPilot\SeoVisibility\PostSeoMetaFields::META_KEYS['focus_keyword'], true );
+
+		$live = array(
+			'title'         => (string) ( $request->get_param( 'title' ) ?? ( '' !== $seo_title ? $seo_title : $post->post_title ) ),
+			'content'       => (string) ( $request->get_param( 'content' ) ?? $post->post_content ),
+			'excerpt'       => (string) ( $request->get_param( 'excerpt' ) ?? $post->post_excerpt ),
+			'slug'          => (string) ( $request->get_param( 'slug' ) ?? $post->post_name ),
+			'focus_keyword' => (string) ( $request->get_param( 'focus_keyword' ) ?? $focus_keyword ),
+		);
+
+		$engine  = new \VuloPilot\SeoVisibility\SeoScoreEngine();
+		$rules   = $engine->evaluate( $post, $live, (bool) $request->get_param( 'live_only' ) );
+		$summary = $engine->calculate_score( $rules );
 
 		return rest_ensure_response(
 			array(
-				'score' => $this->calculate_score( $breakdown ),
+				// Backward-compatible top-level field the toolbar/sidebar badge already reads -
+				// null (insufficient data) reported as 0 rather than breaking that number contract.
+				'score'                => $summary['score'] ?? 0,
+				'ruleset_version'      => \VuloPilot\SeoVisibility\SeoScoreEngine::RULESET_VERSION,
+				'insufficient_data'    => $summary['insufficient_data'],
+				'coverage_percent'     => $summary['coverage_percent'],
+				'evaluated_count'      => $summary['evaluated_count'],
+				'unknown_count'        => $summary['unknown_count'],
+				'not_applicable_count' => $summary['not_applicable_count'],
+				'categories'           => $summary['categories'],
+				'rules'                => $rules,
 			)
 		);
 	}
