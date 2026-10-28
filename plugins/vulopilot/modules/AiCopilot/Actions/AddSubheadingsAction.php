@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * @version     1.0.0
  * @author      VuloLabs
  */
-class AddSubheadingsAction extends AbstractBasicAction {
+class AddSubheadingsAction extends AbstractCloudAction {
 
 	/**
 	 * A rewrite shorter than this fraction of the original is treated as more than
@@ -68,21 +68,16 @@ class AddSubheadingsAction extends AbstractBasicAction {
 	/**
 	 * @inheritDoc
 	 */
-	public function build_prompt( array $input ): array {
+	public function get_cloud_feature(): array {
+		return array( 'add_subheadings', 'add' );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function build_cloud_context( array $input ): array {
 		return array(
-			array(
-				'role'    => 'system',
-				'content' => 'This content has no subheadings (no <h2> through <h6> tags anywhere), which makes long '
-					. 'content harder for both readers and search engines to scan. Break it into logical sections by '
-					. 'inserting <h2> subheadings at natural topic breaks - write the heading text yourself, based on '
-					. 'what each section actually covers. Do NOT change, remove, or add to the existing wording - every '
-					. 'sentence of the original body text must appear unchanged, just organized under new <h2> headings. '
-					. 'Do not change any other tag. Respond with ONLY the full rewritten HTML content - no commentary.',
-			),
-			array(
-				'role'    => 'user',
-				'content' => $input['original_content'],
-			),
+			'content' => $input['original_content'],
 		);
 	}
 

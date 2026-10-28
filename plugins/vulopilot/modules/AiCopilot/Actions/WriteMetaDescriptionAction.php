@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * @version     1.0.0
  * @author      VuloLabs
  */
-class WriteMetaDescriptionAction extends AbstractBasicAction {
+class WriteMetaDescriptionAction extends AbstractCloudAction {
 
 	/**
 	 * Search snippets are truncated well before this; a description
@@ -80,25 +80,17 @@ class WriteMetaDescriptionAction extends AbstractBasicAction {
 	/**
 	 * @inheritDoc
 	 */
-	public function build_prompt( array $input ): array {
+	public function get_cloud_feature(): array {
+		return array( 'meta_description', 'generate' );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function build_cloud_context( array $input ): array {
 		return array(
-			array(
-				'role'    => 'system',
-				'content' => sprintf(
-					'You write concise, compelling meta descriptions for search engine results. '
-						. 'Summarize the page in one sentence, under %d characters. '
-						. 'Respond with ONLY the description itself - no quotes, no preamble.',
-					self::MAX_LENGTH
-				),
-			),
-			array(
-				'role'    => 'user',
-				'content' => sprintf(
-					"Title: %s\n\nContent:\n%s",
-					$input['title'],
-					wp_trim_words( wp_strip_all_tags( $input['content'] ), 200 )
-				),
-			),
+			'title'   => $input['title'],
+			'content' => $input['content'],
 		);
 	}
 

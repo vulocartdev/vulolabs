@@ -60,8 +60,8 @@ class ContentAnalyzer {
 		}
 
 		$deterministic_score = $this->calculate_deterministic_score( $post_id );
-		$messages            = $this->build_prompt( $post, $deterministic_score );
-		$response            = $this->request_sender->send( $messages, null, 'content_intelligence' );
+		$context             = $this->build_context( $post, $deterministic_score );
+		$response            = $this->request_sender->send_feature( 'content_intelligence', 'analyze', $context, 'content_intelligence', null, false );
 		$parsed              = $this->parse_response( $response );
 
 		$overall_score = $this->calculate_overall_score( $deterministic_score, $parsed['topic_authority'] );
@@ -132,33 +132,23 @@ class ContentAnalyzer {
 	}
 
 	/**
+	 * The content analysis feature's input.
+	 *
 	 * @param \WP_Post $post                Post being analyzed.
 	 * @param int|null $deterministic_score Already-known deterministic score, if any - given to the AI as context.
-	 * @return array<int, array{role: string, content: string}>
+	 * @return array<string, mixed>
 	 */
-	private function build_prompt( \WP_Post $post, ?int $deterministic_score ): array {
-		return array(
-			array(
-				'role'    => 'system',
-				'content' => 'You evaluate how authoritatively a piece of web content covers its own topic. Score '
-					. '"topic_authority" from 0-100: does the content demonstrate real depth and expertise on its subject '
-					. '(specific facts, named examples, nuance beyond a surface-level summary), rather than reading as '
-					. 'generic or superficial. Also give 3-5 concrete, specific suggestions to make the content more '
-					. 'authoritative on its topic. Respond with ONLY raw JSON like {"topic_authority": 65, '
-					. '"suggestions": ["...", "..."]} - no markdown fences, no commentary.',
-			),
-			array(
-				'role'    => 'user',
-				'content' => sprintf(
-					"Title: %s\n\nContent:\n%s%s",
-					$post->post_title,
-					wp_trim_words( wp_strip_all_tags( $post->post_content ), 500 ),
-					null !== $deterministic_score
-						? sprintf( "\n\n(This content already scores %d/100 on separate structural checks - factor that in.)", $deterministic_score )
-						: ''
-				),
-			),
+	private function build_context( \WP_Post $post, ?int $deterministic_score ): array {
+		$context = array(
+			'title'   => $post->post_title,
+			'content' => wp_strip_all_tags( $post->post_content ),
 		);
+
+		if ( null !== $deterministic_score ) {
+			$context['deterministic_score'] = $deterministic_score;
+		}
+
+		return $context;
 	}
 
 	/**

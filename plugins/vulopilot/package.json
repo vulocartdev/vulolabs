@@ -41,14 +41,14 @@
 		"test:unit:js": "wp-scripts test-unit-js",
 		"test:php": "./vendor/bin/phpunit -c phpunit.xml.dist",
 		"env:create": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env start && pnpm run env:start:database",
-        "env:start": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env start && pnpm run env:start:database",
-        "env:start:database": "node ../../tools/scripts/docker-compose.mjs && docker compose up -d",
-        "env:dev": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env start --update && pnpm run env:start:database && pnpm --if-present --filter storybook run watch:build:storybook",
-        "env:stop": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env stop && docker compose down",
-        "env:restart": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env restart",
-        "env:clean": "pnpm wp-env clean",
-        "env:destroy": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env destroy && rimraf docker-compose.yml",
-        "readme": "wp-readme-to-md",
+		"env:start": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env start && pnpm run env:start:database",
+		"env:start:database": "node ../../tools/scripts/docker-compose.mjs && docker compose up -d",
+		"env:dev": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env start --update && pnpm run env:start:database && pnpm --if-present --filter storybook run watch:build:storybook",
+		"env:stop": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env stop && docker compose down",
+		"env:restart": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env restart",
+		"env:clean": "pnpm wp-env clean",
+		"env:destroy": "NODE_OPTIONS='--no-network-family-autoselection' pnpm wp-env destroy && rimraf docker-compose.yml",
+		"readme": "wp-readme-to-md",
 		"clean": "node ../../tools/scripts/clean.mjs",
 		"minify": "node ../../tools/scripts/minify.mjs",
 		"move": "node ../../tools/scripts/move-files.mjs",
@@ -88,6 +88,7 @@
 		}
 	},
 	"dependencies": {
+		"@multivendorx/zyra": "^1.0.56",
 		"@wordpress/element": "wp-6.6",
 		"@wordpress/hooks": "^4.46.0",
 		"@wordpress/i18n": "wp-6.6",
@@ -97,14 +98,10 @@
 		"react-router-dom": "^7.15.1",
 		"react-sortablejs": "^6.1.4",
 		"recharts": "^3.8.1",
-		"sortablejs": "^1.15.6",
-		"@multivendorx/zyra": "^1.0.56"
+		"sortablejs": "^1.15.6"
 	},
-	"devDependencies": {	
-		"wireit": "^0.14.12",
-		"@testing-library/jest-dom": "^7.0.0",
-		"@testing-library/react": "^16.3.2",
-		"@testing-library/user-event": "^14.6.1",
-		"@wordpress/jest-preset-default": "^13.0.0"
+	"devDependencies": {
+		"@wordpress/jest-preset-default": "^13.0.0",
+		"wireit": "^0.14.12"
 	}
 }

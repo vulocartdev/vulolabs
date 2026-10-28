@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * @version     1.0.0
  * @author      VuloLabs
  */
-class GenerateBlogAction extends AbstractBasicAction {
+class GenerateBlogAction extends AbstractCloudAction {
 
 	/**
 	 * @inheritDoc
@@ -72,27 +72,18 @@ class GenerateBlogAction extends AbstractBasicAction {
 	/**
 	 * @inheritDoc
 	 */
-	public function build_prompt( array $input ): array {
-		$user_message = sprintf( 'Write a blog post about: %s', $input['topic'] );
+	public function get_cloud_feature(): array {
+		return array( 'blog_post', 'generate' );
+	}
 
-		if ( ! empty( $input['word_count'] ) ) {
-			$user_message .= sprintf( "\n\nTarget length: approximately %d words.", $input['word_count'] );
-		}
-
-		if ( '' !== ( $input['tone'] ?? '' ) ) {
-			$user_message .= sprintf( "\n\nTone: %s.", $input['tone'] );
-		}
-
+	/**
+	 * @inheritDoc
+	 */
+	public function build_cloud_context( array $input ): array {
 		return array(
-			array(
-				'role'    => 'system',
-				'content' => 'You write WordPress blog post drafts. Respond in exactly this format, nothing else:'
-					. "\nTITLE: <the title>\n\nBODY:\n<the full post body as HTML paragraphs>",
-			),
-			array(
-				'role'    => 'user',
-				'content' => $user_message,
-			),
+			'topic'      => $input['topic'],
+			'word_count' => $input['word_count'],
+			'tone'       => $input['tone'],
 		);
 	}
 

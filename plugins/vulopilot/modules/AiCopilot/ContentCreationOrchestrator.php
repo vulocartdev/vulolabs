@@ -8,12 +8,11 @@
 namespace VuloPilot\AiCopilot;
 
 use VuloPilot\Utill\VuloPilotException;
-use VuloPilot\AiAssistant\AIResponse;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Parses an orchestrator's JSON decision and creates the content it describes.
+ * Creates the content a completed chat request describes.
  *
  * @class       ContentCreationOrchestrator class
  * @version     1.0.0
@@ -32,55 +31,10 @@ class ContentCreationOrchestrator {
 	);
 
 	/**
-	 * Parses an orchestrator's JSON reply into a decision a caller can safely act on.
-	 *
-	 * @param AIResponse $response Raw orchestrator response.
-	 * @return array{status: string, message: string}|array{status: 'ready_action', action_id: string, input: array<string, mixed>}
-	 */
-	public function parse_response( AIResponse $response ): array {
-		$raw     = trim( $response->get_content() );
-		$content = preg_replace( '/^```(?:json)?\s*|\s*```$/', '', $raw );
-		$decoded = json_decode( trim( (string) $content ), true );
-
-		if ( ! is_array( $decoded ) || empty( $decoded['status'] ) ) {
-			return array(
-				'status'  => 'respond',
-				'message' => '' !== $raw ? $raw : __( "Sorry, I didn't quite catch that - could you rephrase?", 'vulopilot' ),
-			);
-		}
-
-		if ( 'ready_action' === $decoded['status'] ) {
-			$action_id = sanitize_key( (string) ( $decoded['action_id'] ?? '' ) );
-
-			if ( isset( self::CONTENT_CREATION_ACTIONS[ $action_id ] ) ) {
-				return array(
-					'status'    => 'ready_action',
-					'action_id' => $action_id,
-					'input'     => is_array( $decoded['input'] ?? null ) ? $decoded['input'] : array(),
-				);
-			}
-
-			// An action_id outside the whitelist (hallucinated, or one of the existing-post-only
-			// actions) is never executed.
-			return array(
-				'status'  => 'respond',
-				'message' => __( "I couldn't quite tell what to create - could you tell me a bit more about what you'd like?", 'vulopilot' ),
-			);
-		}
-
-		$message = trim( (string) ( $decoded['message'] ?? '' ) );
-
-		return array(
-			'status'  => 'question' === $decoded['status'] ? 'question' : 'respond',
-			'message' => '' !== $message ? $message : __( 'Could you tell me a bit more about what you need?', 'vulopilot' ),
-		);
-	}
-
-	/**
 	 * Runs a whitelisted CONTENT_CREATION_ACTIONS entry through the real AIAction
 	 * lifecycle end to end.
 	 *
-	 * @param array{action_id: string, input: array<string, mixed>} $decision parse_response()'s "ready_action" return value.
+	 * @param array{action_id: string, input: array<string, mixed>} $decision BlogIntake::handle()'s "ready_action" decision.
 	 * @return array{content: string, link: array{url: string, label: string}|null, run_id: int}|\WP_Error
 	 */
 	public function create_content_and_respond( array $decision ) {

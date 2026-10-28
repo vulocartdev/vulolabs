@@ -7,7 +7,6 @@
 
 namespace VuloPilot\SiteHealth;
 
-use VuloPilot\Dashboard\ActivityLogRepository;
 use VuloPilot\Utill;
 
 defined( 'ABSPATH' ) || exit;

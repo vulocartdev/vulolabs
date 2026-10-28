@@ -7,6 +7,7 @@
 
 namespace VuloPilot\AiCopilot\Rest;
 
+use VuloPilot\AiCopilot\BlogIntake;
 use VuloPilot\AiCopilot\ContentCreationOrchestrator;
 use VuloPilot\Utill\VuloPilotException;
 use VuloPilot\Utill\Severity;
@@ -18,9 +19,9 @@ use VuloPilot\AiCopilot\Repositories\AiConversationRepository;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * REST controller for the AI Copilot chat. Grounded with a live snapshot
- * of the site's findings/automation counts (build_site_context()) so
- * answers reason from actual open issues. A "write a blog about X"
+ * REST controller for the AI Copilot chat. Sends the AI service the conversation
+ * plus a live snapshot of the site's findings/automation counts (build_site_snapshot())
+ * so answers reason from actual open issues. A "write a blog about X"
  * request creates a real draft via ContentCreationOrchestrator
  * (auto-approved); every other kind of change stays advice-only.
  *
@@ -53,12 +54,6 @@ class Copilot extends \WP_REST_Controller {
 	}
 
 	/**
-	 * How many prior turns of client-supplied history to include - bounds
-	 * the prompt sent to the AI service on a long-running chat.
-	 */
-	private const MAX_HISTORY_MESSAGES = 20;
-
-	/**
 	 * Max "Add context" refs (findings/automations) accepted per turn.
 	 */
 	private const MAX_CONTEXT_REFS = 5;
@@ -67,11 +62,6 @@ class Copilot extends \WP_REST_Controller {
 	 * Max "Attach" file refs accepted per turn.
 	 */
 	private const MAX_ATTACHMENTS = 3;
-
-	/**
-	 * How many bytes of an attached file's own content to read and include.
-	 */
-	private const ATTACHMENT_MAX_BYTES = 200000;
 
 	/**
 	 * Mime types this plugin will actually read the *content* of for an attached file.
@@ -166,45 +156,28 @@ class Copilot extends \WP_REST_Controller {
 		$conversation_id_param = $request->get_param( 'conversation_id' );
 		$conversation_id       = $conversation_id_param ? absint( $conversation_id_param ) : null;
 
-		$raw_attachments = (array) $request->get_param( 'attachments' );
+		// A blog request is collected by fixed questions, with no AI, until every field is known.
+		$decision = ( new BlogIntake( 'copilot' ) )->handle( $message );
 
-		$extra_context = $this->build_extra_context(
-			(array) $request->get_param( 'context_refs' ),
-			$raw_attachments
-		);
-
-		$message_with_context = '' !== $extra_context ? $message . "\n\n" . $extra_context : $message;
-
-		$messages = $this->build_messages( $message_with_context, (array) $request->get_param( 'history' ) );
-
-		try {
-			$response = VuloPilot()->ai_request_sender->send( $messages, null, 'copilot_chat' );
-		} catch ( VuloPilotException $exception ) {
-			if ( VuloPilotException::TYPE_INSUFFICIENT_CREDITS === $exception->get_type() ) {
-				return $exception->to_insufficient_credits_error();
-			}
-
-			// Returned, not rethrown, so the \Throwable catch below doesn't fatal.
-			if ( VuloPilotException::TYPE_UNSAFE_PROMPT !== $exception->get_type() ) {
-				return new \WP_Error( 'vulopilot_ai_request_failed', $exception->getMessage(), array( 'status' => 502 ) );
-			}
-
-			return new \WP_Error( 'vulopilot_unsafe_prompt', $exception->getMessage(), array( 'status' => 400 ) );
-		} catch ( \RuntimeException $exception ) {
-			return new \WP_Error(
-				'vulopilot_ai_not_connected',
-				sprintf(
-					/* translators: %s is the exception's own real message, e.g. "No AI connection is configured." */
-					__( '%s Connect this site to VuloCloud in Settings → Connections.', 'vulopilot' ),
-					$exception->getMessage()
-				),
-				array( 'status' => 400 )
+		if ( null === $decision ) {
+			$answer = $this->ask(
+				$this->build_chat_context(
+					$message,
+					(array) $request->get_param( 'history' ),
+					(array) $request->get_param( 'context_refs' ),
+					(array) $request->get_param( 'attachments' )
+				)
 			);
-		} catch ( \Throwable $exception ) {
-			return new \WP_Error( 'vulopilot_ai_request_failed', $exception->getMessage(), array( 'status' => 502 ) );
-		}
 
-		$decision = $this->orchestrator->parse_response( $response );
+			if ( $answer instanceof \WP_Error ) {
+				return $answer;
+			}
+
+			$decision = array(
+				'status'  => 'respond',
+				'message' => $answer,
+			);
+		}
 
 		// "Auto-applies (with approval)" (ChatTab.tsx).
 		$auto_apply = rest_sanitize_boolean( $request->get_param( 'auto_apply' ) ?? true );
@@ -303,8 +276,7 @@ class Copilot extends \WP_REST_Controller {
 	}
 
 	/**
-	 * Same shape/sanitization build_messages() already applies to client- supplied history
-	 * turns.
+	 * Sanitizes client-supplied history turns to {role, content}.
 	 *
 	 * @param array<int, mixed> $raw_history Client-supplied {role, content} turns.
 	 * @return array<int, array{role: string, content: string}>
@@ -370,10 +342,10 @@ class Copilot extends \WP_REST_Controller {
 	}
 
 	/**
-	 * "Auto-applies (with approval)" turned off - describes what the orchestrator would
-	 * have created instead of creating it.
+	 * "Auto-applies (with approval)" turned off - describes what would
+	 * have been created instead of creating it.
 	 *
-	 * @param array{action_id: string, input: array<string, mixed>} $decision parse_response()'s "ready_action" return value.
+	 * @param array{action_id: string, input: array<string, mixed>} $decision BlogIntake::handle()'s "ready_action" decision.
 	 * @return string
 	 */
 	private function describe_pending_action( array $decision ): string {
@@ -397,109 +369,75 @@ class Copilot extends \WP_REST_Controller {
 	}
 
 	/**
-	 * Builds the chat prompt: a system message describing the copilot's
-	 * role, its content-creation capability, and a live site snapshot,
-	 * then the client's recent turns, then the new user message.
-	 * Instructed to respond with strict JSON only (question/ready_action/respond).
+	 * Sends one chat message, with everything the chat may use, and returns the AI's answer.
 	 *
-	 * @param string            $message     The new user message.
-	 * @param array<int, mixed> $raw_history Client-supplied {role, content} turns, oldest first.
-	 * @return array<int, array{role: string, content: string}>
+	 * @param array<string, mixed> $context build_chat_context()'s result.
+	 * @return string|\WP_Error
 	 */
-	private function build_messages( string $message, array $raw_history ): array {
-		$messages   = array();
-		$messages[] = array(
-			'role'    => 'system',
-			'content' => sprintf(
-				/* translators: 1: site name, 2: real live site snapshot text. */
-				__(
-					'You are VuloPilot, an AI website copilot embedded in the WordPress plugin VuloPilot, helping the owner of the site "%1$s". You help with SEO, performance, security, accessibility, GEO/AI-search visibility, WooCommerce store health, and automations.
-
-You can directly create 1 specific kind of real WordPress content (a blog post) - everything else you help with is advice only. For each, collect the fields in order - a field listed after the first one does NOT mean it\'s skippable; ask about each one, one at a time, unless the user already stated it somewhere in the conversation:
-1. "generate-blog" - a blog post or article. Collect, in order: topic (what it\'s about), word_count (target word count), tone (e.g. Professional/Friendly/Informative/Casual).
-
-Rules for content creation:
-- Ask for exactly ONE missing field at a time, as a short natural question, following the collection order above. Never ask about a field already given anywhere earlier in this conversation. Never ask more than 3 questions total for one request.
-- If the user changed their mind about something, use their latest answer, not an earlier one.
-- A field can be given implicitly inside natural phrasing, not just as an explicit "field: value" statement - e.g. "a casual blog post about X" already gives both topic and tone; "500 words" gives word_count. Recognize these the same as an explicit answer, and don\'t ask about them again.
-- If a message already gives multiple fields at once, or a fully-specified first message gives everything needed, only ask about whatever is still actually missing - or proceed straight to ready_action if nothing is missing.
-
-Worked example for "generate-blog" (the same collect-one-at-a-time pattern):
-User: "Write a blog" → {"status":"question","message":"Sure! What should the blog be about?"}
-User: "AI in eCommerce" → {"status":"question","message":"Great - how many words would you like?"}
-User: "1500 words" → {"status":"question","message":"What tone would you prefer? For example: Professional, Friendly, Informative, or Casual."}
-User: "Professional" → {"status":"ready_action","action_id":"generate-blog","input":{"topic":"AI in eCommerce","word_count":1500,"tone":"Professional"}}
-
-For anything that is NOT a blog post request - a general question, SEO/performance/security/accessibility/GEO/WooCommerce/automation advice, editing something that already exists, or any other kind of written content - answer using the real site snapshot below when relevant, and point the user to the specific tab (Issues, Performance, Security, GEO, WooCommerce, Automations) where they can review or fix something themselves. You cannot execute any change on the site yourself beyond the 3 content-creation kinds above - say so plainly if asked to perform some other action, rather than claiming to have done it. Reply in plain text or Markdown, never HTML.
-
-Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly one of these shapes:
-{"status":"question","message":"<the single next question, phrased naturally>"}
-{"status":"ready_action","action_id":"generate-blog","input":{...only the fields listed above for that action_id...}}
-{"status":"respond","message":"<a direct answer, or other written content the user still has to copy/paste themselves>"}%2$s',
-					'vulopilot'
-				),
-				get_bloginfo( 'name' ),
-				$this->build_site_context()
-			),
-		);
-
-		foreach ( array_slice( $raw_history, -self::MAX_HISTORY_MESSAGES ) as $entry ) {
-			if ( ! is_array( $entry ) || empty( $entry['role'] ) || empty( $entry['content'] ) ) {
-				continue;
+	private function ask( array $context ) {
+		try {
+			$response = VuloPilot()->ai_request_sender->send_feature( 'copilot_chat', 'chat', $context, 'copilot_chat', null, false );
+		} catch ( VuloPilotException $exception ) {
+			if ( VuloPilotException::TYPE_INSUFFICIENT_CREDITS === $exception->get_type() ) {
+				return $exception->to_insufficient_credits_error();
 			}
 
-			$messages[] = array(
-				'role'    => 'user' === $entry['role'] ? 'user' : 'assistant',
-				'content' => sanitize_textarea_field( (string) $entry['content'] ),
+			// Returned, not rethrown, so the \Throwable catch below doesn't fatal.
+			if ( VuloPilotException::TYPE_UNSAFE_PROMPT !== $exception->get_type() ) {
+				return new \WP_Error( 'vulopilot_ai_request_failed', $exception->getMessage(), array( 'status' => 502 ) );
+			}
+
+			return new \WP_Error( 'vulopilot_unsafe_prompt', $exception->getMessage(), array( 'status' => 400 ) );
+		} catch ( \RuntimeException $exception ) {
+			return new \WP_Error(
+				'vulopilot_ai_not_connected',
+				sprintf(
+					/* translators: %s is the exception's own real message, e.g. "No AI connection is configured." */
+					__( '%s Connect this site to VuloCloud in Settings → Connections.', 'vulopilot' ),
+					$exception->getMessage()
+				),
+				array( 'status' => 400 )
 			);
+		} catch ( \Throwable $exception ) {
+			return new \WP_Error( 'vulopilot_ai_request_failed', $exception->getMessage(), array( 'status' => 502 ) );
 		}
 
-		$messages[] = array(
-			'role'    => 'user',
-			'content' => $message,
-		);
+		$answer = trim( $response->get_content() );
 
-		return $messages;
+		return '' !== $answer ? $answer : __( "Sorry, I didn't quite catch that - could you rephrase?", 'vulopilot' );
 	}
 
 	/**
-	 * Resolves the user's "Add context" and "Attach" picks into one text
-	 * block appended to the outgoing user message. Everything is
-	 * re-resolved from the database/media library rather than trusting
-	 * client-supplied labels or content.
+	 * The chat feature's input: the new message, the whole conversation so far, and the site
+	 * data the chat may use - the live snapshot plus anything the user attached.
 	 *
-	 * @param array<int, mixed> $raw_context_refs           Client-supplied {type, scanner_id|id} refs, from the "Add context" picker.
-	 * @param array<int, mixed> $raw_attachments            Client-supplied {id} WP attachment refs, from the "Attach" file picker.
-	 * @return string Empty string if nothing in either list resolved to something real.
+	 * @param string            $message          The new user message.
+	 * @param array<int, mixed> $raw_history      Client-supplied {role, content} turns, oldest first.
+	 * @param array<int, mixed> $raw_context_refs Client-supplied finding-group/automation references.
+	 * @param array<int, mixed> $raw_attachments  Client-supplied Media Library attachment references.
+	 * @return array<string, mixed>
 	 */
-	private function build_extra_context( array $raw_context_refs, array $raw_attachments ): string {
-		$blocks = array_filter(
-			array(
-				$this->build_context_refs_block( $raw_context_refs ),
-				$this->build_attachments_block( $raw_attachments ),
-			),
-			static fn( $block ) => '' !== $block
+	private function build_chat_context( string $message, array $raw_history, array $raw_context_refs, array $raw_attachments ): array {
+		return array(
+			'site_name'    => get_bloginfo( 'name' ),
+			'message'      => $message,
+			'history'      => $this->sanitize_client_turns( $raw_history ),
+			'snapshot'     => $this->build_site_snapshot(),
+			'context_refs' => $this->build_context_refs( $raw_context_refs ),
+			'attachments'  => $this->build_attachments( $raw_attachments ),
 		);
-
-		if ( ! $blocks ) {
-			return '';
-		}
-
-		return "[Context the user attached to this message:]\n" . implode( "\n\n", $blocks );
 	}
 
 	/**
-	 * Resolves "Add context" refs - a user-picked open finding group (grouped by
-	 * scanner_id, same unit NeedsAttentionCard.tsx's own list already shows) or automation
-	 * - into real, current one-line summaries.
+	 * The finding groups and automations the user attached, each resolved from the database.
 	 *
-	 * @param array<int, mixed> $raw_refs Client-supplied {type: 'finding_group'|'automations', scanner_id?, id?} entries.
-	 * @return string Empty string if none resolved.
+	 * @param array<int, mixed> $raw_refs Client-supplied references.
+	 * @return array<int, array<string, mixed>>
 	 */
-	private function build_context_refs_block( array $raw_refs ): string {
+	private function build_context_refs( array $raw_refs ): array {
 		$findings    = new FindingRepository();
 		$automations = new AutomationsRepository();
-		$lines       = array();
+		$refs        = array();
 
 		foreach ( array_slice( $raw_refs, 0, self::MAX_CONTEXT_REFS ) as $ref ) {
 			if ( ! is_array( $ref ) ) {
@@ -517,15 +455,13 @@ Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly one of
 				}
 
 				$scanner = VuloPilot()->scanner_registry->get_scanner( $scanner_id );
-				$label   = $scanner ? $scanner->get_label() : $scanner_id;
 
-				$lines[] = sprintf(
-					/* translators: 1: scanner label, 2: category, 3: open finding count, 4: severity */
-					__( '- Finding group "%1$s" (%2$s): %3$d open, severity %4$s.', 'vulopilot' ),
-					$label,
-					$group['category'],
-					$group['count'],
-					$group['severity']
+				$refs[] = array(
+					'type'       => 'finding_group',
+					'label'      => $scanner ? $scanner->get_label() : $scanner_id,
+					'category'   => (string) $group['category'],
+					'open_count' => (int) $group['count'],
+					'severity'   => (string) $group['severity'],
 				);
 			} elseif ( 'automations' === $type ) {
 				$automation_id = absint( $ref['id'] ?? 0 );
@@ -535,27 +471,26 @@ Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly one of
 					continue;
 				}
 
-				$lines[] = sprintf(
-					/* translators: 1: automation name, 2: status (enabled/disabled), 3: trigger type */
-					__( '- Automation "%1$s": %2$s, trigger %3$s.', 'vulopilot' ),
-					$automation['name'],
-					$automation['status'],
-					$automation['trigger_type']
+				$refs[] = array(
+					'type'    => 'automation',
+					'name'    => (string) $automation['name'],
+					'status'  => (string) $automation['status'],
+					'trigger' => (string) $automation['trigger_type'],
 				);
 			}
 		}
 
-		return $lines ? implode( "\n", $lines ) : '';
+		return $refs;
 	}
 
 	/**
-	 * Resolves attached Media Library ids into content blocks.
+	 * The Media Library files the user attached: a text file's contents, or just its name and type.
 	 *
-	 * @param array<int, mixed> $raw_attachments              Client-supplied {id} entries.
-	 * @return string Empty string if none resolved.
+	 * @param array<int, mixed> $raw_attachments Client-supplied attachment references.
+	 * @return array<int, array<string, mixed>>
 	 */
-	private function build_attachments_block( array $raw_attachments ): string {
-		$blocks = array();
+	private function build_attachments( array $raw_attachments ): array {
+		$files = array();
 
 		foreach ( array_slice( $raw_attachments, 0, self::MAX_ATTACHMENTS ) as $attachment ) {
 			if ( ! is_array( $attachment ) ) {
@@ -568,56 +503,38 @@ Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly one of
 				continue;
 			}
 
-			$path     = get_attached_file( $attachment_id );
-			$filename = $path ? wp_basename( $path ) : sprintf( 'attachment-%d', $attachment_id );
-			$mime     = (string) get_post_mime_type( $attachment_id );
+			$path = get_attached_file( $attachment_id );
+			$file = array(
+				'filename' => $path ? wp_basename( $path ) : sprintf( 'attachment-%d', $attachment_id ),
+				'mime'     => (string) get_post_mime_type( $attachment_id ),
+			);
 
-			if ( ! in_array( $mime, self::ATTACHMENT_TEXT_MIME_TYPES, true ) ) {
-				$blocks[] = sprintf(
-					/* translators: 1: original filename, 2: mime type */
-					__( '- Attached file "%1$s" (%2$s) - its content can\'t be read, only the filename is available.', 'vulopilot' ),
-					$filename,
-					$mime
-				);
+			if ( ! in_array( $file['mime'], self::ATTACHMENT_TEXT_MIME_TYPES, true ) ) {
+				$files[] = $file;
 				continue;
 			}
 
 			$contents = ( $path && is_readable( $path ) )
-				? file_get_contents( $path, false, null, 0, self::ATTACHMENT_MAX_BYTES ) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading a local Media Library file this same admin already uploaded (via wp.media()), not a remote URL or arbitrary user-supplied path; WP_Filesystem's FTP-credential fallback isn't warranted for a bounded local read.
+				? file_get_contents( $path ) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- reading a local Media Library file this same admin already uploaded (via wp.media()), not a remote URL or arbitrary user-supplied path; WP_Filesystem's FTP-credential fallback isn't warranted for a local read.
 				: false;
 
 			if ( false === $contents ) {
-				$blocks[] = sprintf(
-					/* translators: 1: original filename, 2: mime type */
-					__( '- Attached file "%1$s" (%2$s) - could not be read.', 'vulopilot' ),
-					$filename,
-					$mime
-				);
+				$files[] = $file + array( 'readable' => false );
 				continue;
 			}
 
-			$contents  = sanitize_textarea_field( $contents );
-			$truncated = strlen( $contents ) >= self::ATTACHMENT_MAX_BYTES ? "\n[...truncated]" : '';
-
-			$blocks[] = sprintf(
-				/* translators: 1: original filename, 2: mime type, 3: the file's own text content, 4: truncation note or empty string */
-				__( "- Attached file \"%1\$s\" (%2\$s):\n%3\$s%4\$s", 'vulopilot' ),
-				$filename,
-				$mime,
-				$contents,
-				$truncated
-			);
+			$files[] = $file + array( 'content' => sanitize_textarea_field( $contents ) );
 		}
 
-		return $blocks ? implode( "\n\n", $blocks ) : '';
+		return $files;
 	}
 
 	/**
-	 * A real, live snapshot of the site's own open findings and automation state.
+	 * Live site health counts the chat can refer to.
 	 *
-	 * @return string
+	 * @return array<string, mixed>
 	 */
-	private function build_site_context(): string {
+	private function build_site_snapshot(): array {
 		$findings    = new FindingRepository();
 		$automations = new AutomationsRepository();
 		$action_runs = new ActionRunRepository();
@@ -634,25 +551,25 @@ Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly one of
 			$categories['woocommerce'] = __( 'WooCommerce', 'vulopilot' );
 		}
 
-		$category_lines = array();
+		$by_category = array();
 		foreach ( $categories as $category => $label ) {
-			$category_lines[] = sprintf( '%s: %d', $label, $findings->count_by_category( $category ) );
+			$by_category[] = array(
+				'label' => $label,
+				'count' => (int) $findings->count_by_category( $category ),
+			);
 		}
 
-		$pending_approvals = (int) $action_runs->find_all(
-			array(
-				'status'   => 'pending_approval',
-				'per_page' => 1,
-			)
-		)['total'];
-
-		return sprintf(
-			"\n\nCurrent site snapshot:\n- Open findings by category: %1\$s\n- Critical: %2\$d, High: %3\$d\n- Active automations: %4\$d\n- Action runs pending approval: %5\$d",
-			implode( ', ', $category_lines ),
-			$findings->count_by_severity( Severity::CRITICAL ),
-			$findings->count_by_severity( Severity::HIGH ),
-			$automations->count_enabled(),
-			$pending_approvals
+		return array(
+			'findings_by_category' => $by_category,
+			'critical'             => (int) $findings->count_by_severity( Severity::CRITICAL ),
+			'high'                 => (int) $findings->count_by_severity( Severity::HIGH ),
+			'active_automations'   => (int) $automations->count_enabled(),
+			'pending_approvals'    => (int) $action_runs->find_all(
+				array(
+					'status'   => 'pending_approval',
+					'per_page' => 1,
+				)
+			)['total'],
 		);
 	}
 }

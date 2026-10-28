@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  * @version     1.0.0
  * @author      VuloLabs
  */
-class WritePostContentAction extends AbstractBasicAction {
+class WritePostContentAction extends AbstractCloudAction {
 
 	/**
 	 * @inheritDoc
@@ -78,21 +78,18 @@ class WritePostContentAction extends AbstractBasicAction {
 	/**
 	 * @inheritDoc
 	 */
-	public function build_prompt( array $input ): array {
+	public function get_cloud_feature(): array {
+		return array( 'post_content', 'write' );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function build_cloud_context( array $input ): array {
 		return array(
-			array(
-				'role'    => 'system',
-				'content' => 'You write WordPress page/post body content as HTML paragraphs. '
-					. 'Respond with ONLY the body HTML - no title, no preamble, no code fences.',
-			),
-			array(
-				'role'    => 'user',
-				'content' => sprintf(
-					"Page title: %s\n\nWrite the body content for this brief: %s",
-					$input['post_title'],
-					$input['brief']
-				),
-			),
+			'title'   => $input['post_title'],
+			'brief'   => $input['brief'],
+			'content' => $input['previous_content'],
 		);
 	}
 

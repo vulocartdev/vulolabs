@@ -3,7 +3,7 @@
 An **AI action** is a change to the site drafted by AI and applied only after a person approves it. Every action follows the same lifecycle, run by `ActionRunner`.
 
 ```
-propose()   input -> validate -> build prompt -> AI call -> parse -> validate output -> preview     [row: pending_approval]
+propose()   input -> validate -> feature context (or prompt) -> AI call -> parse -> validate output -> preview   [row: pending_approval]
 approve()   execute()                                                                            [row: executed | failed]
 reject()    record the decision                                                                  [row: rejected]
 rollback()  rollback( snapshot )                                                                 [row: rolled_back]
@@ -28,6 +28,19 @@ rollback()  rollback( snapshot )                                                
 | `rollback( array $snapshot ): void` | Undo |
 
 Extend `AiCopilot\Actions\AbstractBasicAction` for the defaults.
+
+### Built-in actions: AI-service features
+
+Every built-in action (free and Pro) implements `VuloPilot\Utill\CloudAIActionInterface` instead of writing its own prompt. The AI service owns the wording, so it can be improved without a plugin release:
+
+| Method | Job |
+|---|---|
+| `get_cloud_feature(): array` | `[ featureId, action ]` of the AI-service feature this action runs |
+| `build_cloud_context( array $input ): array` | The feature's structured input, built from `validate_input()`'s result (WordPress lookups such as permalinks and attachment filenames happen here) |
+
+`ActionRunner` sends these through `AiRequestSender::send_feature()`. Extend `AiCopilot\Actions\AbstractCloudAction` (free) or `VuloPilotPro\Utill\ActionUtil` (Pro); their `build_prompt()` is never called. A new built-in action needs its feature added to the AI service first.
+
+Actions added by other plugins keep implementing `build_prompt()` and go through `AiRequestSender::send()`.
 
 ## Rules every action must follow
 
@@ -54,7 +67,8 @@ add_filter( 'vulopilot_ai_action_sources', fn( array $c ) => array_merge( $c, ar
 
 | Class | File | What it does |
 |---|---|---|
-| `AbstractBasicAction` | `modules/AiCopilot/Actions/AbstractBasicAction.php` | Base class for every free-tier action under AiCopilot/Actions/. |
+| `AbstractBasicAction` | `modules/AiCopilot/Actions/AbstractBasicAction.php` | Base class for actions that build their own prompt (third-party actions). |
+| `AbstractCloudAction` | `modules/AiCopilot/Actions/AbstractCloudAction.php` | Base class for every free-tier action under AiCopilot/Actions/; runs an AI-service feature. |
 | `AddSubheadingsAction` | `modules/AiCopilot/Actions/AddSubheadingsAction.php` | Fixes Seo\Scanners\HeadingStructureScanner's finding: 300+ word content with no `h2`-`h6` tag anywhere in it. |
 | `AuditContentAction` | `modules/AiCopilot/Actions/AuditContentAction.php` | Create Content's "AI Content Audit" quick action (QuickActionsCard.tsx) - a real, standalone AI action rather than the in-page scroll shortcut this row used to be (it used to jump to RecentContentCard.tsx's own rule-based scanner  |
 | `DifferentiateDuplicateTitleAction` | `modules/AiCopilot/Actions/DifferentiateDuplicateTitleAction.php` | Fixes Seo\Scanners\DuplicateContentScanner's finding: two or more published posts sharing the exact same title. |

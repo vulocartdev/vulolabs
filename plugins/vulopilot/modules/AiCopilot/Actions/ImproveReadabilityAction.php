@@ -21,7 +21,7 @@ defined( 'ABSPATH' ) || exit;
  * @version     1.0.0
  * @author      VuloLabs
  */
-class ImproveReadabilityAction extends AbstractBasicAction {
+class ImproveReadabilityAction extends AbstractCloudAction {
 
 	/**
 	 * A rewrite shorter than this fraction of the original is treated as a likely
@@ -67,18 +67,17 @@ class ImproveReadabilityAction extends AbstractBasicAction {
 	/**
 	 * @inheritDoc
 	 */
-	public function build_prompt( array $input ): array {
+	public function get_cloud_feature(): array {
+		return array( 'content_improvement', 'rewrite' );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function build_cloud_context( array $input ): array {
 		return array(
-			array(
-				'role'    => 'system',
-				'content' => 'You improve the readability of WordPress post content: shorter sentences, active voice, '
-					. 'clearer paragraph breaks. Preserve every HTML tag, the overall structure, and all factual claims exactly. '
-					. 'Do not add or remove information. Respond with ONLY the rewritten HTML content - no commentary.',
-			),
-			array(
-				'role'    => 'user',
-				'content' => $input['original_content'],
-			),
+			'content' => $input['original_content'],
+			'goal'    => 'improve readability',
 		);
 	}
 

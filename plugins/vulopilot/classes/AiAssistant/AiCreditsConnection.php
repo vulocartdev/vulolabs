@@ -14,6 +14,12 @@ class AiCreditsConnection {
 
 	private const OPTION_KEY = 'vulopilot_ai_credits_connection';
 
+	/**
+	 * Seconds to wait for an AI reply. A long reply can take several generation steps on the
+	 * server, so this is well above a single step's time.
+	 */
+	private const AI_REQUEST_TIMEOUT = 300;
+
 
 	/**
 	 * The stored connection, merged with defaults for any field never yet saved.
@@ -299,12 +305,57 @@ class AiCreditsConnection {
 	 * @param string      $site_tone  The `site_tone` setting, or ''.
 	 * @param string      $request_id Idempotency key, stable across retries of this one logical request.
 	 * @param string|null $label      Human task name for the site owner's credit history (e.g. 'Write Meta Title').
-	 * @return array{success: true, request_id: string, response: string, credits_used: float, credits_remaining: float}|\WP_Error
+	 * @return array{success: true, request_id: string, response: string, credits_used: float, credits_remaining: float, truncated: bool}|\WP_Error
 	 *   WP_Error codes: 'vulopilot_ai_insufficient_credits' (nothing charged yet),
 	 *   'vulopilot_vulocloud_ai_not_configured', 'vulopilot_vulocloud_ai_unreachable'/'_busy' (safe
 	 *   to retry with the same $request_id), or a non-retryable gateway error.
 	 */
 	public function execute( string $feature, string $prompt, string $site_tone, string $request_id, ?string $label = null ) {
+		$body = array(
+			'feature' => substr( $feature, 0, 100 ),
+			'prompt'  => $prompt,
+		);
+
+		if ( null !== $label && '' !== trim( $label ) ) {
+			$body['label'] = mb_substr( trim( $label ), 0, 120 );
+		}
+
+		return $this->post_ai( '/plugin/ai/prompt', $body, $site_tone, $request_id );
+	}
+
+	/**
+	 * Runs one AI-service feature, sending its structured input rather than a prompt.
+	 *
+	 * @param string               $feature_id e.g. 'rewrite_content'.
+	 * @param string               $action     e.g. 'rewrite'.
+	 * @param array<string, mixed> $context    The feature's structured input.
+	 * @param string               $site_tone  The `site_tone` setting, or ''.
+	 * @param string               $request_id Idempotency key, stable across retries of this one logical request.
+	 * @return array{success: true, request_id: string, response: string, credits_used: float, credits_remaining: float, truncated: bool}|\WP_Error Same contract as execute().
+	 */
+	public function execute_feature( string $feature_id, string $action, array $context, string $site_tone, string $request_id ) {
+		return $this->post_ai(
+			'/plugin/ai/execute',
+			array(
+				'featureId' => $feature_id,
+				'action'    => $action,
+				'context'   => (object) $context,
+			),
+			$site_tone,
+			$request_id
+		);
+	}
+
+	/**
+	 * Shared request/response handling for the two credit-metered AI endpoints.
+	 *
+	 * @param string               $path       '/plugin/ai/prompt' or '/plugin/ai/execute'.
+	 * @param array<string, mixed> $body       The endpoint's own fields; credentials, tone and request id are added here.
+	 * @param string               $site_tone  The `site_tone` setting, or ''.
+	 * @param string               $request_id Idempotency key.
+	 * @return array{success: true, request_id: string, response: string, credits_used: float, credits_remaining: float, truncated: bool}|\WP_Error
+	 */
+	private function post_ai( string $path, array $body, string $site_tone, string $request_id ) {
 		if ( '' === trim( VULOPILOT_VULOCLOUD_URL ) ) {
 			return new \WP_Error( 'vulopilot_vulocloud_ai_not_configured', __( 'VuloCloud isn’t configured for this build yet.', 'vulopilot' ), array( 'status' => 400 ) );
 		}
@@ -315,26 +366,18 @@ class AiCreditsConnection {
 			return new \WP_Error( 'vulopilot_vulocloud_ai_not_connected', __( 'This site is not connected to VuloCloud.', 'vulopilot' ), array( 'status' => 400 ) );
 		}
 
-		$body = array(
-			'siteId'    => $credential['site_id'],
-			'secret'    => $credential['secret'],
-			'feature'   => substr( $feature, 0, 100 ),
-			'prompt'    => $prompt,
-			'requestId' => $request_id,
-		);
-
-		if ( null !== $label && '' !== trim( $label ) ) {
-			$body['label'] = mb_substr( trim( $label ), 0, 120 );
-		}
+		$body['siteId']    = $credential['site_id'];
+		$body['secret']    = $credential['secret'];
+		$body['requestId'] = $request_id;
 
 		if ( '' !== $site_tone ) {
-			$body['siteTone'] = mb_substr( $site_tone, 0, 500 );
+			$body['siteTone'] = $site_tone;
 		}
 
 		$response = wp_remote_post(
-			untrailingslashit( VULOPILOT_VULOCLOUD_URL ) . '/plugin/ai/prompt',
+			untrailingslashit( VULOPILOT_VULOCLOUD_URL ) . $path,
 			array(
-				'timeout' => 60,
+				'timeout' => self::AI_REQUEST_TIMEOUT,
 				'headers' => array( 'Content-Type' => 'application/json' ),
 				'body'    => wp_json_encode( $body ),
 			)
@@ -373,8 +416,12 @@ class AiCreditsConnection {
 				return new \WP_Error( 'vulopilot_vulocloud_site_revoked', __( 'This site\'s VuloCloud connection was revoked. Please reconnect under Settings → Connections.', 'vulopilot' ), array( 'status' => $status ) );
 			}
 
-			if ( 409 === $status || 429 === $status || $status >= 500 ) {
-				// Retryable, including 409 "this requestId is still running".
+			// The server says whether a retry can help; when it doesn't, fall back to the status.
+			$retryable = isset( $decoded['retryable'] )
+				? (bool) $decoded['retryable']
+				: ( 409 === $status || 429 === $status || $status >= 500 );
+
+			if ( $retryable ) {
 				return new \WP_Error( 'vulopilot_vulocloud_ai_busy', __( 'VuloCloud could not process this AI request right now.', 'vulopilot' ), array( 'status' => $status ) );
 			}
 
@@ -418,6 +465,7 @@ class AiCreditsConnection {
 			'response'          => (string) ( $decoded['response'] ?? '' ),
 			'credits_used'      => (float) ( $decoded['creditsUsed'] ?? 0 ),
 			'credits_remaining' => $remaining,
+			'truncated'         => ! empty( $decoded['truncated'] ),
 		);
 	}
 

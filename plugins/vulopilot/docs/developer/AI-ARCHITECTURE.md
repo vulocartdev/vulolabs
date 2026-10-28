@@ -4,9 +4,9 @@ How the plugin talks to AI. There is one path: every request goes through **Vulo
 
 ```
 Feature (Copilot chat, an AI action, an analyzer)
-   -> AiRequestSender::send( $messages, $image = null, $surface = null ): AIResponse
-        -> VuloCloud AI endpoint (uses the AI key configured for the connected site/account)
-        -> if the site has no AI key configured: fall back to the AI credits gateway (AiCreditGatewayClient)
+   -> AiRequestSender::send( $messages, $image = null, $surface = null ): AIResponse              (only actions added by other plugins)
+   -> AiRequestSender::send_feature( $feature_id, $action, $context, $surface, $label ): AIResponse  (every built-in feature: actions, analyzers, both chats)
+        -> AiCreditsConnection::execute() / execute_feature() -> VuloCloud
    -> AiHistoryRepository writes one excerpt-only row per call (vulopilot_ai_history)
 ```
 
@@ -18,7 +18,6 @@ Feature (Copilot chat, an AI action, an analyzer)
 | `AiAssistant\ConnectBrokerCallbackHandler` | Handles the redirect back from VuloCloud when connecting |
 | `AiAssistant\AiCreditsConnection` | Site credentials and the credit balance |
 | `AiAssistant\CredentialEncryption` | Encrypts stored secrets |
-| `AiCopilot\Services\AiCreditGatewayClient` | Spends AI credits for supported actions |
 | `AiAssistant\SiteToneLearner`, `SiteTelemetryReporter` | Site tone and connection telemetry |
 
 Data sent to VuloCloud and the links to its terms are documented in the readme's **External services** section. Update it whenever the payload changes.

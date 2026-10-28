@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  * @version     1.0.0
  * @author      VuloLabs
  */
-class DifferentiateDuplicateTitleAction extends AbstractBasicAction {
+class DifferentiateDuplicateTitleAction extends AbstractCloudAction {
 
 	/**
 	 * A rewritten title longer than this is rejected as a run-on AI
@@ -97,26 +97,18 @@ class DifferentiateDuplicateTitleAction extends AbstractBasicAction {
 	/**
 	 * @inheritDoc
 	 */
-	public function build_prompt( array $input ): array {
+	public function get_cloud_feature(): array {
+		return array( 'duplicate_title', 'differentiate' );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function build_cloud_context( array $input ): array {
 		return array(
-			array(
-				'role'    => 'system',
-				'content' => sprintf(
-					'This page shares its exact title with %d other published page(s) on the same site, which splits '
-						. 'search ranking signal between them. Write ONE new title for THIS page that stays accurate to '
-						. 'its own content but is clearly distinct from the shared title. Respond with ONLY the new '
-						. 'title - no quotes, no preamble, no explanation.',
-					count( $input['sibling_titles'] )
-				),
-			),
-			array(
-				'role'    => 'user',
-				'content' => sprintf(
-					"Current (duplicated) title: %s\n\nContent:\n%s",
-					$input['previous_title'],
-					wp_trim_words( wp_strip_all_tags( $input['content'] ), 150 )
-				),
-			),
+			'title'         => $input['previous_title'],
+			'content'       => $input['content'],
+			'sibling_count' => count( $input['sibling_titles'] ),
 		);
 	}
 

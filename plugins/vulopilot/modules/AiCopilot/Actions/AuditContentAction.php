@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  * @version     1.0.0
  * @author      VuloLabs
  */
-class AuditContentAction extends AbstractBasicAction {
+class AuditContentAction extends AbstractCloudAction {
 
 	private const META_KEY = '_vulopilot_ai_content_audit';
 
@@ -76,23 +76,17 @@ class AuditContentAction extends AbstractBasicAction {
 	/**
 	 * @inheritDoc
 	 */
-	public function build_prompt( array $input ): array {
+	public function get_cloud_feature(): array {
+		return array( 'audit_content', 'audit' );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function build_cloud_context( array $input ): array {
 		return array(
-			array(
-				'role'    => 'system',
-				'content' => 'You audit WordPress page content for overall quality - SEO, readability, structure, '
-					. 'and reader engagement. Respond in exactly this format, nothing else:'
-					. "\nSCORE: <a whole number from 0 to 100>\nSUMMARY: <one short paragraph verdict>"
-					. "\nSUGGESTIONS:\n- <first concrete suggestion>\n- <second concrete suggestion>\n- <third concrete suggestion>",
-			),
-			array(
-				'role'    => 'user',
-				'content' => sprintf(
-					"Page title: %s\n\nContent:\n%s\n\nAudit this page.",
-					$input['post_title'],
-					wp_strip_all_tags( $input['post_content'] )
-				),
-			),
+			'title'   => $input['post_title'],
+			'content' => wp_strip_all_tags( $input['post_content'] ),
 		);
 	}
 

@@ -34,7 +34,7 @@ Adding a setting:
 | `SeoVisibility\TagManagerService` | GTM head script via `wp_add_inline_script()` and the `<noscript>` body fallback |
 | `AiAssistant\VuloCloudAccountConnection`, `AiCreditsConnection` | VuloCloud login and credits |
 | `AiAssistant\ConnectBrokerCallbackHandler` | VuloCloud connect callback |
-| `AiAssistant\AiRequestSender`, `AiCreditGatewayClient` | Sends AI requests through VuloCloud |
+| `AiAssistant\AiRequestSender` | Sends AI requests through VuloCloud |
 
 Every outside host is documented in the readme's External services section; keep it in sync when you add a call.
 

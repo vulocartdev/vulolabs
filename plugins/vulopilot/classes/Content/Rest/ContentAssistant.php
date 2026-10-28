@@ -1,6 +1,7 @@
 <?php
 namespace VuloPilot\Content\Rest;
 
+use VuloPilot\AiCopilot\BlogIntake;
 use VuloPilot\AiCopilot\ContentCreationOrchestrator;
 use VuloPilot\Utill\VuloPilotException;
 
@@ -8,11 +9,10 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * REST controller for the AI Content Assistant sidebar's chat turn. Each
- * message goes through one orchestrator AI call that asks a clarifying
- * question, answers directly, or hands off to the `generate-blog` AIAction
- * (auto-approved, since the conversation itself is the approval).
- * Conversation state is just the client's round-tripped `history` array -
- * no separate slot-filling state machine.
+ * blog request is collected by BlogIntake's fixed questions and handed to the
+ * `generate-blog` AIAction (auto-approved, since the conversation itself is the
+ * approval); anything else is answered by one AI-service call. The conversation
+ * is the client's round-tripped `history` array.
  *
  * @class       ContentAssistant controller
  * @version     1.0.0
@@ -28,14 +28,7 @@ class ContentAssistant extends \WP_REST_Controller {
 	protected $rest_base = 'content-assistant';
 
 	/**
-	 * How many prior turns of client-supplied history to include - bounds
-	 * the prompt sent to the AI service on a long-running chat.
-	 */
-	private const MAX_HISTORY_MESSAGES = 20;
-
-	/**
-	 * The shared "parse the orchestrator's decision, then really create the content"
-	 * logic.
+	 * Creates the content once a blog request is complete.
 	 *
 	 * @var ContentCreationOrchestrator
 	 */
@@ -90,7 +83,7 @@ class ContentAssistant extends \WP_REST_Controller {
 	}
 
 	/**
-	 * Runs one orchestrator turn and acts on its decision.
+	 * Handles one chat turn: the next blog question, the created draft, or the AI's answer.
 	 *
 	 * @param \WP_REST_Request $request Full request object.
 	 * @return \WP_REST_Response|\WP_Error
@@ -106,10 +99,50 @@ class ContentAssistant extends \WP_REST_Controller {
 			);
 		}
 
-		$messages = $this->build_orchestrator_messages( $message, (array) $request->get_param( 'history' ) );
+		// A blog request is collected by fixed questions, with no AI, until every field is known.
+		$decision = ( new BlogIntake( 'content_assistant' ) )->handle( $message );
 
+		if ( null === $decision ) {
+			$answer = $this->ask( $this->build_chat_context( $message, (array) $request->get_param( 'history' ) ) );
+
+			if ( $answer instanceof \WP_Error ) {
+				return $answer;
+			}
+
+			$decision = array(
+				'status'  => 'respond',
+				'message' => $answer,
+			);
+		}
+
+		if ( 'ready_action' === $decision['status'] ) {
+			$result = $this->orchestrator->create_content_and_respond( $decision );
+
+			if ( $result instanceof \WP_Error ) {
+				return $result;
+			}
+
+			return rest_ensure_response( $result );
+		}
+
+		return rest_ensure_response(
+			array(
+				'content' => $decision['message'],
+				'link'    => null,
+				'run_id'  => null,
+			)
+		);
+	}
+
+	/**
+	 * Sends one chat message with the conversation so far and returns the AI's answer.
+	 *
+	 * @param array<string, mixed> $context build_chat_context()'s result.
+	 * @return string|\WP_Error
+	 */
+	private function ask( array $context ) {
 		try {
-			$response = VuloPilot()->ai_request_sender->send( $messages, null, 'content_assistant_chat' );
+			$response = VuloPilot()->ai_request_sender->send_feature( 'content_assistant_chat', 'chat', $context, 'content_assistant_chat', null, false );
 		} catch ( VuloPilotException $exception ) {
 			if ( VuloPilotException::TYPE_INSUFFICIENT_CREDITS === $exception->get_type() ) {
 				return $exception->to_insufficient_credits_error();
@@ -135,90 +168,36 @@ class ContentAssistant extends \WP_REST_Controller {
 			return new \WP_Error( 'vulopilot_ai_request_failed', $exception->getMessage(), array( 'status' => 502 ) );
 		}
 
-		$decision = $this->orchestrator->parse_response( $response );
+		$answer = trim( $response->get_content() );
 
-		if ( 'ready_action' === $decision['status'] ) {
-			$result = $this->orchestrator->create_content_and_respond( $decision );
-
-			if ( $result instanceof \WP_Error ) {
-				return $result;
-			}
-
-			return rest_ensure_response( $result );
-		}
-
-		return rest_ensure_response(
-			array(
-				'content' => $decision['message'],
-				'link'    => null,
-				'run_id'  => null,
-			)
-		);
+		return '' !== $answer ? $answer : __( "Sorry, I didn't quite catch that - could you rephrase?", 'vulopilot' );
 	}
 
 	/**
-	 * Builds the orchestrator prompt: a system message describing the
-	 * content types it can create, the client's recent turns, then the
-	 * new user message. Instructed to respond with strict JSON only.
+	 * The content assistant feature's input: the new message and the whole conversation so far.
 	 *
 	 * @param string            $message     The new user message.
 	 * @param array<int, mixed> $raw_history Client-supplied {role, content} turns, oldest first.
-	 * @return array<int, array{role: string, content: string}>
+	 * @return array<string, mixed>
 	 */
-	private function build_orchestrator_messages( string $message, array $raw_history ): array {
-		$messages   = array();
-		$messages[] = array(
-			'role'    => 'system',
-			'content' => sprintf(
-				/* translators: %s is the site's own real name (get_bloginfo('name')). */
-				__(
-					'You are the intake assistant for the "Content" chat inside the WordPress plugin VuloPilot, on the site "%s". Your job this turn is to move the conversation toward either (a) creating one of 3 specific kinds of real WordPress content, or (b) simply answering the user when that\'s what they actually want.
+	private function build_chat_context( string $message, array $raw_history ): array {
+		$history = array();
 
-The 3 kinds of WordPress content you can create. For each, collect the fields in the order listed - a field being listed after the first one does NOT mean it\'s skippable; ask about each one, one at a time, unless the user already stated it somewhere in the conversation:
-1. "generate-blog" - a blog post or article. Collect, in order: topic (what it\'s about), word_count (target word count), tone (e.g. Professional/Friendly/Informative/Casual).
-
-Rules:
-- Ask for exactly ONE missing field at a time, as a short natural question, following the collection order above. Never ask about a field already given anywhere earlier in this conversation - check the whole conversation, not just the latest message, before asking. Never ask more than 3 questions total for one request.
-- If the user changed their mind about something, use their latest answer, not an earlier one.
-- Only skip a field if the user\'s messages already gave it, or if they explicitly say they don\'t have a preference for it. Do not stop early just because the first, most-obvious field (e.g. the topic) is known - still ask about the remaining ones in order.
-- A field can be given implicitly inside natural phrasing, not just as an explicit "field: value" statement - e.g. "a casual blog post about X" already gives both topic and tone (casual); "a 500-word post" or "500 words" gives word_count. Recognize these the same as an explicit answer, and don\'t ask about them again.
-- If the request doesn\'t match any of the 3 kinds (e.g. an email, a social caption, general advice, or editing something that already exists, which you have no way to identify from chat), have a short exchange to understand what\'s actually needed (purpose, audience, tone - whatever is relevant), then write the content yourself as a normal reply. Never claim it was created or saved - there is no WordPress content type for it.
-- If the user is just asking a question rather than requesting new content, answer it directly and helpfully. Use plain text or Markdown, never HTML.
-
-Worked example for "generate-blog" (the same collect-one-at-a-time pattern and their own field lists above):
-User: "Write a blog" → {"status":"question","message":"Sure! What should the blog be about?"}
-User: "AI in eCommerce" → {"status":"question","message":"Great - how many words would you like?"}
-User: "1500 words" → {"status":"question","message":"What tone would you prefer? For example: Professional, Friendly, Informative, or Casual."}
-User: "Professional" → {"status":"ready_action","action_id":"generate-blog","input":{"topic":"AI in eCommerce","word_count":1500,"tone":"Professional"}}
-
-But if a message already gives multiple fields at once (e.g. "Write a 1000-word blog about SEO" gives topic and word_count together, or a fully-specified first message gives everything), only ask about whatever is still actually missing from that list - or proceed straight to ready_action if nothing is missing.
-
-Respond with ONLY raw JSON, no markdown fences, no commentary, in exactly one of these shapes:
-{"status":"question","message":"<the single next question, phrased naturally>"}
-{"status":"ready_action","action_id":"generate-blog","input":{...only the fields listed above for that action_id...}}
-{"status":"respond","message":"<a direct answer, or fully-written content for a kind with no matching action above>"}',
-					'vulopilot'
-				),
-				get_bloginfo( 'name' )
-			),
-		);
-
-		foreach ( array_slice( $raw_history, -self::MAX_HISTORY_MESSAGES ) as $entry ) {
+		foreach ( $raw_history as $entry ) {
 			if ( ! is_array( $entry ) || empty( $entry['role'] ) || empty( $entry['content'] ) ) {
 				continue;
 			}
 
-			$messages[] = array(
+			$history[] = array(
 				'role'    => 'user' === $entry['role'] ? 'user' : 'assistant',
 				'content' => sanitize_textarea_field( (string) $entry['content'] ),
 			);
 		}
 
-		$messages[] = array(
-			'role'    => 'user',
-			'content' => $message,
+		return array(
+			'site_name' => get_bloginfo( 'name' ),
+			'message'   => $message,
+			'history'   => $history,
 		);
-
-		return $messages;
 	}
 }

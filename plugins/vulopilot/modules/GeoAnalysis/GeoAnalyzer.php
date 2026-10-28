@@ -79,8 +79,8 @@ class GeoAnalyzer {
 
         $deterministic_score       = $this->calculate_deterministic_score( $post_id );
         $sub_scores                = $this->calculate_sub_scores( $post_id, $post );
-        $messages                  = $this->build_prompt( $post, $deterministic_score, $settings );
-        $response                  = $this->request_sender->send( $messages, null, 'geo_analysis' );
+        $context                   = $this->build_context( $post, $deterministic_score, $settings );
+        $response                  = $this->request_sender->send_feature( 'geo_analysis', 'analyze', $context, 'geo_analysis', null, false );
         $ai_scores_and_suggestions = $this->parse_response( $response );
 
         // Scanning → GEO's "Flag weak entity coverage" - entity_coverage
@@ -390,58 +390,30 @@ class GeoAnalyzer {
     }
 
     /**
+     * The GEO analysis feature's input.
+     *
      * @param \WP_Post             $post                Post being analyzed.
      * @param int|null             $deterministic_score Already-known deterministic score, if any - given to the AI as context.
      * @param array<string, mixed> $settings            Stored plugin settings - only `ai_visibility_scans.entity` is read here.
-     * @return array<int, array{role: string, content: string}>
+     * @return array<string, mixed>
      */
-    private function build_prompt( \WP_Post $post, ?int $deterministic_score, array $settings ): array {
-        // Settings → Scanning → AI Visibility's "Entity clarity" row's own
-        // `min_mentions` - entity_coverage is still an AI judgment call
-        // (see analyze()'s own comment on `ai_visibility_scans.entity.enable`),
-        // but this gives the AI a concrete, user-configurable anchor point
-        // instead of an unparameterized "judge this holistically," the
-        // same "factor this in" context $deterministic_score already gets
-        // below.
-        $entity_guidance = '';
-        if ( ! empty( $settings['ai_visibility_scans']['entity']['enable'] ) ) {
-            $entity_guidance = sprintf(
-                "\n\n(Score \"entity_coverage\" low if this content mentions its primary subject/entity - the main product, service, or organization it's about - fewer than %d times.)",
-                max( 1, absint( $settings['ai_visibility_scans']['entity']['min_mentions'] ?? 2 ) )
-            );
+    private function build_context( \WP_Post $post, ?int $deterministic_score, array $settings ): array {
+        $context = array(
+            'title'   => $post->post_title,
+            'content' => wp_strip_all_tags( $post->post_content ),
+        );
+
+        if ( null !== $deterministic_score ) {
+            $context['deterministic_score'] = $deterministic_score;
         }
 
-        return array(
-            array(
-                'role'    => 'system',
-                'content' => 'You evaluate web content for how well AI answer engines (like ChatGPT, Perplexity, and AI Overviews) '
-                    . 'can find, understand, and cite it. Score eight dimensions from 0-100: '
-                    . '"entity_coverage" (does the content clearly name and explain the key people/products/concepts it discusses), '
-                    . '"question_coverage" (does it directly answer the questions a reader would plausibly search for), '
-                    . '"answer_completeness" (are answers self-contained rather than requiring outside context), '
-                    . '"llm_readability" (is it written in clear, extractable prose an AI system could quote directly), '
-                    . '"purpose_clarity" (is it obvious within the first few sentences what this content is about and who it is for), '
-                    . '"conversation_readiness" (would the content still read naturally if voiced aloud as an answer to a follow-up question), '
-                    . '"knowledge_graph_coverage" (does the content name real, specific, well-known entities an AI system could cross-reference, rather than vague generalities), '
-                    . '"answer_first_structure" (does the content lead with the direct answer/conclusion before background or preamble). '
-                    . 'Also give 3-5 concrete, specific suggestions to improve this content for AI answer engines. '
-                    . 'Respond with ONLY raw JSON like {"entity_coverage": 70, "question_coverage": 60, "answer_completeness": 65, '
-                    . '"llm_readability": 80, "purpose_clarity": 75, "conversation_readiness": 55, "knowledge_graph_coverage": 60, '
-                    . '"answer_first_structure": 65, "suggestions": ["...", "..."]} - no markdown fences, no commentary.',
-            ),
-            array(
-                'role'    => 'user',
-                'content' => sprintf(
-                    "Title: %s\n\nContent:\n%s%s%s",
-                    $post->post_title,
-                    wp_trim_words( wp_strip_all_tags( $post->post_content ), 500 ),
-                    null !== $deterministic_score
-                        ? sprintf( "\n\n(This content already scores %d/100 on separate structural checks - factor that in.)", $deterministic_score )
-                        : '',
-                    $entity_guidance
-                ),
-            ),
-        );
+        // Settings → Scanning → AI Visibility's "Entity clarity" row: a user-configurable anchor
+        // for the entity_coverage judgment, sent only while that check is on.
+        if ( ! empty( $settings['ai_visibility_scans']['entity']['enable'] ) ) {
+            $context['entity_min_mentions'] = max( 1, absint( $settings['ai_visibility_scans']['entity']['min_mentions'] ?? 2 ) );
+        }
+
+        return $context;
     }
 
     /**
