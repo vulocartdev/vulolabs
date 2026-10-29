@@ -191,12 +191,13 @@ const ContentToolsGrid = () => {
 	const proSlot = useFilterSlot<ProToolsSlot>('vulopilot_content_tools_pro');
 	const { status: creditsStatus } = useAiCredits();
 	const isContentToolsEnabled = useContentToolsEnabled();
+	const isToolLocked = (tool: ContentTool) => Boolean(tool.pro) && (!isContentToolsEnabled || !proSlot);
 	const [isCloudConnectPromptOpen, setIsCloudConnectPromptOpen] = useState(false);
 	const [isProLocked, setIsProLocked] = useState(false);
 	const dismissProLocked = () => setIsProLocked(false);
 
 	const handleToolClick = (tool: ContentTool) => {
-		if (tool.pro && (!isContentToolsEnabled || !proSlot)) {
+		if (isToolLocked(tool)) {
 			setIsProLocked(true);
 			return;
 		}
@@ -229,7 +230,8 @@ const ContentToolsGrid = () => {
 						desc: tool.desc,
 						tags: (
 							<>
-								{tool.pro && (!isContentToolsEnabled || !proSlot) && (
+								{/* Licensed sites skip the tag - a click there opens the "enable module" prompt instead. */}
+								{isToolLocked(tool) && !vulopilotAppLocalizer.khali_dabba && (
 									<span className="admin-tag pro-tag">
 										<i className="adminfont-pro-tag" />
 										{__('Pro', 'vulopilot')}

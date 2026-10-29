@@ -113,8 +113,11 @@ const App = () => {
 		}
 	};
 
-	// Highlight the active tab in the WP admin sidebar submenu.
+	// Highlight the active tab in the WP admin sidebar submenu. Content Planner has no menu
+	// entry of its own (it opens from the Content page), so it highlights Content.
 	useEffect(() => {
+		const menuTab = currentTab === 'content-planner' ? 'content' : currentTab;
+
 		document
 			.querySelectorAll('#toplevel_page_vulopilot > ul > li > a')
 			.forEach((menuItem) => {
@@ -131,7 +134,7 @@ const App = () => {
 					);
 				}
 
-				if (menuItemHashParams.get('tab') === currentTab) {
+				if (menuItemHashParams.get('tab') === menuTab) {
 					(menuItem.parentNode as HTMLElement).classList.add(
 						'current'
 					);
